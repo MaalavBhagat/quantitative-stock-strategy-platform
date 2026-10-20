@@ -2,7 +2,7 @@
 Last updated: 2026-10-20
 
 CURRENT PHASE: Phase 1 — Development Environment and Repository (In progress)
-CURRENT TASK: Steps 1.2 + 1.3 — repo + Python + tests (prompt: prompts/02_phase1_step1.2-1.3_repo.md)
+CURRENT TASK: Step 1.4 — development conventions doc (prompt not written yet)
 
 PHASE STATES (Not started / In progress / Blocked / Verified):
 - Phase 0  Feasibility & research design ........ VERIFIED (2026-10-18)
@@ -33,9 +33,16 @@ COMPLETED:
   no profitability claim ✓  → Phase 0 VERIFIED
 - CLAUDE.md created (auto-read rules for Claude Code)
 - Step 1.1 Mac inspection — DONE 2026-10-20 (report reviewed by Claude in chat; results under SETUP FACTS)
+- Steps 1.2 + 1.3 repo + Python + tests — DONE 2026-10-20 (prompt 02):
+  pyproject.toml, .python-version (3.13), uv.lock, .gitignore, .env.example, README.md, CHANGELOG.md,
+  src/quant_research/__init__.py (version 0.1.0), tests/test_smoke.py. Dev deps: pytest 9.1.1, ruff 0.17.1.
+  Git repo initialised (branch main); pushed to PRIVATE GitHub repo
+  https://github.com/MaalavBhagat/quantitative-stock-strategy-platform
+  Fresh clone + `uv sync` + `uv run pytest` + `uv run ruff check .` all worked (README steps verified).
+  Style-only fix to research/calc_feasibility.py (ruff PLC0206), output diffed identical — approved by Goggy.
 
 IN PROGRESS:
-- Steps 1.2 + 1.3 — prompt 02 ready (updated with Step 1.1 decisions)
+- Phase 1: Step 1.4 remaining
 
 BLOCKED / OPEN QUESTIONS:
 - Stake withdrawal FX not confirmed (check AU_Pricing.pdf in Phase 2)
@@ -63,9 +70,12 @@ Mac environment (checked 2026-10-20 by Claude Code, read-only commands):
 - VS Code: NOT installed (no `code` command, no app in /Applications).
 - Free disk: 23 GiB of 228 GiB (data volume 89% used).
 - This folder is NOT a git repo yet.
+  UPDATE after Step 1.2–1.3 (2026-10-20): installed uv 0.13.2 + gh 2.102.0 (Homebrew; brew auto-cleanup ran);
+  uv-managed Python 3.13.16; git user.name = MaalavBhagat, user.email = GitHub noreply address;
+  gh logged in as MaalavBhagat (keyring, https). Folder is now a git repo.
 
 KNOWN BUGS:
-- None (no code yet)
+- None known
 
 IMPORTANT DECISIONS:
 - 2026-10-17: Work in small, single tasks. Every task ends by updating this file.
@@ -76,19 +86,21 @@ IMPORTANT DECISIONS:
 - 2026-10-17: Stake is the MAIN cost case.
 - 2026-10-17: US market first (agreed). Data: Tiingo primary, yfinance cross-check (agreed).
 - 2026-10-18: Repo root = this folder (Desktop/Share research). GitHub repo name: quantitative-stock-strategy-platform.
+- 2026-10-20: Git identity = MaalavBhagat + GitHub noreply email. GitHub repo created PRIVATE.
 - 2026-10-20: Tooling = uv; project Python pinned to 3.13 via uv (Homebrew 3.14 left alone); gh CLI for GitHub. Goggy approved brew install uv + gh.
 - 2026-10-18: Q4.11 added — which market/company types suit the strategy (answer after Phase 6/7).
 - 2026-10-17: Starting pair AAPL (with momentum) + XOM (without steady momentum) — Goggy's choice. Downloaded data never goes into the public repo (licence).
 - 2026-10-17: H1 v2 + H2–H7 approved. H1 v2 is the main hypothesis. H2–H6 tested only after H1 baseline; H7 exploratory.
 
 NEXT ACTION:
-- In the Claude desktop Code session (local, Share research folder) type:
-  "Read prompts/02_phase1_step1.2-1.3_repo.md and do exactly what it says."
-- Have ready: name + GitHub noreply email for git; be ready to log in to GitHub in the browser.
-- Paste the completion report back to chat. Then Step 1.4 (development conventions).
+- Step 1.4 — development conventions doc (naming, module responsibilities, testing, error handling,
+  coding-agent rules, documentation). Needs a prompt (03) written first.
 
-TESTS RUN:
-- None
+TESTS RUN (2026-10-20):
+- uv run pytest  (in project folder AND in a fresh clone)
+- uv run ruff check .  (in project folder AND in a fresh clone)
 
-TEST RESULTS:
-- None
+TEST RESULTS (real output):
+- pytest: "1 passed in 0.04s" (fresh clone: "1 passed in 0.03s") — tests/test_smoke.py
+- ruff: first run "Found 1 error." (PLC0206 in research/calc_feasibility.py) → fixed → "All checks passed!"
+- calc_feasibility.py output before vs after fix: identical (diff)
