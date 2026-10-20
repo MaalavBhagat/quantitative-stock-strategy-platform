@@ -2,7 +2,7 @@
 Last updated: 2026-10-20
 
 CURRENT PHASE: Phase 3 — Portfolio Accounting Engine (In progress)
-CURRENT TASK: Steps 3.4–3.6 — costs, dividends, splits (prompt: prompts/09_phase3_steps3.4-3.6_costs_dividends_splits.md)
+CURRENT TASK: Steps 3.7–3.8 — valuation + full accounting tests (prompt 10, not written yet)
 
 PHASE STATES (Not started / In progress / Blocked / Verified):
 - Phase 0  Feasibility & research design ........ VERIFIED (2026-10-18)
@@ -152,11 +152,32 @@ FINDINGS (Step 2.3):
   (2) min order US$10 on buys + partial sells, whole-position sell allowed below it [ASSUMPTION];
   (3) fees rounded up to the cent.
 
+- Steps 3.4–3.6 costs, dividends, splits — DONE 2026-10-20 (prompt 09, plan + 3 design choices approved by Goggy;
+  branch phase3-costs-dividends-splits, merged to main):
+  src/quant_research/execution/costs.py — ONE config table COST_TABLE (every row: source link or [ASSUMPTION]);
+  fee_usd (stake / ibkr_fixed / commsec_standard, brokerage + per-trade FX + total), apply_spread (fill price +
+  spread cost), aud_to_usd / usd_to_aud (rate passed in, fee in USD rounded up, amount out rounded down),
+  fx_fee_settings. src/quant_research/ratios.py — nearest_simple_ratio moved here (shared by validation + ledger).
+  Ledger: apply_dividend (entitled at previous close; refused after a trade that day; gross down / withholding up;
+  net < US$0.01 not credited with a note; gross/withholding/net totals; basis unchanged; double-apply refused) and
+  apply_split (snapped ratio; shares × ratio; basis + cash unchanged; whole-mode fractional reverse split →
+  NotImplementedError; fractional rounds down + notes dropped fraction; double-apply refused). Daily order
+  split → dividend → trades enforced.
+  Tests: test_costs 15, test_corporate_actions 16, invariant test now covers dividends + splits in both share modes
+  (cash equation incl. dividends_net, and shares == replay of the log). Stake round trip on US$6,900 normal spread
+  = US$12.90 = 0.187% (feasibility doc ≈0.19% — consistent).
+  Mutation check: withholding rounded DOWN → 5 tests fail; split changing cost basis → 4 fail; restored → all pass.
+- Design choices approved 2026-10-20: (1) ratio function moved to quant_research/ratios.py (no copy);
+  (2) FX fees counted in USD, rounded up, converted amount rounded down; (3) fractional reverse split keeps cost
+  basis unchanged when a tiny fraction is dropped (conservative).
+
 IN PROGRESS:
-- Phase 3: Steps 3.4–3.6 next (prompt 09)
+- Phase 3: Steps 3.7–3.8 next (prompt 10 — valuation, unrealised P&L, P&L display rule, full accounting tests)
 
 BLOCKED / OPEN QUESTIONS:
 - Stake fractional-share precision UNVERIFIED (D3 assumes 6 dp — check in Phase 3)
+- Historical AUD/USD rate source for start/end FX not chosen yet (Phase 4 question) — cost functions take the
+  rate as an input, nothing hard-coded.
 - XOM 2014-07-28 Tiingo/Yahoo close differ 1.085% — unexplained (third source?)
 - XOM pre-ex-date closes (2010-02-05, 2010-05-10): Tiingo vs Yahoo differ by exactly the dividend — which is right?
 - Delisted stocks: can Tiingo price history be downloaded for tickers with endDate in the past? (survivorship; untested)
@@ -217,13 +238,17 @@ IMPORTANT DECISIONS:
      (only Goggy sets it) · D9 type hints required on every function in src/; no type-checker yet.
 
 NEXT ACTION:
-- Desktop Code session: "Read prompts/09_phase3_steps3.4-3.6_costs_dividends_splits.md and do exactly what it says."
-  (Shows a plan, waits for OK.)
+- Chat Claude reviews Steps 3.4–3.6, then writes prompt 10 (Steps 3.7–3.8: valuation + full accounting tests).
 
 CHAT CLAUDE CHECK OF STEPS 3.1–3.3 (2026-10-20): main at 9079fa0, clean tree. Re-did test arithmetic by hand
 (8,494.50; +94.00; avg 105; +72.00; 3.323333; 123.46) — all correct. Read ledger.py: inputs checked before any change,
 round_pay/round_receive used, buy fee in cost basis, sell fee from proceeds. → Steps 3.1–3.3 VERIFIED.
 Note for prompt 10: decide how P&L is displayed (cost basis kept exact, display to cents).
+
+TESTS RUN (2026-10-20, Steps 3.4–3.6):
+- uv run pytest → "139 passed in 1.50s" (accounting: corporate_actions 16, costs 15, ledger 22, money 8; + 78 data)
+- uv run ruff check . → "All checks passed!" · uv run ruff format --check . → "50 files already formatted"
+- Mutation check: withholding DOWN → "5 failed, 56 passed"; split basis × ratio → "4 failed, 57 passed"; restored → 61 passed
 
 TESTS RUN (2026-10-20, Steps 3.1–3.3):
 - uv run pytest → "107 passed in 1.12s" (accounting/test_ledger 21, accounting/test_money 8, + 78 earlier)

@@ -45,13 +45,13 @@ anything system-wide.
 | `.gitignore`, `.env.example` | what Git must never save; template for API keys |
 | `data/` (git-ignored) | downloaded market data — never committed (licence): `raw/tiingo/`, `cache/yfinance/`, `reference/tiingo/` |
 
-**Modules** — inside `src/quant_research/`. `data/` (Phase 2) and `portfolio/` (Phase 3) exist; the rest are
+**Modules** — inside `src/quant_research/`. `data/` (Phase 2), `portfolio/` and `execution/` (Phase 3) exist; the rest are
 *not created yet* and get created only when a phase needs them (no empty modules).
 | Module | Phase | Its job | It must NOT |
 |---|---|---|---|
 | `data/` — **created** (`tiingo`, `storage`, `validation`, `crosscheck`, `loader`) | 2 | Download, validate, cache and load prices, dividends, splits (all years, incl. 2021+, for quality checks only — D8). Conventions: DATA_SOURCES §7 | trade, compute signals, chart or summarise 2021+ prices, or silently fill/fix bad data |
 | `portfolio/` — **created** (`money`, `ledger`) | 3 | The ledger: cash, shares, costs, dividends, valuation (the only place cash changes) | decide when to trade or read future prices |
-| `execution/` | 3–4 | Turn an order into a fill: next-open price, gaps, costs, rounding | decide *whether* to trade; use the signal day's close as the fill price |
+| `execution/` — **created** (`costs`; fills come in Phase 4) | 3–4 | Turn an order into a fill: next-open price, gaps, costs, rounding | decide *whether* to trade; use the signal day's close as the fill price |
 | `backtesting/` | 4 | Run the day-by-day timeline: data → signal → order → fill → ledger | contain strategy rules or fee numbers; run on dates ≥ 2021-01-01 while locked (D8) |
 | `strategies/` | 5 | Read past data, return "buy / sell / hold" signals | touch cash or shares directly; see any data after day T |
 | `metrics/` | 4, 6 | Returns, drawdown, Sharpe, round trips, time in cash | change results or re-run trades |
@@ -123,6 +123,13 @@ makes a losing strategy look profitable, so it must be exact; the speed cost is 
 - Minimum order US$10 (Stake, BROKER_FEES §4) applies to buys and partial sells; selling a whole
   position is allowed below it [ASSUMPTION — Stake doesn't say].
 - Only one function turns a float price into Decimal: `portfolio.money.to_decimal_price`.
+
+**Daily event order — rule (Phase 3, approved 2026-10-20)**
+- Each day, per ticker: **split → dividend → trades (at the open)**. The ledger refuses any other order.
+- Why: the split changes the share count the dividend is paid on, and dividend entitlement is the holding at the
+  previous close — so both must be booked before any trade that day.
+- Split ratios are snapped by `quant_research.ratios.nearest_simple_ratio` (shared with data validation).
+- All cost numbers live in ONE table: `execution.costs.COST_TABLE` (source link or [ASSUMPTION] per row).
 
 ---
 

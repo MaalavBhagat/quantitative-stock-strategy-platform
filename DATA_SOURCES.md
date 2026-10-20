@@ -86,3 +86,5 @@ These rules are what the code does now (`src/quant_research/data/`); Phase 3+ co
 | Licence: Tiingo "Internal Use Only" | Raw data can't be shared or published | `/data/` git-ignored; reports show counts, dates and % only |
 | Split factor not exact (AAPL 7.000007) | Using it as-is would create fractional share drift | Snap to nearest realistic ratio (§7 row 5); WARNING if not within 1e-4 of one |
 | Yahoo values split-adjusted even with `auto_adjust=False` | Naive comparisons would look wildly wrong | Basis detected from the data and converted (`crosscheck.detect_split_basis`); fails loudly if unexplained |
+| **Unsupported:** reverse splits that leave a fraction in whole-share mode (cash-in-lieu) | Can't model the cash paid for the fraction | Ledger raises NotImplementedError (none in our data so far). Fractional mode rounds down to 6 dp and notes the dropped fraction |
+| Other corporate actions (spin-offs, mergers, special distributions in `splitFactor`) | Not modelled | Not present in AAPL/XOM 2010–2016 (validation found only the 2014 split); check again for each new ticker |

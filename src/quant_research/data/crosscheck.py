@@ -15,7 +15,7 @@ from typing import Any
 
 import pandas as pd
 
-from quant_research.data.validation import nearest_simple_ratio
+from quant_research.ratios import nearest_simple_ratio
 
 logger = logging.getLogger(__name__)
 

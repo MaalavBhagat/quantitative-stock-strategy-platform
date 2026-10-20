@@ -10,11 +10,12 @@ import math
 from dataclasses import dataclass, field
 from datetime import date
 from enum import StrEnum
-from fractions import Fraction
 from typing import Any
 
 import exchange_calendars as xcals
 import pandas as pd
+
+from quant_research.ratios import nearest_simple_ratio
 
 logger = logging.getLogger(__name__)
 
@@ -165,19 +166,6 @@ def check_ohlc(df: pd.DataFrame, ticker: str) -> list[Issue]:
                     )
                 )
     return issues
-
-
-# Ratios real splits use: n-for-1 and 1-for-n (n ≤ 100), and small pairs like 3:2 (both ≤ 10).
-SIMPLE_RATIOS = sorted(
-    {Fraction(n, 1) for n in range(1, 101)}
-    | {Fraction(1, n) for n in range(1, 101)}
-    | {Fraction(p, q) for p in range(1, 11) for q in range(1, 11)}
-)
-
-
-def nearest_simple_ratio(factor: float) -> Fraction:
-    """Closest realistic split ratio, e.g. 7.000007 → 7/1, 1.5 → 3/2, 0.25 → 1/4."""
-    return min(SIMPLE_RATIOS, key=lambda ratio: abs(factor - float(ratio)) / float(ratio))
 
 
 def check_splits(df: pd.DataFrame, ticker: str) -> list[Issue]:

@@ -16,7 +16,7 @@ from quant_research.portfolio.ledger import (
     LedgerError,
     Portfolio,
 )
-from quant_research.portfolio.money import shares_affordable
+from quant_research.portfolio.money import round_shares_down, shares_affordable
 
 D = Decimal
 DAY1, DAY2, DAY3 = date(2014, 6, 2), date(2014, 6, 3), date(2014, 6, 4)
@@ -269,42 +269,78 @@ def test_ledger_entries_complete_and_immutable():
     assert isinstance(p.entries, tuple)  # no append/remove from outside
 
 
-def test_invariant_cash_equation_holds_after_random_trades():
-    # For ANY sequence of valid trades:
-    # initial cash − total spent − total fees + total received == current cash (exactly)
+def replay_shares(p: Portfolio) -> dict[str, Decimal]:
+    """Shares implied by the audit trail alone: buys − sells, × split ratios (rounded down)."""
+    shares: dict[str, Decimal] = {}
+    for e in p.entries:
+        if e.type == "BUY":
+            shares[e.ticker] = shares.get(e.ticker, D(0)) + e.quantity
+        elif e.type == "SELL":
+            shares[e.ticker] -= e.quantity
+        elif e.type == "SPLIT":
+            shares[e.ticker] = round_shares_down(shares[e.ticker] * e.ratio, p.share_mode)
+    return shares
+
+
+@pytest.mark.parametrize(
+    ("mode", "split_ratios"),
+    [("fractional", ["2", "3", "7", "0.5", "0.25"]), ("whole", ["2", "3", "7"])],
+)
+def test_invariants_hold_after_random_trades_dividends_and_splits(mode, split_ratios):
+    # For ANY sequence of valid events, after EVERY step (exactly, no tolerance):
+    #   initial − spent − fees + received + dividends_net == cash
+    #   shares held per ticker == shares implied by the log (buys − sells, × split ratios)
     rng = random.Random(20261020)
-    p = Portfolio("10000.00", share_mode="fractional")
-    day = date(2014, 1, 2)
-    trades = 0
-    for step in range(500):
-        day = date.fromordinal(day.toordinal() + rng.choice([0, 1]))
-        price = D(rng.randint(500, 50000)) / 100  # 5.00 … 500.00
-        fee = D(rng.choice([0, 1, 3, 300])) / 100  # 0.00, 0.01, 0.03, 3.00
-        held = p.position("AAPL").quantity
-        if held > 0 and rng.random() < 0.5:
-            qty = (
-                held
-                if rng.random() < 0.3
-                else (held * D(rng.randint(1, 99)) / 100).quantize(D("0.000001"))
-            )
+    p = Portfolio("10000.00", share_mode=mode)
+    tickers = ["AAPL", "XOM"]
+    day = date(2014, 1, 1)
+    counts = {"trade": 0, "dividend": 0, "split": 0}
+    for _ in range(400):
+        day = date.fromordinal(day.toordinal() + 1)
+        t = rng.choice(tickers)
+        # daily order: split → dividend → trades
+        if rng.random() < 0.05 and p.position(t).quantity > 0:
+            p.apply_split(day, t, rng.choice(split_ratios))  # held > 0 → always logs an entry
+            counts["split"] += 1
+        if rng.random() < 0.15 and p.position(t).quantity > 0:
+            amount = D(rng.randint(1, 300)) / 100  # 0.01 … 3.00 per share
+            e = p.apply_dividend(day, t, amount)
+            if e is not None and e.note is None:
+                counts["dividend"] += 1
+        for _ in range(rng.choice([1, 2])):
+            price = D(rng.randint(500, 50000)) / 100  # 5.00 … 500.00
+            fee = D(rng.choice([0, 1, 3, 300])) / 100  # 0.00, 0.01, 0.03, 3.00
+            held = p.position(t).quantity
             try:
-                p.sell(day, "AAPL", qty, price, fee)
-                trades += 1
+                if held > 0 and rng.random() < 0.5:
+                    share = D(rng.randint(1, 99)) / 100
+                    qty = held if rng.random() < 0.3 else round_shares_down(held * share, mode)
+                    if qty > 0:
+                        p.sell(day, t, qty, price, fee)
+                        counts["trade"] += 1
+                else:
+                    qty = round_shares_down(
+                        shares_affordable(p.cash_usd, price, fee, mode)
+                        * D(rng.randint(1, 60))
+                        / 100,
+                        mode,
+                    )
+                    if qty > 0:
+                        p.buy(day, t, qty, price, fee)
+                        counts["trade"] += 1
             except LedgerError:
-                pass  # e.g. below minimum order — refused trades change nothing
-        else:
-            affordable = shares_affordable(p.cash_usd, price, fee, "fractional")
-            qty = affordable * D(rng.randint(1, 100)) / 100
-            if qty > 0:
-                try:
-                    p.buy(day, "AAPL", qty, price, fee)
-                    trades += 1
-                except LedgerError:
-                    pass
-        assert (
-            p.initial_cash_usd - p.total_spent_usd - p.total_fees_usd + p.total_received_usd
-            == p.cash_usd
-        )
-        assert p.cash_usd >= 0
-    assert trades > 100  # the sequence really exercised the ledger
-    assert len(p.entries) == trades
+                pass  # e.g. below the minimum order — refused trades change nothing
+            assert (
+                p.initial_cash_usd
+                - p.total_spent_usd
+                - p.total_fees_usd
+                + p.total_received_usd
+                + p.dividends_net_usd
+                == p.cash_usd
+            )
+            assert p.cash_usd >= 0
+            implied = replay_shares(p)
+            for ticker in tickers:
+                assert p.position(ticker).quantity == implied.get(ticker, D(0))
+    # the sequence really exercised every kind of event
+    assert counts["trade"] > 100 and counts["dividend"] > 10 and counts["split"] > 3, counts

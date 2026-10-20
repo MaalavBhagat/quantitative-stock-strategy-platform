@@ -1,10 +1,12 @@
-"""The portfolio ledger: cash, positions and an append-only audit trail (Phase 3, Steps 3.1–3.3).
+"""The portfolio ledger: cash, positions and an append-only audit trail (Phase 3, Steps 3.1–3.6).
 
 The ledger only RECORDS trades it is told about — it never decides prices, fees or timing.
 Rules (PROJECT_GUIDE §4): Decimal only (D1); cash rounded to cents against us (D2); shares
 bought rounded down to 6 dp in fractional mode (D3). Profit/loss uses AVERAGE COST, with buy fees
 in the cost basis and sell fees taken from proceeds [ASSUMPTION — no tax modelling].
 A refused trade raises an error and changes nothing.
+Daily event order (PROJECT_GUIDE §4): split → dividend → trades. The ledger refuses a split after a
+dividend or trade on the same day for that ticker, and a dividend after a trade.
 """
 
 import logging
@@ -21,12 +23,15 @@ from quant_research.portfolio.money import (
     round_receive,
     round_shares_down,
 )
+from quant_research.ratios import nearest_simple_ratio
 
 logger = logging.getLogger(__name__)
 
 ShareMode = Literal["whole", "fractional"]
-EntryType = Literal["START", "BUY", "SELL"]
+EntryType = Literal["START", "BUY", "SELL", "DIVIDEND", "SPLIT"]
 STAKE_MIN_ORDER_USD = Decimal(10)  # BROKER_FEES §4 [OFFICIAL], excluding brokerage
+US_WITHHOLDING_W8BEN = Decimal("0.15")  # VERIFIED 2026-10-20, link in EXPERIMENT_PLAN §1
+MIN_DIVIDEND_CREDIT_USD = Decimal("0.01")  # BROKER_FEES §4: amounts below a minimum not credited
 
 
 class LedgerError(ValueError):
@@ -55,6 +60,9 @@ class LedgerEntry:
     cash_before_usd: Decimal
     cash_after_usd: Decimal
     realised_pnl_usd: Decimal | None = None  # sells only
+    withholding_usd: Decimal | None = None  # dividends only
+    ratio: Decimal | None = None  # splits only (snapped ratio)
+    note: str | None = None
 
 
 @dataclass(frozen=True)
@@ -100,6 +108,12 @@ class Portfolio:
         self._realised = Decimal("0.00")
         self._quantity: dict[str, Decimal] = {}
         self._basis: dict[str, Decimal] = {}
+        self._div_gross = Decimal("0.00")
+        self._withholding = Decimal("0.00")
+        self._div_net = Decimal("0.00")
+        self._applied_dividends: set[tuple[str, date]] = set()
+        self._applied_splits: set[tuple[str, date]] = set()
+        self._events: dict[tuple[str, date], set[str]] = {}
         self._last_date: date | None = None
         self._entries: list[LedgerEntry] = []
         if start_date is not None:
@@ -134,6 +148,20 @@ class Portfolio:
     @property
     def realised_pnl_usd(self) -> Decimal:
         return self._realised
+
+    @property
+    def dividends_gross_usd(self) -> Decimal:
+        """Dividends credited, before withholding tax."""
+        return self._div_gross
+
+    @property
+    def withholding_usd(self) -> Decimal:
+        return self._withholding
+
+    @property
+    def dividends_net_usd(self) -> Decimal:
+        """Dividend cash actually credited (gross − withholding)."""
+        return self._div_net
 
     @property
     def entries(self) -> tuple[LedgerEntry, ...]:
@@ -206,6 +234,7 @@ class Portfolio:
         self._quantity[t] = self._quantity.get(t, Decimal(0)) + qty
         self._basis[t] = self._basis.get(t, Decimal(0)) + total
         self._last_date = when
+        self._events.setdefault((t, when), set()).add("trade")
         entry = LedgerEntry(when, "BUY", t, qty, price, fee_charged, cost, before, self._cash)
         self._entries.append(entry)
         logger.debug("BUY %s %s @ %s, fee %s, cash %s → %s", qty, t, price, fee, before, self._cash)
@@ -250,9 +279,133 @@ class Portfolio:
         self._quantity[t] = held - qty
         self._basis[t] = Decimal(0) if closing else basis - basis_sold
         self._last_date = when
+        self._events.setdefault((t, when), set()).add("trade")
         entry = LedgerEntry(
             when, "SELL", t, qty, price, fee_charged, proceeds, before, self._cash, pnl
         )
         self._entries.append(entry)
         logger.debug("SELL %s %s @ %s, fee %s, P&L %s", qty, t, price, fee, pnl)
+        return entry
+
+    # ---------- corporate actions (Steps 3.5, 3.6) ----------
+    def _check_ticker(self, ticker: str) -> str:
+        if not isinstance(ticker, str) or not ticker.strip():
+            raise ValueError("ticker must be a non-empty string")
+        return ticker.strip().upper()
+
+    def apply_dividend(
+        self,
+        ex_date: date,
+        ticker: str,
+        amount_per_share_usd: Decimal | int | str,
+        withholding_rate: Decimal | int | str = US_WITHHOLDING_W8BEN,
+    ) -> LedgerEntry | None:
+        """Credit a dividend to shares held at the close BEFORE ex_date (DATA_SOURCES §7 row 6).
+
+        Must be called before any trade in `ticker` on ex_date. Cash is credited on the ex-date
+        [ASSUMPTION — no pay date in the data]. gross rounded DOWN, withholding rounded UP,
+        net = gross − withholding; net below US$0.01 is not credited (logged with a note).
+        Dividends never change the cost basis. Returns None if no shares are held.
+        """
+        self._check_date(ex_date)
+        t = self._check_ticker(ticker)
+        amount = require_decimal(amount_per_share_usd, "amount_per_share_usd")
+        rate = require_decimal(withholding_rate, "withholding_rate")
+        if amount <= 0:
+            raise ValueError(f"amount_per_share_usd must be > 0, got {amount}")
+        if not 0 <= rate < 1:
+            raise ValueError(f"withholding_rate must be in [0, 1), got {rate}")
+        if (t, ex_date) in self._applied_dividends:
+            raise LedgerError(f"dividend for {t} on {ex_date} was already applied")
+        if "trade" in self._events.get((t, ex_date), set()):
+            raise LedgerError(
+                f"a {t} trade is already logged on {ex_date} — apply the dividend BEFORE trades "
+                "(entitlement = shares held at the previous close)"
+            )
+        self._applied_dividends.add((t, ex_date))
+        self._events.setdefault((t, ex_date), set()).add("dividend")
+        self._last_date = ex_date
+        held = self._quantity.get(t, Decimal(0))
+        if held == 0:
+            logger.debug("dividend %s %s: no shares held — nothing credited", t, ex_date)
+            return None
+        gross_exact = held * amount
+        gross = round_receive(gross_exact)
+        withholding = round_pay(gross_exact * rate)
+        net = gross - withholding
+        before = self._cash
+        if net < MIN_DIVIDEND_CREDIT_USD:
+            entry = LedgerEntry(
+                ex_date, "DIVIDEND", t, held, amount, Decimal(0), gross, before, before,
+                withholding_usd=withholding,
+                note=f"net US${net} below US${MIN_DIVIDEND_CREDIT_USD} — not credited",
+            )  # fmt: skip
+            self._entries.append(entry)
+            logger.info("dividend %s %s too small (net %s) — not credited", t, ex_date, net)
+            return entry
+        self._cash += net
+        self._div_gross += gross
+        self._withholding += withholding
+        self._div_net += net
+        entry = LedgerEntry(
+            ex_date, "DIVIDEND", t, held, amount, Decimal(0), gross, before, self._cash,
+            withholding_usd=withholding,
+        )  # fmt: skip
+        self._entries.append(entry)
+        return entry
+
+    def apply_split(
+        self, when: date, ticker: str, ratio: Decimal | int | str
+    ) -> LedgerEntry | None:
+        """Apply a split at the START of `when` (before dividends and trades).
+
+        The ratio is snapped to the nearest realistic ratio (quant_research.ratios, same as data
+        validation: 7.000007 → 7). Shares × ratio; cost basis and cash unchanged.
+        Whole mode: a result that is not a whole number raises NotImplementedError (cash-in-lieu
+        not modelled). Fractional mode: rounded DOWN to 6 dp, dropped fraction noted.
+        Returns None if no shares are held.
+        """
+        self._check_date(when)
+        t = self._check_ticker(ticker)
+        raw_ratio = require_decimal(ratio, "ratio")
+        if raw_ratio <= 0:
+            raise ValueError(f"split ratio must be > 0, got {raw_ratio}")
+        if (t, when) in self._applied_splits:
+            raise LedgerError(f"split for {t} on {when} was already applied")
+        if self._events.get((t, when), set()) & {"dividend", "trade"}:
+            raise LedgerError(
+                f"{t} already has a dividend or trade on {when} — apply the split FIRST "
+                "(order: split → dividend → trades)"
+            )
+        snapped = nearest_simple_ratio(raw_ratio)
+        num, den = Decimal(snapped.numerator), Decimal(snapped.denominator)
+        held = self._quantity.get(t, Decimal(0))
+        note = None
+        if held > 0:
+            if self.share_mode == "whole":
+                if (held * num) % den != 0:
+                    raise NotImplementedError(
+                        f"cash-in-lieu not modelled: {held} {t} × {snapped} is not a whole number"
+                    )
+                new_qty = held * num / den
+            else:
+                exact = held * num / den
+                new_qty = round_shares_down(exact, "fractional")
+                if new_qty != exact:
+                    note = f"fraction dropped: {exact - new_qty} shares (rounded down to 6 dp)"
+        self._applied_splits.add((t, when))
+        self._events.setdefault((t, when), set()).add("split")
+        self._last_date = when
+        if held == 0:
+            logger.debug("split %s %s: no shares held — nothing to do", t, when)
+            return None
+        self._quantity[t] = new_qty
+        ratio_value = num / den
+        detail = f"{held} → {new_qty} shares (ratio {snapped.numerator}:{snapped.denominator}"
+        detail += f", data factor {raw_ratio})"
+        entry = LedgerEntry(
+            when, "SPLIT", t, new_qty, Decimal(0), Decimal(0), Decimal(0), self._cash, self._cash,
+            ratio=ratio_value, note=f"{detail}; {note}" if note else detail,
+        )  # fmt: skip
+        self._entries.append(entry)
         return entry

@@ -53,3 +53,12 @@
   minimum order, immutable audit trail; refused trades change nothing).
 - `tests/accounting/`: 29 hand-calculated tests incl. a seeded cash-invariant test.
 - PROJECT_GUIDE.md: `portfolio/` marked created; average-cost and fee/minimum-order assumptions in §4.
+
+## 2026-10-20 — Phase 3, Steps 3.4–3.6: costs, dividends, splits (version stays 0.1.0)
+- New module `quant_research.execution.costs`: one `COST_TABLE` with sources; brokerage (Stake, IBKR fixed,
+  CommSec incl. per-trade FX), spread + slippage, AUD↔USD conversion (rate passed in).
+- `quant_research.ratios`: `nearest_simple_ratio` moved here from data validation (shared, not copied).
+- Ledger: `apply_dividend` (15% withholding, entitlement at previous close, tiny amounts not credited) and
+  `apply_split` (snapped ratio, basis unchanged, reverse-split rules); daily order split → dividend → trades enforced.
+- Tests: costs, corporate actions, and the random invariant test extended to dividends + splits (both share modes).
+- PROJECT_GUIDE §4 daily event order rule; DATA_SOURCES §8 unsupported corporate actions.
