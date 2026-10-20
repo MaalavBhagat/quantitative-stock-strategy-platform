@@ -2,7 +2,7 @@
 Last updated: 2026-10-20
 
 CURRENT PHASE: Phase 3 — Portfolio Accounting Engine (In progress)
-CURRENT TASK: Steps 3.7–3.8 — valuation + full accounting tests (prompt 10, not written yet)
+CURRENT TASK: Steps 3.7–3.8 — valuation + independent golden-scenario tests, Phase 3 check (prompt: prompts/10_phase3_steps3.7-3.8_valuation_golden.md)
 
 PHASE STATES (Not started / In progress / Blocked / Verified):
 - Phase 0  Feasibility & research design ........ VERIFIED (2026-10-18)
@@ -238,12 +238,14 @@ IMPORTANT DECISIONS:
      (only Goggy sets it) · D9 type hints required on every function in src/; no type-checker yet.
 
 NEXT ACTION:
-- Chat Claude reviews Steps 3.4–3.6, then writes prompt 10 (Steps 3.7–3.8: valuation + full accounting tests).
+- Desktop Code session: "Read prompts/10_phase3_steps3.7-3.8_valuation_golden.md and do exactly what it says."
+- Then chat Claude verifies Phase 3 → Phase 4 (backtesting engine).
 
-CHAT CLAUDE CHECK OF STEPS 3.1–3.3 (2026-10-20): main at 9079fa0, clean tree. Re-did test arithmetic by hand
-(8,494.50; +94.00; avg 105; +72.00; 3.323333; 123.46) — all correct. Read ledger.py: inputs checked before any change,
-round_pay/round_receive used, buy fee in cost basis, sell fee from proceeds. → Steps 3.1–3.3 VERIFIED.
-Note for prompt 10: decide how P&L is displayed (cost basis kept exact, display to cents).
+CHAT CLAUDE CHECK OF STEPS 3.4–3.6 (2026-10-20): main at 44ff22d, clean tree. Re-did by hand: Stake round trip on
+US$6,900 = 6.00 fees + 6.90 spread = 12.90 (0.187%); CommSec 8.28 + 37.95 FX; dividend 26.50 − 3.98 = 22.52.
+Read costs.py: fill price exact, fees rounded up, FX fee up / output down, rate always passed in. → Steps 3.4–3.6 VERIFIED.
+Golden scenario for prompt 10 computed independently by chat Claude (own Decimal code, doc rounding rules only):
+AUD 10,000 → USD 6,862.05 → … → USD 7,260.30 → AUD 9,627.14 (AUD/USD 0.69 → 0.75). Cash identity balances exactly.
 
 TESTS RUN (2026-10-20, Steps 3.4–3.6):
 - uv run pytest → "139 passed in 1.50s" (accounting: corporate_actions 16, costs 15, ledger 22, money 8; + 78 data)
