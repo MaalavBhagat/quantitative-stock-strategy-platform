@@ -2,7 +2,7 @@
 Last updated: 2026-10-20
 
 CURRENT PHASE: Phase 4 — Backtesting Engine (In progress)
-CURRENT TASK: Steps 4.1–4.3 — engine core: timeline, no look-ahead, order execution (prompt: prompts/11_phase4_steps4.1-4.3_engine.md)
+CURRENT TASK: Steps 4.4–4.6 — buy-and-hold on real data, RBA FX, metrics, edge cases (prompt 12, not written yet)
 
 PHASE STATES (Not started / In progress / Blocked / Verified):
 - Phase 0  Feasibility & research design ........ VERIFIED (2026-10-18)
@@ -200,13 +200,32 @@ FINDINGS (Step 2.3):
   multi-currency cash (account is USD; AUD only at start/end), short selling / margin.
   → Phase 3: ready for verification
 
+- Steps 4.1–4.3 engine core — DONE 2026-10-21 (prompt 11, plan approved incl. pyyaml; branch phase4-engine-core,
+  merged to main). Synthetic data only.
+  backtesting/engine.py — run_engine: per day OPEN split → dividend → fill yesterday's orders at open_raw;
+  CLOSE valuation → equity row; strategy.on_close(day, history ending at T (a copy), read-only PortfolioView) →
+  OrderIntents queued for T+1; leftovers EXPIRED; end: last-close value AND liquidation value (spread + fee).
+  execution/orders.py — OrderIntent (side, ticker, size = shares | "all" | "max_affordable"; NO price field).
+  execution/fills.py — fill_order at T's open via costs.apply_spread + costs.fee_usd; max_affordable = exact
+  binary search (fees that grow with size: IBKR per-share + 1% cap, CommSec %); gap % recorded; cash / shares /
+  minimum / nothing-affordable → Rejection with reason (run continues); bad inputs / missing open → error.
+  backtesting/lookahead.py — reusable check_no_lookahead (scramble all data after T → decisions, orders, equity up
+  to T identical; strategy never sees a row after its day; no order handled on the day it was created).
+  backtesting/run.py — RunConfig from YAML (config/s0_buy_and_hold_aapl_dev.yaml), D8 lock checked BEFORE loading,
+  run record in /data/runs/<run_id>/ (run.json with config, provenance, git commit + dirty, times, summary;
+  orders.csv, fills.csv, equity.csv). FX rates usd_per_aud_start/end in config are TEMPORARY (RBA in prompt 12).
+  Mutation check: fills at T's close → 9 tests fail (timing tests + the look-ahead harness after adding the
+  same-day-fill rule — the first version of the harness did NOT catch it, because it only compared post-T data).
+  Bug found + fixed while testing: first max_affordable could stop below the true maximum when the fee grows
+  with size (CommSec / IBKR cap) — never overspent, but under-invested; replaced with exact binary search.
+
 IN PROGRESS:
-- Phase 3 verification by chat Claude
+- Phase 4: Steps 4.4–4.6 next (prompt 12)
 
 BLOCKED / OPEN QUESTIONS:
 - Stake fractional-share precision UNVERIFIED (D3 assumes 6 dp — check in Phase 3)
-- Historical AUD/USD rate source for start/end FX not chosen yet (Phase 4 question) — cost functions take the
-  rate as an input, nothing hard-coded.
+- AUD/USD source CHOSEN (RBA daily 4 pm Sydney, DATA_SOURCES §9) but not implemented yet — run configs use
+  TEMPORARY usd_per_aud_start/end values until prompt 12. RBA file names / columns still [UNVERIFIED].
 - XOM 2014-07-28 Tiingo/Yahoo close differ 1.085% — unexplained (third source?)
 - XOM pre-ex-date closes (2010-02-05, 2010-05-10): Tiingo vs Yahoo differ by exactly the dividend — which is right?
 - Delisted stocks: can Tiingo price history be downloaded for tickers with endDate in the past? (survivorship; untested)
@@ -268,14 +287,20 @@ IMPORTANT DECISIONS:
      (only Goggy sets it) · D9 type hints required on every function in src/; no type-checker yet.
 
 NEXT ACTION:
-- Desktop Code session: "Read prompts/11_phase4_steps4.1-4.3_engine.md and do exactly what it says." (plan first, waits for OK)
-- Phase 4 plan: 11 = engine core (synthetic data) · 12 = buy-and-hold on real data + RBA FX + metrics + edge cases + Phase 4 check.
+- Chat Claude reviews Steps 4.1–4.3, then writes prompt 12 (buy-and-hold on real AAPL + XOM, RBA FX, metrics,
+  edge cases, Phase 4 check).
+- Phase 4 plan: 11 = engine core (DONE) · 12 = buy-and-hold on real data + RBA FX + metrics + edge cases + Phase 4 check.
 
 PHASE 3 VERIFIED by chat Claude 2026-10-20: main at f162ea5. Golden scenario matches chat Claude's independent answer
 key exactly (after Goggy's decision: withholding = 15% of cents-rounded gross; code had taxed unrounded gross → 1c diff;
 expected values were never edited). Whole-share scenario re-computed independently by chat Claude: 555.90 idle,
 US$7,227.53, AUD 9,583.69 — matches. 151 tests; mutation checks caught. All 6 roadmap criteria met; unsupported items listed.
 AUD/USD source chosen: RBA daily 4 pm Sydney rate (DATA_SOURCES §9; personal non-commercial use, attribute RBA).
+
+TESTS RUN (2026-10-21, Steps 4.1–4.3):
+- uv run pytest → "189 passed in 1.39s" (backtesting: engine 15, fills 18, run 5; accounting 73; data 78)
+- uv run ruff check . → "All checks passed!" · uv run ruff format --check . → "65 files already formatted"
+- Mutation: fill at T's close → "9 failed, 29 passed" (backtesting); restored → 38 passed
 
 TESTS RUN (2026-10-20, Steps 3.7–3.8):
 - uv run pytest → "151 passed in 1.49s" (accounting 73: corporate_actions 17, costs 15, golden 2, ledger 22,

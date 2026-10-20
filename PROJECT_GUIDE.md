@@ -40,19 +40,21 @@ anything system-wide.
 | `src/quant_research/` | the Python package: `__init__.py` (version) + `data/` (Phase 2, see below) |
 | `tests/` | one test file per module + `fixtures/` (small made-up data files) |
 | `scripts/` | runnable steps: `download_initial_dataset.py`, `crosscheck_yfinance.py`, `validate_initial_dataset.py` |
-| `reports/` | generated reports, e.g. `data_validation/` (counts, dates, % only — no prices) |
+| `reports/` | generated reports, e.g. `data_validation/`, `accounting/` (counts, dates, % only — no prices) |
+| `config/` | run settings as YAML (`RunConfig`), e.g. `s0_buy_and_hold_aapl_dev.yaml`; money/rates quoted, `final_test_unlocked: false` |
+| `data/runs/` (git-ignored) | one folder per run: run.json (config, data provenance, git commit + dirty, times, summary), orders/fills/equity CSVs |
 | `pyproject.toml`, `uv.lock`, `.python-version` | project settings, exact package versions, Python 3.13 |
 | `.gitignore`, `.env.example` | what Git must never save; template for API keys |
 | `data/` (git-ignored) | downloaded market data — never committed (licence): `raw/tiingo/`, `cache/yfinance/`, `reference/tiingo/` |
 
-**Modules** — inside `src/quant_research/`. `data/` (Phase 2), `portfolio/` and `execution/` (Phase 3) exist; the rest are
+**Modules** — inside `src/quant_research/`. `data/` (Phase 2), `portfolio/` + `execution/` (Phase 3) and `backtesting/` (Phase 4) exist; the rest are
 *not created yet* and get created only when a phase needs them (no empty modules).
 | Module | Phase | Its job | It must NOT |
 |---|---|---|---|
 | `data/` — **created** (`tiingo`, `storage`, `validation`, `crosscheck`, `loader`) | 2 | Download, validate, cache and load prices, dividends, splits (all years, incl. 2021+, for quality checks only — D8). Conventions: DATA_SOURCES §7 | trade, compute signals, chart or summarise 2021+ prices, or silently fill/fix bad data |
 | `portfolio/` — **created** (`money`, `ledger`) | 3 | The ledger: cash, shares, costs, dividends, valuation (the only place cash changes) | decide when to trade or read future prices |
-| `execution/` — **created** (`costs`; fills come in Phase 4) | 3–4 | Turn an order into a fill: next-open price, gaps, costs, rounding | decide *whether* to trade; use the signal day's close as the fill price |
-| `backtesting/` | 4 | Run the day-by-day timeline: data → signal → order → fill → ledger | contain strategy rules or fee numbers; run on dates ≥ 2021-01-01 while locked (D8) |
+| `execution/` — **created** (`costs`, `orders`, `fills`) | 3–4 | Turn an order into a fill: next-open price, gaps, costs, rounding | decide *whether* to trade; use the signal day's close as the fill price |
+| `backtesting/` — **created** (`engine`, `run`, `lookahead`, `synthetic`) | 4 | Run the day-by-day timeline: data → signal → order → fill → ledger. Strategy interface: `on_close(day, history, portfolio_view) -> list[OrderIntent]` (no price field) | contain strategy rules or fee numbers; run on dates ≥ 2021-01-01 while locked (D8) |
 | `strategies/` | 5 | Read past data, return "buy / sell / hold" signals | touch cash or shares directly; see any data after day T |
 | `metrics/` | 4, 6 | Returns, drawdown, Sharpe, round trips, time in cash | change results or re-run trades |
 | `research/` | 6 | Experiment runner: grids, periods, walk-forward, saving run records | run anything on dates ≥ 2021-01-01 unless `final_test_unlocked: true` (D8) |
@@ -62,7 +64,7 @@ anything system-wide.
 | `news/` | 9 | News / AI context (only if the baseline is solid) | influence past backtests with information from later dates |
 
 Planned test folders (roadmap): `tests/unit/`, `tests/accounting/`, `tests/backtesting/`,
-`tests/integration/`, plus `tests/fixtures/` for small data files. Planned: `config/`, `reports/`, `scripts/`.
+`tests/integration/`, plus `tests/fixtures/` for small data files. `config/`, `reports/`, `scripts/` exist.
 
 ---
 

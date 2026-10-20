@@ -70,3 +70,13 @@
 - `tests/accounting/test_golden_scenario.py` (chat Claude's independent answer key + hand-calculated whole-share run),
   `tests/accounting/test_valuation.py`; random invariant test also checks valuation.
 - `reports/accounting/golden_scenario.md`; PROJECT_GUIDE §4 display rule; PROJECT_STATUS Phase 3 check.
+
+## 2026-10-21 — Phase 4, Steps 4.1–4.3: engine core (version stays 0.1.0)
+- Dependency: `pyyaml` (run configs).
+- `quant_research.backtesting`: `engine` (daily timeline: split → dividend → fills at open → valuation → strategy
+  at close; expired orders; liquidation value), `lookahead` (reusable no-look-ahead harness), `run` (`RunConfig`
+  from YAML, D8 final-test lock before loading, run record under /data/runs/), `synthetic` (made-up price tables).
+- `quant_research.execution`: `orders.OrderIntent` (no price field), `fills.fill_order` (next-open fills, exact
+  max-affordable sizing, gaps, rejections with reasons).
+- `config/s0_buy_and_hold_aapl_dev.yaml` example (FX rates temporary).
+- Tests: `tests/backtesting/` (engine, fills, run) — synthetic only.
