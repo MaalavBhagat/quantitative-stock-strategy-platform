@@ -2,7 +2,7 @@
 Last updated: 2026-10-20
 
 CURRENT PHASE: Phase 3 — Portfolio Accounting Engine (In progress)
-CURRENT TASK: Steps 3.4–3.6 — costs, dividends, splits (prompt 09, not written yet)
+CURRENT TASK: Steps 3.4–3.6 — costs, dividends, splits (prompt: prompts/09_phase3_steps3.4-3.6_costs_dividends_splits.md)
 
 PHASE STATES (Not started / In progress / Blocked / Verified):
 - Phase 0  Feasibility & research design ........ VERIFIED (2026-10-18)
@@ -217,13 +217,13 @@ IMPORTANT DECISIONS:
      (only Goggy sets it) · D9 type hints required on every function in src/; no type-checker yet.
 
 NEXT ACTION:
-- Chat Claude reviews Steps 3.1–3.3, then writes prompt 09 (Steps 3.4–3.6: costs, dividends, splits).
-- Phase 3 plan: 08 = cash + whole + fractional (DONE) · 09 = costs, dividends, splits · 10 = valuation + full accounting tests.
+- Desktop Code session: "Read prompts/09_phase3_steps3.4-3.6_costs_dividends_splits.md and do exactly what it says."
+  (Shows a plan, waits for OK.)
 
-PHASE 2 VERIFIED by chat Claude 2026-10-20: main at 1cf6deb, no stray branches, no data/.env tracked;
-DATA_SOURCES §7 conventions + §8 limitations present; loader raises DataLoadError on missing file/meta/rows and on
-validation ERRORs; provenance in df.attrs; 78 tests pass (Claude Code output). All 5 roadmap criteria met.
-Stake fractional rules checked (BROKER_FEES §4): min US$10, market/stop orders only, precision not stated.
+CHAT CLAUDE CHECK OF STEPS 3.1–3.3 (2026-10-20): main at 9079fa0, clean tree. Re-did test arithmetic by hand
+(8,494.50; +94.00; avg 105; +72.00; 3.323333; 123.46) — all correct. Read ledger.py: inputs checked before any change,
+round_pay/round_receive used, buy fee in cost basis, sell fee from proceeds. → Steps 3.1–3.3 VERIFIED.
+Note for prompt 10: decide how P&L is displayed (cost basis kept exact, display to cents).
 
 TESTS RUN (2026-10-20, Steps 3.1–3.3):
 - uv run pytest → "107 passed in 1.12s" (accounting/test_ledger 21, accounting/test_money 8, + 78 earlier)
