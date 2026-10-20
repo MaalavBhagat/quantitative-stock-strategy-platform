@@ -88,3 +88,13 @@ These rules are what the code does now (`src/quant_research/data/`); Phase 3+ co
 | Yahoo values split-adjusted even with `auto_adjust=False` | Naive comparisons would look wildly wrong | Basis detected from the data and converted (`crosscheck.detect_split_basis`); fails loudly if unexplained |
 | **Unsupported:** reverse splits that leave a fraction in whole-share mode (cash-in-lieu) | Can't model the cash paid for the fraction | Ledger raises NotImplementedError (none in our data so far). Fractional mode rounds down to 6 dp and notes the dropped fraction |
 | Other corporate actions (spin-offs, mergers, special distributions in `splitFactor`) | Not modelled | Not present in AAPL/XOM 2010–2016 (validation found only the 2014 split); check again for each new ticker |
+
+## 9. AUD/USD exchange rate source (chosen 2026-10-20, for portfolio start/end conversion)
+| Item | Value | Label / source |
+|---|---|---|
+| Source | Reserve Bank of Australia (RBA) historical exchange rates (daily) | [OFFICIAL] [RBA exchange rates](https://www.rba.gov.au/statistics/frequency/exchange-rates.html), files on [RBA historical data](https://www.rba.gov.au/statistics/historical-data.html#exchange-rates) |
+| What the USD rate is | WM/Reuters AUD fix at **4.00 pm Sydney** (since 1 Jul 2008); before that, RBA's own 4 pm mid-rate | [OFFICIAL] [RBA definitions](https://www.rba.gov.au/statistics/frequency/definitions-sources.html) |
+| Days | NSW business days only (no rate on NSW public/bank holidays) | [OFFICIAL] |
+| Licence | Personal, non-commercial use, unaltered, attributed to the RBA | [OFFICIAL] [RBA copyright](https://www.rba.gov.au/copyright/) → store under /data/, cite RBA in reports |
+| Timing rule | 4 pm Sydney is BEFORE the US open of the same calendar day. Conversion on US trading day T uses the latest RBA rate dated ≤ T (Sydney date). No rate that day → previous available rate, logged. [ASSUMPTION] | to implement in Phase 4 |
+| Exact file names / columns | not checked yet | [UNVERIFIED] — check when downloading |

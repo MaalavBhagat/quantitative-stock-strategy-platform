@@ -1,15 +1,15 @@
 # PROJECT_STATUS.md
 Last updated: 2026-10-20
 
-CURRENT PHASE: Phase 3 — Portfolio Accounting Engine (ready for verification)
-CURRENT TASK: Phase 3 verification by chat Claude
+CURRENT PHASE: Phase 4 — Backtesting Engine (In progress)
+CURRENT TASK: Steps 4.1–4.3 — engine core: timeline, no look-ahead, order execution (prompt: prompts/11_phase4_steps4.1-4.3_engine.md)
 
 PHASE STATES (Not started / In progress / Blocked / Verified):
 - Phase 0  Feasibility & research design ........ VERIFIED (2026-10-18)
 - Phase 1  Dev environment & repository ......... VERIFIED (2026-10-20)
 - Phase 2  Historical market data ............... VERIFIED (2026-10-20)
-- Phase 3  Portfolio accounting engine .......... ready for verification (2026-10-20)
-- Phase 4  Backtesting engine ................... Not started
+- Phase 3  Portfolio accounting engine .......... VERIFIED (2026-10-20)
+- Phase 4  Backtesting engine ................... In progress
 - Phase 5  Strategy laboratory .................. Not started
 - Phase 6  Research validation .................. Not started
 - Phase 7  Company research & screening ......... Not started
@@ -268,13 +268,14 @@ IMPORTANT DECISIONS:
      (only Goggy sets it) · D9 type hints required on every function in src/; no type-checker yet.
 
 NEXT ACTION:
-- Chat Claude verifies Phase 3, then Phase 4 Step 4.1 timeline
+- Desktop Code session: "Read prompts/11_phase4_steps4.1-4.3_engine.md and do exactly what it says." (plan first, waits for OK)
+- Phase 4 plan: 11 = engine core (synthetic data) · 12 = buy-and-hold on real data + RBA FX + metrics + edge cases + Phase 4 check.
 
-CHAT CLAUDE CHECK OF STEPS 3.4–3.6 (2026-10-20): main at 44ff22d, clean tree. Re-did by hand: Stake round trip on
-US$6,900 = 6.00 fees + 6.90 spread = 12.90 (0.187%); CommSec 8.28 + 37.95 FX; dividend 26.50 − 3.98 = 22.52.
-Read costs.py: fill price exact, fees rounded up, FX fee up / output down, rate always passed in. → Steps 3.4–3.6 VERIFIED.
-Golden scenario for prompt 10 computed independently by chat Claude (own Decimal code, doc rounding rules only):
-AUD 10,000 → USD 6,862.05 → … → USD 7,260.30 → AUD 9,627.14 (AUD/USD 0.69 → 0.75). Cash identity balances exactly.
+PHASE 3 VERIFIED by chat Claude 2026-10-20: main at f162ea5. Golden scenario matches chat Claude's independent answer
+key exactly (after Goggy's decision: withholding = 15% of cents-rounded gross; code had taxed unrounded gross → 1c diff;
+expected values were never edited). Whole-share scenario re-computed independently by chat Claude: 555.90 idle,
+US$7,227.53, AUD 9,583.69 — matches. 151 tests; mutation checks caught. All 6 roadmap criteria met; unsupported items listed.
+AUD/USD source chosen: RBA daily 4 pm Sydney rate (DATA_SOURCES §9; personal non-commercial use, attribute RBA).
 
 TESTS RUN (2026-10-20, Steps 3.7–3.8):
 - uv run pytest → "151 passed in 1.49s" (accounting 73: corporate_actions 17, costs 15, golden 2, ledger 22,
