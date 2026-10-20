@@ -2,7 +2,7 @@
 Last updated: 2026-10-20
 
 CURRENT PHASE: Phase 2 — Historical Market Data (In progress)
-CURRENT TASK: Step 2.3 — validate the initial dataset (prompt not written yet)
+CURRENT TASK: Step 2.3 — validate data + yfinance cross-check + survivorship check (prompt: prompts/06_phase2_step2.3_validate.md)
 
 PHASE STATES (Not started / In progress / Blocked / Verified):
 - Phase 0  Feasibility & research design ........ VERIFIED (2026-10-18)
@@ -146,7 +146,13 @@ IMPORTANT DECISIONS:
      (only Goggy sets it) · D9 type hints required on every function in src/; no type-checker yet.
 
 NEXT ACTION:
-- Step 2.3 (data validation): write prompt 06 in chat, then run it in the desktop Code session.
+- Desktop Code session: "Read prompts/06_phase2_step2.3_validate.md and do exactly what it says."
+- Paste report back to chat. Then Steps 2.4 (data conventions) + 2.5 (limitations) → Phase 2 check.
+
+CHAT CLAUDE CHECK OF STEP 2.2 (2026-10-20): main at 24dc35b; key not in tracked files or git history;
+/data/ ignored, src/quant_research/data/ tracked (3 files); AAPL + XOM 1,762 rows each 2010-01-04→2016-12-30;
+AAPL first dividend 2012-08-09 $2.65, 18 dividends, split 2014-06-09 (7.000007); XOM 28 dividends, first 2010-02-08 $0.42;
+0 OHLC-inconsistent rows; meta.json has no key, git_dirty false. → Step 2.2 VERIFIED.
 
 TESTS RUN (2026-10-20, Step 2.2):
 - uv run pytest → "22 passed in 0.99s" (test_smoke 1, test_storage 6, test_tiingo 15)
