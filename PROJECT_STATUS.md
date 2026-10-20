@@ -2,7 +2,7 @@
 Last updated: 2026-10-20
 
 CURRENT PHASE: Phase 2 — Historical Market Data (In progress)
-CURRENT TASK: Steps 2.4 (data conventions) + 2.5 (limitations) — prompt not written yet
+CURRENT TASK: Steps 2.4 + 2.5 — data conventions, safe loader, limitations, Phase 2 check (prompt: prompts/07_phase2_steps2.4-2.5_conventions_limits.md)
 
 PHASE STATES (Not started / In progress / Blocked / Verified):
 - Phase 0  Feasibility & research design ........ VERIFIED (2026-10-18)
@@ -184,13 +184,14 @@ IMPORTANT DECISIONS:
      (only Goggy sets it) · D9 type hints required on every function in src/; no type-checker yet.
 
 NEXT ACTION:
-- Step 2.4 (data conventions) + 2.5 (limitations): write prompt 07 in chat, then run it in the desktop Code session.
-  Then Phase 2 check.
+- Desktop Code session: "Read prompts/07_phase2_steps2.4-2.5_conventions_limits.md and do exactly what it says."
+- Paste report back. Chat Claude verifies Phase 2. Then Phase 3 (accounting engine).
 
-CHAT CLAUDE CHECK OF STEP 2.2 (2026-10-20): main at 24dc35b; key not in tracked files or git history;
-/data/ ignored, src/quant_research/data/ tracked (3 files); AAPL + XOM 1,762 rows each 2010-01-04→2016-12-30;
-AAPL first dividend 2012-08-09 $2.65, 18 dividends, split 2014-06-09 (7.000007); XOM 28 dividends, first 2010-02-08 $0.42;
-0 OHLC-inconsistent rows; meta.json has no key, git_dirty false. → Step 2.2 VERIFIED.
+CHAT CLAUDE CHECK OF STEP 2.3 (2026-10-20): main at 896a53c, no stray branches, no data/.env tracked;
+report has counts/dates/% only (no price values found by grep). Results accepted: 0 ERROR/0 WARNING both tickers,
+NYSE calendar match 1,762/1,762, Yahoo split-adjusted basis handled, 3 XOM close diffs logged. → Step 2.3 VERIFIED.
+Third-source check of the 3 XOM days: Financial Datasets connector has $0 credits → not done; left as known minor issue.
+Dividend withholding 15% with W-8BEN VERIFIED on Stake support page (30% without).
 
 TESTS RUN (2026-10-20, Step 2.3):
 - uv run pytest → "68 passed in 0.79s" (smoke 1, storage 6, tiingo 15, validation 33, crosscheck 13)

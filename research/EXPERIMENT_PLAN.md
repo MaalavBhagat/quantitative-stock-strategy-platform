@@ -16,7 +16,7 @@ Labels: [ASSUMPTION] = our choice, can change · [UNVERIFIED] = fact still to ch
 | Gaps | If T+1 opens far past the threshold, we fill at that open (could be better or worse) |
 | Shares | MAIN = fractional (Stake allows). Sensitivity = whole shares only |
 | Costs | MAIN = Stake + normal spread (0.05%/side). Also LOW (IBKR), HIGH (CommSec), tight/wide spread |
-| Dividends | Paid as cash on pay date if holding on ex-date. US withholding tax 15% [UNVERIFIED — W-8BEN treaty rate, check] |
+| Dividends | Entitled if holding at the close before the ex-date; cash credited ON the ex-date [ASSUMPTION — Tiingo gives no pay date; same rule for all strategies]. US withholding tax 15% with W-8BEN (30% without) — VERIFIED 2026-10-20, [Stake support](https://hellostake.com/au/support/documents-and-statements/taxes-and-forms/26011219005337) |
 | Cash | Earns 0% interest [ASSUMPTION — conservative; Stake cash interest not modelled] |
 | End of test | Any open position valued at last close minus selling costs (fair to both sides) |
 | Currency | Results reported in USD (main) and AUD (secondary) |
@@ -122,4 +122,6 @@ Same structure applies to H2–H6 (H2 uses Sharpe / drawdown instead of final va
 
 ## 10. Change log
 - 2026-10-17: v1 created.
+- 2026-10-20: Dividend withholding 15% (W-8BEN) verified on Stake support page.
+- 2026-10-20: Dividend cash timing changed from 'pay date' to 'ex-date' — Tiingo has no pay date (DATA_SOURCES.md). Before any backtest, so no results affected.
 - 2026-10-18: Approved. Q4.11 (suitability profile) to be answered from H5/H6 results.
