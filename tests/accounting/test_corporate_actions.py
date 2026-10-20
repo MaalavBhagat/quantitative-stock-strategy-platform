@@ -39,7 +39,7 @@ def test_dividend_on_fractional_holding():
     p = holding("1.234567", mode="fractional")  # cost 123.4567 → 123.46
     p.apply_dividend(EX, "AAPL", "0.57")
     # gross exact = 1.234567 × 0.57 = 0.70370319 → round DOWN → 0.70
-    # withholding = 15% × 0.70370319 = 0.1055554785 → round UP → 0.11 ; net = 0.70 − 0.11 = 0.59
+    # withholding = 15% × 0.70 (cents gross) = 0.105 → round UP → 0.11 ; net = 0.70 − 0.11 = 0.59
     assert (p.dividends_gross_usd, p.withholding_usd, p.dividends_net_usd) == (
         D("0.70"),
         D("0.11"),
@@ -194,3 +194,17 @@ def test_full_day_order_split_dividend_trade():
     assert p.cash_usd == D("10008.50")
     assert p.realised_pnl_usd == D("0.00")
     assert [e.type for e in p.entries] == ["BUY", "SPLIT", "DIVIDEND", "SELL"]
+
+
+def test_withholding_is_on_the_cents_gross():
+    # Rule (Goggy 2026-10-20): withholding = 15% of the gross ROUNDED TO CENTS, then rounded UP.
+    p = holding("76.173573", price="90", mode="fractional")
+    p.apply_dividend(EX, "AAPL", "0.47")
+    # gross exact 76.173573 × 0.47 = 35.80157931 → DOWN → 35.80
+    # withholding 15% × 35.80 = 5.37 (exact) → 5.37   (15% of the exact gross would give 5.38)
+    # net 35.80 − 5.37 = 30.43
+    assert (p.dividends_gross_usd, p.withholding_usd, p.dividends_net_usd) == (
+        D("35.80"),
+        D("5.37"),
+        D("30.43"),
+    )

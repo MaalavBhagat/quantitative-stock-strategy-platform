@@ -62,3 +62,11 @@
   `apply_split` (snapped ratio, basis unchanged, reverse-split rules); daily order split → dividend → trades enforced.
 - Tests: costs, corporate actions, and the random invariant test extended to dividends + splits (both share modes).
 - PROJECT_GUIDE §4 daily event order rule; DATA_SOURCES §8 unsupported corporate actions.
+
+## 2026-10-20 — Phase 3, Steps 3.7–3.8: valuation + independent accounting tests (version stays 0.1.0)
+- `Portfolio.valuation` → `Valuation` / `HoldingValuation` (market value rounded down, unrealised P&L, income and
+  fees separately); `MissingPriceError`; display helper `money.to_display` (ROUND_HALF_EVEN, display only).
+- Changed rule (Goggy, 2026-10-20): dividend withholding is taken from the cents-rounded gross (was: exact gross).
+- `tests/accounting/test_golden_scenario.py` (chat Claude's independent answer key + hand-calculated whole-share run),
+  `tests/accounting/test_valuation.py`; random invariant test also checks valuation.
+- `reports/accounting/golden_scenario.md`; PROJECT_GUIDE §4 display rule; PROJECT_STATUS Phase 3 check.

@@ -6,7 +6,7 @@ All amounts are exact Decimal comparisons (no "approximately equal").
 import dataclasses
 import random
 from datetime import date, datetime
-from decimal import Decimal
+from decimal import ROUND_FLOOR, Decimal
 
 import pytest
 
@@ -290,6 +290,7 @@ def test_invariants_hold_after_random_trades_dividends_and_splits(mode, split_ra
     # For ANY sequence of valid events, after EVERY step (exactly, no tolerance):
     #   initial − spent − fees + received + dividends_net == cash
     #   shares held per ticker == shares implied by the log (buys − sells, × split ratios)
+    #   total value at a close == cash + Σ(qty × close rounded down)  (once per day)
     rng = random.Random(20261020)
     p = Portfolio("10000.00", share_mode=mode)
     tickers = ["AAPL", "XOM"]
@@ -342,5 +343,16 @@ def test_invariants_hold_after_random_trades_dividends_and_splits(mode, split_ra
             implied = replay_shares(p)
             for ticker in tickers:
                 assert p.position(ticker).quantity == implied.get(ticker, D(0))
+        # valuation at a random close: total == cash + Σ(qty × close rounded DOWN to cents)
+        closes = {ticker: D(rng.randint(500, 50000)) / 100 for ticker in tickers}
+        v = p.valuation(day, closes)
+        expected_mv = sum(
+            (
+                (p.position(ticker).quantity * closes[ticker]).quantize(D("0.01"), ROUND_FLOOR)
+                for ticker in tickers
+            ),
+            D(0),
+        )
+        assert v.total_value_usd == p.cash_usd + expected_mv
     # the sequence really exercised every kind of event
     assert counts["trade"] > 100 and counts["dividend"] > 10 and counts["split"] > 3, counts

@@ -1,14 +1,14 @@
 # PROJECT_STATUS.md
 Last updated: 2026-10-20
 
-CURRENT PHASE: Phase 3 — Portfolio Accounting Engine (In progress)
-CURRENT TASK: Steps 3.7–3.8 — valuation + independent golden-scenario tests, Phase 3 check (prompt: prompts/10_phase3_steps3.7-3.8_valuation_golden.md)
+CURRENT PHASE: Phase 3 — Portfolio Accounting Engine (ready for verification)
+CURRENT TASK: Phase 3 verification by chat Claude
 
 PHASE STATES (Not started / In progress / Blocked / Verified):
 - Phase 0  Feasibility & research design ........ VERIFIED (2026-10-18)
 - Phase 1  Dev environment & repository ......... VERIFIED (2026-10-20)
 - Phase 2  Historical market data ............... VERIFIED (2026-10-20)
-- Phase 3  Portfolio accounting engine .......... In progress
+- Phase 3  Portfolio accounting engine .......... ready for verification (2026-10-20)
 - Phase 4  Backtesting engine ................... Not started
 - Phase 5  Strategy laboratory .................. Not started
 - Phase 6  Research validation .................. Not started
@@ -171,8 +171,37 @@ FINDINGS (Step 2.3):
   (2) FX fees counted in USD, rounded up, converted amount rounded down; (3) fractional reverse split keeps cost
   basis unchanged when a tiny fraction is dropped (conservative).
 
+- Steps 3.7–3.8 valuation + independent tests — DONE 2026-10-20 (prompt 10, plan approved; branch phase3-valuation,
+  merged to main): Portfolio.valuation(as_of, close_prices_usd) → Valuation (cash, per-ticker qty / avg cost /
+  basis / close / market value rounded DOWN / unrealised, totals, realised, dividends gross/withholding/net, fees;
+  spread is inside fill prices, tracked by execution). MissingPriceError for a held ticker without a close.
+  Display rule: exact Decimal inside, ROUND_HALF_EVEN to cents only at display (money.to_display; PROJECT_GUIDE §4).
+  GOLDEN SCENARIO (chat Claude's independent answer key): dry run found ONE mismatch — dividend withholding 5.38
+  (15% of exact gross 35.80157931) vs key 5.37 (15% of cents gross 35.80), carrying 1 cent into net, cash, total
+  and AUD out. Expected values NOT changed; Goggy decided 2026-10-20: withholding = 15% of the cents-rounded gross.
+  Code changed; earlier tests kept their values. Now EVERY row of the key matches exactly
+  (tests/accounting/test_golden_scenario.py). Whole-share version hand-calculated by Claude Code (not pre-computed
+  by chat Claude) also passes. Report: reports/accounting/golden_scenario.md (made-up prices).
+  Finding: TEST gained in USD (+367.82 realised, +30.43 dividends) but AUD out 9,627.14 < AUD in 10,000 because
+  AUD/USD 0.69 → 0.75 plus two 0.55% FX fees → results must be shown in AUD too.
+  Mutation check: market value rounded UP → 3 tests fail; unrealised sign flipped → 4 fail; restored → all pass.
+- PHASE 3 CHECK (2026-10-20, by Claude Code) — NOT marked Verified:
+  cash balances correct ✓ (hand-calculated tests; random invariant initial − spent − fees + received + div_net ==
+    cash after every step, both share modes; golden scenario) ·
+  share quantities correct ✓ (shares == replay of the log incl. splits; fractional 6 dp round-down tests) ·
+  dividends consistent ✓ (entitlement at previous close, order enforced, double-apply refused, gross/withholding/net
+    tracked, basis unchanged, golden row matches) ·
+  corporate actions don't silently corrupt holdings ✓ (snapped ratio, basis unchanged, double-apply refused,
+    whole-mode fractional reverse split raises, dropped fractions noted) ·
+  transaction costs included ✓ (COST_TABLE with sources; Stake round trip 0.187%; spread in fill prices; FX in/out) ·
+  valuation independently validated ✓ (golden scenario from chat Claude's own code + hand-calculated whole-share run).
+  Unsupported (documented): cash-in-lieu on reverse splits (whole mode), spin-offs/mergers/special distributions,
+  tax (CGT), interest on cash (0%), dividend pay-date lag (credited on ex-date), mid-run deposits/withdrawals,
+  multi-currency cash (account is USD; AUD only at start/end), short selling / margin.
+  → Phase 3: ready for verification
+
 IN PROGRESS:
-- Phase 3: Steps 3.7–3.8 next (prompt 10 — valuation, unrealised P&L, P&L display rule, full accounting tests)
+- Phase 3 verification by chat Claude
 
 BLOCKED / OPEN QUESTIONS:
 - Stake fractional-share precision UNVERIFIED (D3 assumes 6 dp — check in Phase 3)
@@ -226,6 +255,7 @@ IMPORTANT DECISIONS:
 - 2026-10-18: Q4.11 added — which market/company types suit the strategy (answer after Phase 6/7).
 - 2026-10-17: Starting pair AAPL (with momentum) + XOM (without steady momentum) — Goggy's choice. Downloaded data never goes into the public repo (licence).
 - 2026-10-17: H1 v2 + H2–H7 approved. H1 v2 is the main hypothesis. H2–H6 tested only after H1 baseline; H7 exploratory.
+- 2026-10-20: Dividend withholding = 15% of the gross rounded DOWN to cents, then rounded UP (Goggy, golden scenario).
 - 2026-10-20: Coding conventions D1–D9 approved by Goggy (full text: PROJECT_GUIDE.md §9):
   D1 money = Decimal in portfolio/ + execution/ (cash, fees, shares), float for prices/signals/metrics, one tested
      conversion point at the fill · D2 cash rounded to cents at each ledger entry, against us (pay up, receive down) ·
@@ -238,14 +268,19 @@ IMPORTANT DECISIONS:
      (only Goggy sets it) · D9 type hints required on every function in src/; no type-checker yet.
 
 NEXT ACTION:
-- Desktop Code session: "Read prompts/10_phase3_steps3.7-3.8_valuation_golden.md and do exactly what it says."
-- Then chat Claude verifies Phase 3 → Phase 4 (backtesting engine).
+- Chat Claude verifies Phase 3, then Phase 4 Step 4.1 timeline
 
 CHAT CLAUDE CHECK OF STEPS 3.4–3.6 (2026-10-20): main at 44ff22d, clean tree. Re-did by hand: Stake round trip on
 US$6,900 = 6.00 fees + 6.90 spread = 12.90 (0.187%); CommSec 8.28 + 37.95 FX; dividend 26.50 − 3.98 = 22.52.
 Read costs.py: fill price exact, fees rounded up, FX fee up / output down, rate always passed in. → Steps 3.4–3.6 VERIFIED.
 Golden scenario for prompt 10 computed independently by chat Claude (own Decimal code, doc rounding rules only):
 AUD 10,000 → USD 6,862.05 → … → USD 7,260.30 → AUD 9,627.14 (AUD/USD 0.69 → 0.75). Cash identity balances exactly.
+
+TESTS RUN (2026-10-20, Steps 3.7–3.8):
+- uv run pytest → "151 passed in 1.49s" (accounting 73: corporate_actions 17, costs 15, golden 2, ledger 22,
+  money 8, valuation 9; data 78)
+- uv run ruff check . → "All checks passed!" · uv run ruff format --check . → "54 files already formatted"
+- Mutation: market value UP → "3 failed, 70 passed"; unrealised sign flip → "4 failed, 69 passed"; restored → 73 passed
 
 TESTS RUN (2026-10-20, Steps 3.4–3.6):
 - uv run pytest → "139 passed in 1.50s" (accounting: corporate_actions 16, costs 15, ledger 22, money 8; + 78 data)

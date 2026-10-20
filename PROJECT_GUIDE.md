@@ -124,6 +124,14 @@ makes a losing strategy look profitable, so it must be exact; the speed cost is 
   position is allowed below it [ASSUMPTION — Stake doesn't say].
 - Only one function turns a float price into Decimal: `portfolio.money.to_decimal_price`.
 
+**Display rule (Phase 3, Step 3.7)**
+- Inside the code every value stays exact `Decimal` (e.g. cost basis after a partial sell).
+- Anything shown or saved in a report is rounded to cents with ROUND_HALF_EVEN (`portfolio.money.to_display`),
+  only at that last step. A displayed value is never fed back into the ledger.
+- Valuation: market value = quantity × close rounded DOWN to cents; unrealised P&L = market value − cost basis;
+  a held ticker without a close price is an error (never valued at 0 or at an old price).
+- Dividend withholding = 15% of the cents-rounded gross, rounded UP (decided by Goggy 2026-10-20, golden scenario).
+
 **Daily event order — rule (Phase 3, approved 2026-10-20)**
 - Each day, per ticker: **split → dividend → trades (at the open)**. The ledger refuses any other order.
 - Why: the split changes the share count the dividend is paid on, and dividend entitlement is the holding at the

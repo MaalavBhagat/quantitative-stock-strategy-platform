@@ -46,6 +46,10 @@ class InsufficientSharesError(LedgerError):
     pass
 
 
+class MissingPriceError(LedgerError):
+    """A held ticker has no close price — it is never valued at 0 or at an old price."""
+
+
 @dataclass(frozen=True)
 class LedgerEntry:
     """One immutable line of the audit trail."""
@@ -77,6 +81,47 @@ class Position:
     def average_cost_usd(self) -> Decimal:
         """Cost per share (unrounded). Zero when nothing is held."""
         return self.cost_basis_usd / self.quantity if self.quantity else Decimal(0)
+
+
+@dataclass(frozen=True)
+class HoldingValuation:
+    ticker: str
+    quantity: Decimal
+    average_cost_usd: Decimal  # exact
+    cost_basis_usd: Decimal  # exact
+    close_price_usd: Decimal
+    market_value_usd: Decimal  # quantity × close, rounded DOWN to cents (a value we'd receive)
+    unrealised_pnl_usd: Decimal  # market value − cost basis (exact; display with to_display)
+
+
+@dataclass(frozen=True)
+class Valuation:
+    """Statement at one close. Total = cash + market value (nothing else is modelled).
+
+    Spread costs are not in the ledger — they are inside the fill prices and are tracked by
+    quant_research.execution (apply_spread → spread_cost_usd).
+    """
+
+    as_of: date
+    cash_usd: Decimal
+    holdings: tuple[HoldingValuation, ...]
+    total_market_value_usd: Decimal
+    total_value_usd: Decimal
+    realised_pnl_usd: Decimal
+    dividends_gross_usd: Decimal
+    withholding_usd: Decimal
+    dividends_net_usd: Decimal
+    total_fees_usd: Decimal
+
+    @property
+    def unrealised_pnl_usd(self) -> Decimal:
+        return sum((h.unrealised_pnl_usd for h in self.holdings), Decimal(0))
+
+    def holding(self, ticker: str) -> HoldingValuation:
+        for h in self.holdings:
+            if h.ticker == ticker.upper():
+                return h
+        raise KeyError(f"{ticker.upper()} is not held at {self.as_of}")
 
 
 class Portfolio:
@@ -303,7 +348,8 @@ class Portfolio:
         """Credit a dividend to shares held at the close BEFORE ex_date (DATA_SOURCES §7 row 6).
 
         Must be called before any trade in `ticker` on ex_date. Cash is credited on the ex-date
-        [ASSUMPTION — no pay date in the data]. gross rounded DOWN, withholding rounded UP,
+        [ASSUMPTION — no pay date in the data]. gross rounded DOWN to cents; withholding =
+        rate × that cents gross, rounded UP;
         net = gross − withholding; net below US$0.01 is not credited (logged with a note).
         Dividends never change the cost basis. Returns None if no shares are held.
         """
@@ -331,7 +377,9 @@ class Portfolio:
             return None
         gross_exact = held * amount
         gross = round_receive(gross_exact)
-        withholding = round_pay(gross_exact * rate)
+        # Withholding is 15% of the dividend actually paid (whole cents), rounded UP —
+        # decided by Goggy 2026-10-20 (golden scenario, prompt 10).
+        withholding = round_pay(gross * rate)
         net = gross - withholding
         before = self._cash
         if net < MIN_DIVIDEND_CREDIT_USD:
@@ -409,3 +457,47 @@ class Portfolio:
         )  # fmt: skip
         self._entries.append(entry)
         return entry
+
+    # ---------- valuation (Step 3.7) ----------
+    def valuation(self, as_of: date, close_prices_usd: dict[str, Decimal]) -> Valuation:
+        """Value the portfolio at the close of `as_of`. Never changes the ledger.
+
+        Every held ticker needs a close price (Decimal — convert floats with to_decimal_price at
+        the edge); a missing one raises MissingPriceError. `as_of` may not be before the last
+        ledger date (holdings would be wrong).
+        """
+        if isinstance(as_of, datetime) or not isinstance(as_of, date):
+            raise TypeError(f"as_of must be a datetime.date, got {type(as_of).__name__}")
+        if self._last_date is not None and as_of < self._last_date:
+            raise LedgerError(f"as_of {as_of} is before the last ledger date {self._last_date}")
+        prices = {k.upper(): v for k, v in close_prices_usd.items()}
+        holdings = []
+        for t in sorted(self._quantity):
+            qty = self._quantity[t]
+            if qty == 0:
+                continue
+            if t not in prices:
+                raise MissingPriceError(f"no close price for {t} on {as_of} (holding {qty})")
+            close = require_decimal(prices[t], f"close price for {t}")
+            if close <= 0:
+                raise ValueError(f"close price for {t} must be > 0, got {close}")
+            market_value = round_receive(qty * close)
+            basis = self._basis[t]
+            holdings.append(
+                HoldingValuation(
+                    t, qty, basis / qty, basis, close, market_value, market_value - basis
+                )
+            )
+        total_mv = sum((h.market_value_usd for h in holdings), Decimal("0.00"))
+        return Valuation(
+            as_of=as_of,
+            cash_usd=self._cash,
+            holdings=tuple(holdings),
+            total_market_value_usd=total_mv,
+            total_value_usd=self._cash + total_mv,
+            realised_pnl_usd=self._realised,
+            dividends_gross_usd=self._div_gross,
+            withholding_usd=self._withholding,
+            dividends_net_usd=self._div_net,
+            total_fees_usd=self._fees,
+        )

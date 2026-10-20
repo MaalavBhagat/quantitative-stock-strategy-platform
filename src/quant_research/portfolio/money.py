@@ -5,7 +5,7 @@ data (floats) are converted at one place, `to_decimal_price`.
 """
 
 import math
-from decimal import ROUND_CEILING, ROUND_FLOOR, Decimal, InvalidOperation
+from decimal import ROUND_CEILING, ROUND_FLOOR, ROUND_HALF_EVEN, Decimal, InvalidOperation
 
 CENT = Decimal("0.01")
 SHARE_DECIMALS = 6  # D3 [ASSUMPTION — Stake's real precision not stated, BROKER_FEES §4]
@@ -56,6 +56,12 @@ def round_pay(amount_usd: Decimal) -> Decimal:
 def round_receive(amount_usd: Decimal) -> Decimal:
     """Money we RECEIVE: round DOWN to the cent (D2, against us)."""
     return amount_usd.quantize(CENT, rounding=ROUND_FLOOR)
+
+
+def to_display(amount_usd: Decimal) -> Decimal:
+    """DISPLAY RULE (PROJECT_GUIDE §4): values shown or saved in reports are rounded to cents with
+    ROUND_HALF_EVEN, only at the display step. Never feed a displayed value back into the ledger."""
+    return amount_usd.quantize(CENT, rounding=ROUND_HALF_EVEN)
 
 
 def round_shares_down(quantity: Decimal, share_mode: str) -> Decimal:
