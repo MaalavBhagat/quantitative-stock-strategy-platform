@@ -16,10 +16,10 @@ Labels: [OFFICIAL] = provider's own page · [SECONDARY] = third-party page · [U
 | Adjusted fields | `adjOpen, adjHigh, adjLow, adjClose, adjVolume` (CRSP method: splits + dividends) | [OFFICIAL] |
 | Dividends | `divCash` on the **ex-date** row | [OFFICIAL] |
 | Splits | `splitFactor` (also used for some distributions) | [OFFICIAL] |
-| Timezone of `date` | Not stated → treat as US trading date only, drop any time part | [UNVERIFIED] check in Step 2.2 |
+| Timezone of `date` | Docs don't state it. Real download (2026-10-20): every value is midnight with a UTC label, e.g. `2010-01-04T00:00:00.000Z`; all 1,762 dates (AAPL, XOM 2010–2016) match the NYSE XNYS calendar exactly and Yahoo's New-York-dated rows → it is the US trading date. Code drops the time part; any non-midnight time fails loudly | [CHECKED — our data] reports/data_validation/2010-2016_AAPL_XOM.md |
 | Release time | ~5:30 PM US Eastern, corrections until 8 PM | [OFFICIAL] |
 | Rate-limit error | HTTP 429 → wait and retry with backoff | [SECONDARY] APIs.io |
-| Delisted stocks | Not stated | [UNVERIFIED] — test in Phase 2 (affects survivorship bias) |
+| Delisted stocks | Docs don't say. Official [supported_tickers.zip](https://apimedia.tiingo.com/docs/tiingo/daily/supported_tickers.zip) (downloaded 2026-10-20; columns ticker, exchange, assetType, priceCurrency, startDate, endDate; 109,085 rows) lists 3,019 US-exchange USD stocks with endDate before 2020 → some delisted tickers ARE listed. But LEH, LEHMQ, ENRNQ, WAMUQ not found by symbol → coverage looks partial. Price download for delisted tickers NOT tested | [CHECKED — list only; downloadability UNVERIFIED] report §5 |
 | Dividend **pay date** | NOT provided (only ex-date + amount) | [OFFICIAL — absent from field list] → see §4 |
 
 ## 2. Cross-check source — yfinance (Yahoo)
@@ -28,6 +28,7 @@ Labels: [OFFICIAL] = provider's own page · [SECONDARY] = third-party page · [U
 | Status | Unofficial client, not a contracted API; rate limits (HTTP 429) without notice | [SECONDARY] [guide](https://thelinuxcode.com/what-the-yfinance-library-is-and-isnt-a-practical-guide-to-yahoo-finance-data-in-python/) |
 | Licence | "Intended for personal use only" | [OFFICIAL-ish] [yfinance PyPI](https://pypi.org/project/yfinance/0.2.39) |
 | Gotcha | `auto_adjust` changes what "Close" means. Default has changed across versions [UNVERIFIED which] | → **always pass `auto_adjust=False` explicitly** |
+| Basis (checked 2026-10-20, yfinance 1.7.0) | Even with `auto_adjust=False`, Yahoo `Close`, `Dividends` and `Volume` are split-adjusted for ALL splits incl. later ones (AAPL 2010–2014 close = Tiingo raw ÷ 28 = 7×4). Must convert back before comparing | [CHECKED — our data] report §4 |
 | Use | Spot-check Tiingo raw closes, dividends, splits (Step 2.3). Never the main source. | decision |
 
 ## 3. Trading calendar (D4)

@@ -2,7 +2,7 @@
 Last updated: 2026-10-20
 
 CURRENT PHASE: Phase 2 — Historical Market Data (In progress)
-CURRENT TASK: Step 2.3 — validate data + yfinance cross-check + survivorship check (prompt: prompts/06_phase2_step2.3_validate.md)
+CURRENT TASK: Steps 2.4 (data conventions) + 2.5 (limitations) — prompt not written yet
 
 PHASE STATES (Not started / In progress / Blocked / Verified):
 - Phase 0  Feasibility & research design ........ VERIFIED (2026-10-18)
@@ -84,11 +84,49 @@ FINDINGS (Step 2.2, from the real download — to check in Step 2.3):
 - AAPL dividends: 18 non-zero rows in 2010–2016; XOM: 28. Plausibility check (e.g. vs yfinance) is Step 2.3.
 - 1762 trading days in both files — check against the NYSE calendar (D4) in Step 2.3.
 
+- Step 2.3 data validation — DONE 2026-10-20 (prompt 06, branch phase2-data-validation, merged to main):
+  src/quant_research/data/validation.py (9 checks, ERROR/WARNING/INFO report, never fixes data),
+  src/quant_research/data/crosscheck.py (Yahoo basis detection + comparisons), scripts/crosscheck_yfinance.py,
+  scripts/validate_initial_dataset.py, report reports/data_validation/2010-2016_AAPL_XOM.md (counts/dates/% only).
+  Deps: exchange_calendars 4.13.2 (main; installed fine on 3.13, fallback not needed); yfinance 1.7.0 in separate
+  `crosscheck` group (unofficial, personal-use, only for cross-checks — main code must not depend on it).
+  Run: `uv run --group crosscheck python scripts/validate_initial_dataset.py` (no Tiingo calls; Yahoo cached).
+  RESULTS: AAPL 0 ERROR / 0 WARNING / 5 INFO · XOM 0 ERROR / 0 WARNING / 3 INFO.
+    Both: 1,762 rows = 1,762 NYSE sessions; no missing/duplicate/unsorted dates; no missing values; no bad
+    prices/volumes; OHLC consistent (raw + adj); adj/raw ratio changes ONLY on dividend/split ex-dates.
+    AAPL: split 2014-06-09 factor 7.000007 → 7:1 (rel diff 1e-6); -85.5% raw move that day explained by split;
+          18 dividends (first 2012-08-09). Gap inside table ×7.685 = splits ×7.000 × dividends ×1.098.
+    XOM: 28 dividends, no splits, no big moves. Gap inside table ×1.221 = dividends only.
+  YFINANCE CROSS-CHECK (2 Yahoo requests, cached in /data/cache/yfinance/):
+    Trading days identical (1,762 both, 0 only-in-one). Splits identical (AAPL 2014-06-09 7:1).
+    Dividends: same dates (18 / 28), amounts match after basis conversion (max diff 0.0004%).
+    Closes: AAPL max 0.318% (2015-09-30), 0 days > 0.5%. XOM max 1.085%, 3 days > 0.5%:
+      2010-02-05 +0.652% and 2010-05-10 +0.679% = exactly the next day's dividend (day before ex-date);
+      2014-07-28 +1.085% unexplained (Yahoo open also differs −0.42%).
+  SURVIVORSHIP: Tiingo's official supported_tickers.zip (1 download, 0.8 MB) — 109,085 rows; 16,576 US-exchange
+    USD stocks, 3,019 with endDate before 2020 → delisted tickers partly listed. LEH/LEHMQ/ENRNQ/WAMUQ not found by
+    symbol → coverage looks partial. Downloadability of delisted price history NOT tested.
+
+FINDINGS (Step 2.3):
+- Yahoo `Close`/`Dividends`/`Volume` are split-adjusted for ALL splits (incl. later ones) even with auto_adjust=False
+  (AAPL 2010–2014 Yahoo close = Tiingo raw ÷ 28). Confirmed from the data; recorded in DATA_SOURCES §2.
+- Tiingo `date` = midnight UTC label, matches NYSE calendar and Yahoo New York dates → US trading date (DATA_SOURCES §1).
+- Adj/raw gap explained: in-table = splits × dividends exactly; after 2016 AAPL gap ×4.35 vs ~×1.14 from dividends →
+  "implied by the ratio": about a 4:1 later split (rough estimate, matches Yahoo's ÷4 basis). XOM: dividends explain it.
+- XOM: on 2 of 28 days before an ex-date, Yahoo's close is higher than Tiingo's by exactly the dividend. Which source
+  is right is UNKNOWN — needs a third source if it ever matters (only affects signal-day closes, not fills at next open).
+- XOM 2014-07-28: Tiingo vs Yahoo close differ 1.085% — unexplained. Open question.
+- 2014-07-28 and the pre-ex-date days are the only cross-source disagreements > 0.5% in 3,524 rows.
+- Note: exchange_calendars cannot start a calendar on a holiday (2010-01-01) — handled in nyse_sessions (tested).
+
 IN PROGRESS:
-- Step 2.3 — needs a prompt (data validation + yfinance cross-check + NYSE calendar)
+- Steps 2.4 + 2.5 — need a prompt
 
 BLOCKED / OPEN QUESTIONS:
 - Stake fractional-share precision UNVERIFIED (D3 assumes 6 dp — check in Phase 3)
+- XOM 2014-07-28 Tiingo/Yahoo close differ 1.085% — unexplained (third source?)
+- XOM pre-ex-date closes (2010-02-05, 2010-05-10): Tiingo vs Yahoo differ by exactly the dividend — which is right?
+- Delisted stocks: can Tiingo price history be downloaded for tickers with endDate in the past? (survivorship; untested)
 
 SETUP FACTS (stated by Goggy, 2026-10-17):
 - Computer: Mac. Coding tool: Claude Code in the Claude desktop app (2026-10-20).
@@ -146,13 +184,21 @@ IMPORTANT DECISIONS:
      (only Goggy sets it) · D9 type hints required on every function in src/; no type-checker yet.
 
 NEXT ACTION:
-- Desktop Code session: "Read prompts/06_phase2_step2.3_validate.md and do exactly what it says."
-- Paste report back to chat. Then Steps 2.4 (data conventions) + 2.5 (limitations) → Phase 2 check.
+- Step 2.4 (data conventions) + 2.5 (limitations): write prompt 07 in chat, then run it in the desktop Code session.
+  Then Phase 2 check.
 
 CHAT CLAUDE CHECK OF STEP 2.2 (2026-10-20): main at 24dc35b; key not in tracked files or git history;
 /data/ ignored, src/quant_research/data/ tracked (3 files); AAPL + XOM 1,762 rows each 2010-01-04→2016-12-30;
 AAPL first dividend 2012-08-09 $2.65, 18 dividends, split 2014-06-09 (7.000007); XOM 28 dividends, first 2010-02-08 $0.42;
 0 OHLC-inconsistent rows; meta.json has no key, git_dirty false. → Step 2.2 VERIFIED.
+
+TESTS RUN (2026-10-20, Step 2.3):
+- uv run pytest → "68 passed in 0.79s" (smoke 1, storage 6, tiingo 15, validation 33, crosscheck 13)
+- uv run ruff check . → first run "Found 17 errors" (15× ISC004 implicit string concat in report script, PERF102, RUF059)
+  → fixed (wrapped in parentheses; report regenerated and diffed IDENTICAL) → "All checks passed!"
+- uv run ruff format --check . → "35 files already formatted"
+- Key check: TIINGO_API_KEY prefix (not printed) NOT found in staged files or in the report; no data/ or .env staged.
+- scripts/validate_initial_dataset.py real run → AAPL 0/0/5, XOM 0/0/3 (ERROR/WARNING/INFO), exit 0
 
 TESTS RUN (2026-10-20, Step 2.2):
 - uv run pytest → "22 passed in 0.99s" (test_smoke 1, test_storage 6, test_tiingo 15)

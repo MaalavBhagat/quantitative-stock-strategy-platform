@@ -30,3 +30,12 @@
 - `scripts/download_initial_dataset.py`: AAPL + XOM, 2010-01-01 → 2016-12-31, prints a summary.
 - Offline tests with a made-up fixture (`tests/fixtures/tiingo_prices_sample.json`) and mocked HTTP.
 - Fix: `.gitignore` now ignores only the top-level `/data/` (the old `data/` rule also hid `src/quant_research/data/`).
+
+## 2026-10-20 — Phase 2, Step 2.3: data validation (version stays 0.1.0)
+- Dependency: `exchange_calendars` (NYSE calendar, D4). New optional group `crosscheck`: `yfinance`.
+- `quant_research.data.validation`: calendar, duplicates/order, missing values, positive prices/volume, OHLC,
+  split ratios, dividends, big moves, adjusted/raw ratio — structured ERROR/WARNING/INFO report; never fixes data.
+- `quant_research.data.crosscheck`: Yahoo download + cache, split-basis detection, comparisons of trading days,
+  closes, dividends, splits, and a data-derived explanation test for close differences.
+- Scripts: `crosscheck_yfinance.py`, `validate_initial_dataset.py` → `reports/data_validation/2010-2016_AAPL_XOM.md`.
+- DATA_SOURCES.md: "Timezone of date", "Delisted stocks" and a new yfinance "Basis" row filled from evidence.
