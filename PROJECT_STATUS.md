@@ -1,12 +1,12 @@
 # PROJECT_STATUS.md
 Last updated: 2026-10-20
 
-CURRENT PHASE: Phase 1 — Development Environment and Repository (In progress)
-CURRENT TASK: Step 1.4 — development conventions doc (prompt not written yet)
+CURRENT PHASE: Phase 1 — Development Environment and Repository (ready for verification)
+CURRENT TASK: Goggy to answer DECISIONS D1–D9 in PROJECT_GUIDE.md §9; then Phase 1 verification
 
 PHASE STATES (Not started / In progress / Blocked / Verified):
 - Phase 0  Feasibility & research design ........ VERIFIED (2026-10-18)
-- Phase 1  Dev environment & repository ......... In progress
+- Phase 1  Dev environment & repository ......... Phase 1: ready for verification (2026-10-20)
 - Phase 2  Historical market data ............... Not started
 - Phase 3  Portfolio accounting engine .......... Not started
 - Phase 4  Backtesting engine ................... Not started
@@ -40,12 +40,25 @@ COMPLETED:
   https://github.com/MaalavBhagat/quantitative-stock-strategy-platform
   Fresh clone + `uv sync` + `uv run pytest` + `uv run ruff check .` all worked (README steps verified).
   Style-only fix to research/calc_feasibility.py (ruff PLC0206), output diffed identical — approved by Goggy.
+- Step 1.4 PROJECT_GUIDE.md v1 (development conventions, 191 lines) — DONE 2026-10-20 (prompt 03),
+  pending Goggy's answers to DECISIONS D1–D9 (§9). Documentation only; no code changed.
+- PHASE 1 CHECK (2026-10-20, by Claude Code):
+  clean environment ✓ (fresh clone: uv sync + pytest + ruff worked) · dependencies documented ✓
+  (pyproject.toml + uv.lock + README) · Git configured ✓ (identity set, private GitHub remote, pushes OK) ·
+  tests can be executed ✓ (uv run pytest: 1 passed) · project guide explains how to begin ✓ (PROJECT_GUIDE.md §1)
+  → Phase 1: ready for verification (NOT marked Verified — Goggy + chat Claude verify after D1–D9)
 
 IN PROGRESS:
-- Phase 1: Step 1.4 remaining
+- Phase 1 verification — waiting on DECISIONS D1–D9
 
 BLOCKED / OPEN QUESTIONS:
 - Stake withdrawal FX not confirmed (check AU_Pricing.pdf in Phase 2)
+- OPEN DECISIONS (PROJECT_GUIDE.md §9, recommendation in brackets):
+  D1 money number type [hybrid: Decimal in ledger, float for prices/metrics] ·
+  D2 cash rounding [cents, against us] · D3 fractional precision [6 dp, round down; Stake UNVERIFIED] ·
+  D4 trading calendar [NYSE calendar library, Phase 2] · D5 branches [branch per code task] ·
+  D6 dirty runs [allowed in dev, marked; clean for validation/final] · D7 formatter [ruff format] ·
+  D8 final-test lock in code [yes] · D9 type hints in src/ [required]
 
 SETUP FACTS (stated by Goggy, 2026-10-17):
 - Computer: Mac. Coding tool: Claude Code in the Claude desktop app (2026-10-20).
@@ -93,10 +106,18 @@ IMPORTANT DECISIONS:
 - 2026-10-17: H1 v2 + H2–H7 approved. H1 v2 is the main hypothesis. H2–H6 tested only after H1 baseline; H7 exploratory.
 
 NEXT ACTION:
-- Step 1.4 — development conventions doc (naming, module responsibilities, testing, error handling,
-  coding-agent rules, documentation). Needs a prompt (03) written first.
+- Steps 1.2 + 1.3 independently checked by chat Claude 2026-10-20 — OK.
+- Goggy: answer DECISIONS D1–D9 (PROJECT_GUIDE.md §9) with chat Claude.
+- Then: record answers (guide + IMPORTANT DECISIONS), apply D7 (ruff format) in its own commit if approved,
+  and Goggy + chat Claude verify Phase 1. After that: Phase 2, Step 2.1 (data providers).
 
-TESTS RUN (2026-10-20):
+TESTS RUN (2026-10-20, Step 1.4):
+- uv run pytest → "1 passed in 0.01s"
+- uv run ruff check . → "All checks passed!"
+- uv run ruff format --check . → "1 file would be reformatted, 16 files already formatted"
+  (research/calc_feasibility.py, spacing only; NOT applied — waits for D7)
+
+TESTS RUN (2026-10-20, Steps 1.2–1.3):
 - uv run pytest  (in project folder AND in a fresh clone)
 - uv run ruff check .  (in project folder AND in a fresh clone)
 
