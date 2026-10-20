@@ -30,3 +30,9 @@ uv run ruff check .
 ## Data
 
 Downloaded market data goes in `data/`, which is git-ignored (personal-use licence).
+Rules for using it: `DATA_SOURCES.md` §7 (conventions) and §8 (limitations).
+
+- Download the initial dataset (2 Tiingo calls, needs `.env`): `uv run python scripts/download_initial_dataset.py`
+- Validate it + write the report (Yahoo cross-check needs the optional group): `uv run --group crosscheck python scripts/validate_initial_dataset.py`
+- Yahoo cross-check only: `uv run --group crosscheck python scripts/crosscheck_yfinance.py`
+- Code style check: `uv run ruff format --check .`

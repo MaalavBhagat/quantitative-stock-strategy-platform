@@ -39,3 +39,10 @@
   closes, dividends, splits, and a data-derived explanation test for close differences.
 - Scripts: `crosscheck_yfinance.py`, `validate_initial_dataset.py` → `reports/data_validation/2010-2016_AAPL_XOM.md`.
 - DATA_SOURCES.md: "Timezone of date", "Delisted stocks" and a new yfinance "Basis" row filled from evidence.
+
+## 2026-10-20 — Phase 2, Steps 2.4–2.5: conventions, loader, limitations (version stays 0.1.0)
+- `quant_research.data.loader.load_prices`: reads saved Tiingo files only, requires `.meta.json`, validates,
+  stops on any ERROR, returns raw columns (+ adjusted on request) with `Provenance`. 10 offline tests.
+- DATA_SOURCES.md v1.1: §7 Data conventions (10 rules), §8 Known limitations; calendar row updated.
+- PROJECT_GUIDE.md folder map and README data commands updated.
+- PROJECT_STATUS.md: Phase 2 check → ready for verification.

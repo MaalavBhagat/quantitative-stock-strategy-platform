@@ -1,5 +1,5 @@
 # DATA_SOURCES.md — Phase 2, Step 2.1
-Status: v1 (2026-10-20). Checked on official pages where possible. Re-check before relying on limits.
+Status: v1.1 (2026-10-20; §7 conventions + §8 limitations added in Steps 2.4–2.5). Checked on official pages where possible. Re-check before relying on limits.
 Labels: [OFFICIAL] = provider's own page · [SECONDARY] = third-party page · [UNVERIFIED] = must test ourselves
 
 ## 1. Primary source — Tiingo (free plan)
@@ -36,11 +36,11 @@ Labels: [OFFICIAL] = provider's own page · [SECONDARY] = third-party page · [U
 |---|---|---|
 | Library | `exchange_calendars`, calendar code `XNYS` (NYSE) | [OFFICIAL] [PyPI](https://pypi.org/project/exchange-calendars/4.1) |
 | Licence | Apache 2.0 | [OFFICIAL] |
-| Python 3.13 support | Newer versions exist (4.13.x listed); 3.13 support [UNVERIFIED] — `uv add` will tell us | test in Step 2.3 |
+| Python 3.13 support | 4.13.2 installs and runs on Python 3.13.16 (Step 2.3, 2026-10-20); fallback not needed | [CHECKED — our setup] |
 | Fallback | `pandas_market_calendars` | if the above fails on 3.13 |
 
 ## 4. Known gaps and how we handle them
-| Gap | Effect | Handling (to confirm in Step 2.4 conventions) |
+| Gap | Effect | Handling (now fixed in §7 conventions and §8 limitations) |
 |---|---|---|
 | No dividend pay date | Can't credit cash on the real pay date | [ASSUMPTION] credit cash on ex-date (+ optional fixed lag). Same rule for all strategies. Documented limitation. |
 | No historical bid-ask spread | Spread must be assumed | 3 spread levels (EXPERIMENT_PLAN §1) |
@@ -55,5 +55,34 @@ Labels: [OFFICIAL] = provider's own page · [SECONDARY] = third-party page · [U
 
 ## 6. Initial dataset for Step 2.2 (roadmap: start small)
 - Tickers: AAPL, XOM. Period: 2010-01-01 → 2016-12-31 (inside the development period).
-- Why: contains AAPL's 2014 split [UNVERIFIED — confirm from `splitFactor`] and regular XOM dividends,
+- Why: contains AAPL's 2014 split (confirmed: `splitFactor` 7.000007 on 2014-06-09, Yahoo shows 7:1 — Step 2.3) and regular XOM dividends,
   so split + dividend handling get tested early. Small: ~1,760 rows per ticker, 2 API calls.
+
+## 7. Data conventions (Phase 2, Step 2.4)
+These rules are what the code does now (`src/quant_research/data/`); Phase 3+ code must follow them.
+
+| # | Topic | Rule |
+|---|---|---|
+| 1 | Timestamps | Tiingo sends midnight with a UTC label (`2010-01-04T00:00:00.000Z`). We store a plain **US trading date** (no time). Any other time of day → ERROR (`tiingo.parse_prices`). |
+| 2 | Calendar | NYSE = `exchange_calendars` 4.13.2, code `XNYS` (D4). Data dates must match it **exactly**: a missing or extra day → ERROR (`validation.check_calendar`). |
+| 3 | Currency | All Tiingo prices and dividends are **USD**. Evidence: AAPL (NASDAQ) and XOM (NYSE) have `priceCurrency` = USD in Tiingo's supported_tickers file (2026-10-20). Column names say so (`div_cash_usd`). AUD appears only at portfolio start/end via the FX cost (EXPERIMENT_PLAN §1). |
+| 4 | Raw vs adjusted | Trading and accounting use `*_raw` columns **only**. `*_adj` is for analysis/validation only and the loader leaves it out unless `include_adjusted=True`. Adjusted values change with the download date → never compare adjusted values across downloads. |
+| 5 | Splits | `split_factor` is snapped to the nearest realistic ratio (n:1, 1:n, or p:q ≤ 10 — as `validation.nearest_simple_ratio` does; 7.000007 → 7:1). On the split date, shares held × ratio; raw prices on that row already reflect the split. Exact rule built and tested in Phase 3. |
+| 6 | Dividends | `div_cash_usd` sits on the **ex-date** row. Entitled = holding shares at the close of the trading day **before** the ex-date. Cash credited **on the ex-date** [ASSUMPTION — Tiingo has no pay date; §8]. US withholding 15% with W-8BEN (VERIFIED — link in EXPERIMENT_PLAN §1). Same rule for every strategy. |
+| 7 | Missing data | Never filled, interpolated or forward-filled. Any validation ERROR → `loader.load_prices` stops with a clear message. WARNINGs are logged, data returned. |
+| 8 | Caching | A saved file is reused; the loader never downloads. Re-downloading needs `overwrite=True` (`storage.save_raw_prices`) and writes a new download timestamp in `.meta.json`. Yahoo cross-check data is cached under `data/cache/yfinance/`. |
+| 9 | Versioning | File name = `TICKER_<requested start>_<requested end>.csv`; `.meta.json` = source, endpoint (no key), download time (UTC), row count, first/last date, git commit, dirty flag. Every load returns `Provenance` (file name, downloaded_at_utc, git commit, rows) for the run record. |
+| 10 | Source disagreements | **Tiingo is the source of truth.** Known Tiingo-vs-Yahoo differences are listed, not "fixed": XOM 2010-02-05 (+0.652%) and 2010-05-10 (+0.679%) — Yahoo higher by exactly the next day's dividend; XOM 2014-07-28 (+1.085%) — unexplained. A third source (Financial Datasets) was tried by chat Claude — no credits; left unresolved, impact judged tiny (3 of 3,524 rows, signal-day closes only). |
+
+## 8. Known limitations (Phase 2, Step 2.5)
+| Limitation | Effect on results | What we do about it |
+|---|---|---|
+| Daily bars only — intraday order of high/low unknown | Can't tell if a buy or sell level was hit first inside a day | Decide at T close → trade at T+1 open; where a limit-order test is added, assume the worse order (EXPERIMENT_PLAN §1) |
+| No dividend pay date (ex-date + amount only) | Cash arrives earlier in the model than in real life (usually a few weeks) | Credit cash on the ex-date for every strategy alike [ASSUMPTION]; documented here |
+| No historical bid-ask spread | Real trading cost per trade unknown | Model 3 spread levels (tight/normal/wide) and report each (EXPERIMENT_PLAN §1) |
+| Partial delisted coverage | Survivorship bias — results too optimistic, especially for "buy the dip" | Official supported_tickers list has 3,019 US-exchange stocks with endDate before 2020, but Lehman/Enron/WaMu (LEH, LEHMQ, ENRNQ, WAMUQ) are absent under the symbols checked; delisted price download untested. Our 8 stocks are all survivors → stated in every result (INITIAL_UNIVERSE.md) |
+| Adjusted prices drift with download date | Old and new downloads of `*_adj` differ (e.g. AAPL 2016 adj values include a later ~4:1 split, implied by the ratio) | Trade on raw only; save raw + download date; never compare `*_adj` across downloads |
+| Single primary source | Errors in Tiingo would pass into results | Yahoo used only as a cross-check: days, splits, dividends agree; 3 XOM closes differ > 0.5% (§7 row 10). Report re-run per new dataset |
+| Licence: Tiingo "Internal Use Only" | Raw data can't be shared or published | `/data/` git-ignored; reports show counts, dates and % only |
+| Split factor not exact (AAPL 7.000007) | Using it as-is would create fractional share drift | Snap to nearest realistic ratio (§7 row 5); WARNING if not within 1e-4 of one |
+| Yahoo values split-adjusted even with `auto_adjust=False` | Naive comparisons would look wildly wrong | Basis detected from the data and converted (`crosscheck.detect_split_basis`); fails loudly if unexplained |

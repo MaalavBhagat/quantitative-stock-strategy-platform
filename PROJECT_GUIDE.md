@@ -37,17 +37,19 @@ anything system-wide.
 | `README.md`, `CHANGELOG.md` | setup instructions; list of changes per task |
 | `research/` | Phase 0 design docs + `calc_feasibility.py` (a one-off calculator, not platform code) |
 | `prompts/` | the task prompts Goggy gives to Claude Code |
-| `src/quant_research/` | the Python package (only `__init__.py` with the version so far) |
-| `tests/` | `test_smoke.py` (one test) |
+| `src/quant_research/` | the Python package: `__init__.py` (version) + `data/` (Phase 2, see below) |
+| `tests/` | one test file per module + `fixtures/` (small made-up data files) |
+| `scripts/` | runnable steps: `download_initial_dataset.py`, `crosscheck_yfinance.py`, `validate_initial_dataset.py` |
+| `reports/` | generated reports, e.g. `data_validation/` (counts, dates, % only — no prices) |
 | `pyproject.toml`, `uv.lock`, `.python-version` | project settings, exact package versions, Python 3.13 |
 | `.gitignore`, `.env.example` | what Git must never save; template for API keys |
-| `data/` (git-ignored) | downloaded market data — never committed (licence). Not created yet. |
+| `data/` (git-ignored) | downloaded market data — never committed (licence): `raw/tiingo/`, `cache/yfinance/`, `reference/tiingo/` |
 
-**Planned modules** — inside `src/quant_research/`. *All not created yet.* Created only when a
-phase needs them (no empty modules).
+**Modules** — inside `src/quant_research/`. Only `data/` exists so far (created in Phase 2); the rest are
+*not created yet* and get created only when a phase needs them (no empty modules).
 | Module | Phase | Its job | It must NOT |
 |---|---|---|---|
-| `data/` | 2 | Download, validate, cache and load prices, dividends, splits (all years, incl. 2021+, for quality checks only — D8) | trade, compute signals, chart or summarise 2021+ prices, or silently fill/fix bad data |
+| `data/` — **created** (`tiingo`, `storage`, `validation`, `crosscheck`, `loader`) | 2 | Download, validate, cache and load prices, dividends, splits (all years, incl. 2021+, for quality checks only — D8). Conventions: DATA_SOURCES §7 | trade, compute signals, chart or summarise 2021+ prices, or silently fill/fix bad data |
 | `portfolio/` | 3 | The ledger: cash, shares, costs, dividends, valuation (the only place cash changes) | decide when to trade or read future prices |
 | `execution/` | 3–4 | Turn an order into a fill: next-open price, gaps, costs, rounding | decide *whether* to trade; use the signal day's close as the fill price |
 | `backtesting/` | 4 | Run the day-by-day timeline: data → signal → order → fill → ledger | contain strategy rules or fee numbers; run on dates ≥ 2021-01-01 while locked (D8) |

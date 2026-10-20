@@ -1,13 +1,13 @@
 # PROJECT_STATUS.md
 Last updated: 2026-10-20
 
-CURRENT PHASE: Phase 2 — Historical Market Data (In progress)
-CURRENT TASK: Steps 2.4 + 2.5 — data conventions, safe loader, limitations, Phase 2 check (prompt: prompts/07_phase2_steps2.4-2.5_conventions_limits.md)
+CURRENT PHASE: Phase 2 — Historical Market Data (ready for verification)
+CURRENT TASK: Phase 2 verification by chat Claude
 
 PHASE STATES (Not started / In progress / Blocked / Verified):
 - Phase 0  Feasibility & research design ........ VERIFIED (2026-10-18)
 - Phase 1  Dev environment & repository ......... VERIFIED (2026-10-20)
-- Phase 2  Historical market data ............... In progress
+- Phase 2  Historical market data ............... ready for verification (2026-10-20)
 - Phase 3  Portfolio accounting engine .......... Not started
 - Phase 4  Backtesting engine ................... Not started
 - Phase 5  Strategy laboratory .................. Not started
@@ -119,8 +119,28 @@ FINDINGS (Step 2.3):
 - 2014-07-28 and the pre-ex-date days are the only cross-source disagreements > 0.5% in 3,524 rows.
 - Note: exchange_calendars cannot start a calendar on a holiday (2010-01-01) — handled in nyse_sessions (tested).
 
+- Steps 2.4 + 2.5 — DONE 2026-10-20 (prompt 07, branch phase2-loader, merged to main):
+  DATA_SOURCES.md v1.1 §7 "Data conventions" (10 rules: timestamps, NYSE calendar, USD, raw vs adjusted, splits,
+  dividends on ex-date + 15% withholding, no filling, caching, versioning/provenance, source disagreements) and
+  §8 "Known limitations" (9 rows). src/quant_research/data/loader.py: load_prices() reads saved files only,
+  requires .meta.json, validates the slice, raises DataLoadError on any ERROR, logs WARNINGs, returns raw columns
+  (+ adj only with include_adjusted=True) and Provenance in df.attrs; does NOT enforce the D8 lock (runner does).
+  Real files load: AAPL 1,762 rows, XOM 1,762 rows, provenance = file name + 2026-10-20 download + commit 454e5d4.
+  Housekeeping: PROJECT_GUIDE folder map (data/ module created, scripts/, reports/), README data commands,
+  DATA_SOURCES calendar row (exchange_calendars runs on 3.13).
+- PHASE 2 CHECK (2026-10-20, by Claude Code) — NOT marked Verified:
+  retrieved reproducibly ✓ (download script + .meta.json with endpoint/time/commit; refuses overwrite; validation
+    report regenerated from saved files and diffed IDENTICAL) ·
+  data-quality checks exist ✓ (validation.py 9 checks, 33 tests; Yahoo cross-check, 13 tests) ·
+  source limitations documented ✓ (DATA_SOURCES §8, 9 rows; §7 row 10 source disagreements) ·
+  pipeline handles missing observations safely ✓ (loader raises on missing day / missing value / missing meta —
+    tests test_missing_trading_day_raises, test_missing_value_raises_and_is_not_filled, test_missing_meta…) ·
+  initial dataset suitable for basic experiments ✓ (AAPL + XOM 2010–2016, 0 ERROR / 0 WARNING, matches NYSE
+    calendar, split + 46 dividends cross-checked) — limited to 2 stocks and the development period by design.
+  → Phase 2: ready for verification
+
 IN PROGRESS:
-- Steps 2.4 + 2.5 — need a prompt
+- Phase 2 verification by chat Claude
 
 BLOCKED / OPEN QUESTIONS:
 - Stake fractional-share precision UNVERIFIED (D3 assumes 6 dp — check in Phase 3)
@@ -184,14 +204,19 @@ IMPORTANT DECISIONS:
      (only Goggy sets it) · D9 type hints required on every function in src/; no type-checker yet.
 
 NEXT ACTION:
-- Desktop Code session: "Read prompts/07_phase2_steps2.4-2.5_conventions_limits.md and do exactly what it says."
-- Paste report back. Chat Claude verifies Phase 2. Then Phase 3 (accounting engine).
+- Chat Claude verifies Phase 2, then Phase 3 Step 3.1 (cash accounting)
 
 CHAT CLAUDE CHECK OF STEP 2.3 (2026-10-20): main at 896a53c, no stray branches, no data/.env tracked;
 report has counts/dates/% only (no price values found by grep). Results accepted: 0 ERROR/0 WARNING both tickers,
 NYSE calendar match 1,762/1,762, Yahoo split-adjusted basis handled, 3 XOM close diffs logged. → Step 2.3 VERIFIED.
 Third-source check of the 3 XOM days: Financial Datasets connector has $0 credits → not done; left as known minor issue.
 Dividend withholding 15% with W-8BEN VERIFIED on Stake support page (30% without).
+
+TESTS RUN (2026-10-20, Steps 2.4–2.5):
+- uv run pytest → "78 passed in 1.09s" (crosscheck 13, loader 10, smoke 1, storage 6, tiingo 15, validation 33)
+- uv run ruff check . → "All checks passed!" · uv run ruff format --check . → "38 files already formatted"
+- scripts/validate_initial_dataset.py re-run → AAPL 0/0/5, XOM 0/0/3; report diffed IDENTICAL to previous run
+- loader on real data: AAPL + XOM 1,762 rows each, June 2014 slice 21 rows
 
 TESTS RUN (2026-10-20, Step 2.3):
 - uv run pytest → "68 passed in 0.79s" (smoke 1, storage 6, tiingo 15, validation 33, crosscheck 13)
