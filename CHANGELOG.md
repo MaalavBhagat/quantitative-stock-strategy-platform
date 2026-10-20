@@ -46,3 +46,10 @@
 - DATA_SOURCES.md v1.1: §7 Data conventions (10 rules), §8 Known limitations; calendar row updated.
 - PROJECT_GUIDE.md folder map and README data commands updated.
 - PROJECT_STATUS.md: Phase 2 check → ready for verification.
+
+## 2026-10-20 — Phase 3, Steps 3.1–3.3: ledger core (version stays 0.1.0)
+- New module `quant_research.portfolio`: `money` (Decimal helpers, `to_decimal_price`, rounding against us,
+  `shares_affordable`) and `ledger` (`Portfolio` with cash, whole/fractional positions, average-cost realised P&L,
+  minimum order, immutable audit trail; refused trades change nothing).
+- `tests/accounting/`: 29 hand-calculated tests incl. a seeded cash-invariant test.
+- PROJECT_GUIDE.md: `portfolio/` marked created; average-cost and fee/minimum-order assumptions in §4.

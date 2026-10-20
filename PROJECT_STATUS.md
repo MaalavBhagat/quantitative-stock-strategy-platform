@@ -2,7 +2,7 @@
 Last updated: 2026-10-20
 
 CURRENT PHASE: Phase 3 — Portfolio Accounting Engine (In progress)
-CURRENT TASK: Steps 3.1–3.3 — cash, whole + fractional shares ledger (prompt: prompts/08_phase3_steps3.1-3.3_ledger.md)
+CURRENT TASK: Steps 3.4–3.6 — costs, dividends, splits (prompt 09, not written yet)
 
 PHASE STATES (Not started / In progress / Blocked / Verified):
 - Phase 0  Feasibility & research design ........ VERIFIED (2026-10-18)
@@ -139,8 +139,21 @@ FINDINGS (Step 2.3):
     calendar, split + 46 dividends cross-checked) — limited to 2 stocks and the development period by design.
   → Phase 2: ready for verification
 
+- Steps 3.1–3.3 ledger core — DONE 2026-10-20 (prompt 08, plan approved by Goggy incl. 3 choices; branch
+  phase3-ledger-core, merged to main): src/quant_research/portfolio/money.py (to_decimal_price = the ONE float→Decimal
+  point; require_decimal rejects floats; round_pay up / round_receive down to cents; round_shares_down 6 dp;
+  shares_affordable) and portfolio/ledger.py (Portfolio: cash, totals spent/received/fees, positions with cost basis,
+  average-cost realised P&L, immutable LedgerEntry audit trail; InsufficientCashError / InsufficientSharesError;
+  refused trades change nothing; whole/fractional modes; min order US$10; dates never backwards).
+  Tests: tests/accounting/ — 29 tests with hand calculations, exact Decimal equality, incl. a seeded 500-step
+  invariant test (initial − spent − fees + received == cash). Mutation check: breaking pay-rounding → 5 tests fail;
+  dropping fees from cost basis → 3 tests fail; restored code passes.
+  Choices approved 2026-10-20: (1) buy fees in cost basis, sell fees off proceeds → P&L after all costs;
+  (2) min order US$10 on buys + partial sells, whole-position sell allowed below it [ASSUMPTION];
+  (3) fees rounded up to the cent.
+
 IN PROGRESS:
-- Phase 2 verification by chat Claude
+- Phase 3: Steps 3.4–3.6 next (prompt 09)
 
 BLOCKED / OPEN QUESTIONS:
 - Stake fractional-share precision UNVERIFIED (D3 assumes 6 dp — check in Phase 3)
@@ -204,14 +217,18 @@ IMPORTANT DECISIONS:
      (only Goggy sets it) · D9 type hints required on every function in src/; no type-checker yet.
 
 NEXT ACTION:
-- Desktop Code session: "Read prompts/08_phase3_steps3.1-3.3_ledger.md and do exactly what it says."
-  (It will show a plan and wait for your OK.)
-- Phase 3 plan: 08 = cash + whole + fractional · 09 = costs, dividends, splits · 10 = valuation + full accounting tests.
+- Chat Claude reviews Steps 3.1–3.3, then writes prompt 09 (Steps 3.4–3.6: costs, dividends, splits).
+- Phase 3 plan: 08 = cash + whole + fractional (DONE) · 09 = costs, dividends, splits · 10 = valuation + full accounting tests.
 
 PHASE 2 VERIFIED by chat Claude 2026-10-20: main at 1cf6deb, no stray branches, no data/.env tracked;
 DATA_SOURCES §7 conventions + §8 limitations present; loader raises DataLoadError on missing file/meta/rows and on
 validation ERRORs; provenance in df.attrs; 78 tests pass (Claude Code output). All 5 roadmap criteria met.
 Stake fractional rules checked (BROKER_FEES §4): min US$10, market/stop orders only, precision not stated.
+
+TESTS RUN (2026-10-20, Steps 3.1–3.3):
+- uv run pytest → "107 passed in 1.12s" (accounting/test_ledger 21, accounting/test_money 8, + 78 earlier)
+- uv run ruff check . → first run "Found 12 errors" (FURB157: Decimal("10") → Decimal(10), style only) → fixed →
+  "All checks passed!" · uv run ruff format --check . → "44 files already formatted"
 
 TESTS RUN (2026-10-20, Steps 2.4–2.5):
 - uv run pytest → "78 passed in 1.09s" (crosscheck 13, loader 10, smoke 1, storage 6, tiingo 15, validation 33)

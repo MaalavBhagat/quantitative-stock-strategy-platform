@@ -45,12 +45,12 @@ anything system-wide.
 | `.gitignore`, `.env.example` | what Git must never save; template for API keys |
 | `data/` (git-ignored) | downloaded market data — never committed (licence): `raw/tiingo/`, `cache/yfinance/`, `reference/tiingo/` |
 
-**Modules** — inside `src/quant_research/`. Only `data/` exists so far (created in Phase 2); the rest are
+**Modules** — inside `src/quant_research/`. `data/` (Phase 2) and `portfolio/` (Phase 3) exist; the rest are
 *not created yet* and get created only when a phase needs them (no empty modules).
 | Module | Phase | Its job | It must NOT |
 |---|---|---|---|
 | `data/` — **created** (`tiingo`, `storage`, `validation`, `crosscheck`, `loader`) | 2 | Download, validate, cache and load prices, dividends, splits (all years, incl. 2021+, for quality checks only — D8). Conventions: DATA_SOURCES §7 | trade, compute signals, chart or summarise 2021+ prices, or silently fill/fix bad data |
-| `portfolio/` | 3 | The ledger: cash, shares, costs, dividends, valuation (the only place cash changes) | decide when to trade or read future prices |
+| `portfolio/` — **created** (`money`, `ledger`) | 3 | The ledger: cash, shares, costs, dividends, valuation (the only place cash changes) | decide when to trade or read future prices |
 | `execution/` | 3–4 | Turn an order into a fill: next-open price, gaps, costs, rounding | decide *whether* to trade; use the signal day's close as the fill price |
 | `backtesting/` | 4 | Run the day-by-day timeline: data → signal → order → fill → ledger | contain strategy rules or fee numbers; run on dates ≥ 2021-01-01 while locked (D8) |
 | `strategies/` | 5 | Read past data, return "buy / sell / hold" signals | touch cash or shares directly; see any data after day T |
@@ -115,6 +115,14 @@ makes a losing strategy look profitable, so it must be exact; the speed cost is 
 - Fractional shares: store up to **6 decimal places** [ASSUMPTION — Stake's real precision is
   UNVERIFIED, check in Phase 3]; shares bought round *down* so we never spend cash we don't have.
 - Whole-share mode: shares bought round down to a whole number; leftover cash stays as cash.
+- Fees are rounded up to the cent too (we pay them). Approved by Goggy 2026-10-20 (prompt 08).
+
+**Profit and loss — average cost [ASSUMPTION, approved 2026-10-20]**
+- Realised/unrealised P&L uses the average cost of all shares held (no tax lots, no tax modelling).
+- Buy fees are part of the cost basis; sell fees come off the proceeds → P&L is after all costs.
+- Minimum order US$10 (Stake, BROKER_FEES §4) applies to buys and partial sells; selling a whole
+  position is allowed below it [ASSUMPTION — Stake doesn't say].
+- Only one function turns a float price into Decimal: `portfolio.money.to_decimal_price`.
 
 ---
 
