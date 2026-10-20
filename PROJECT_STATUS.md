@@ -1,14 +1,14 @@
 # PROJECT_STATUS.md
 Last updated: 2026-10-20
 
-CURRENT PHASE: Phase 2 — Historical Market Data (ready for verification)
-CURRENT TASK: Phase 2 verification by chat Claude
+CURRENT PHASE: Phase 3 — Portfolio Accounting Engine (In progress)
+CURRENT TASK: Steps 3.1–3.3 — cash, whole + fractional shares ledger (prompt: prompts/08_phase3_steps3.1-3.3_ledger.md)
 
 PHASE STATES (Not started / In progress / Blocked / Verified):
 - Phase 0  Feasibility & research design ........ VERIFIED (2026-10-18)
 - Phase 1  Dev environment & repository ......... VERIFIED (2026-10-20)
-- Phase 2  Historical market data ............... ready for verification (2026-10-20)
-- Phase 3  Portfolio accounting engine .......... Not started
+- Phase 2  Historical market data ............... VERIFIED (2026-10-20)
+- Phase 3  Portfolio accounting engine .......... In progress
 - Phase 4  Backtesting engine ................... Not started
 - Phase 5  Strategy laboratory .................. Not started
 - Phase 6  Research validation .................. Not started
@@ -204,13 +204,14 @@ IMPORTANT DECISIONS:
      (only Goggy sets it) · D9 type hints required on every function in src/; no type-checker yet.
 
 NEXT ACTION:
-- Chat Claude verifies Phase 2, then Phase 3 Step 3.1 (cash accounting)
+- Desktop Code session: "Read prompts/08_phase3_steps3.1-3.3_ledger.md and do exactly what it says."
+  (It will show a plan and wait for your OK.)
+- Phase 3 plan: 08 = cash + whole + fractional · 09 = costs, dividends, splits · 10 = valuation + full accounting tests.
 
-CHAT CLAUDE CHECK OF STEP 2.3 (2026-10-20): main at 896a53c, no stray branches, no data/.env tracked;
-report has counts/dates/% only (no price values found by grep). Results accepted: 0 ERROR/0 WARNING both tickers,
-NYSE calendar match 1,762/1,762, Yahoo split-adjusted basis handled, 3 XOM close diffs logged. → Step 2.3 VERIFIED.
-Third-source check of the 3 XOM days: Financial Datasets connector has $0 credits → not done; left as known minor issue.
-Dividend withholding 15% with W-8BEN VERIFIED on Stake support page (30% without).
+PHASE 2 VERIFIED by chat Claude 2026-10-20: main at 1cf6deb, no stray branches, no data/.env tracked;
+DATA_SOURCES §7 conventions + §8 limitations present; loader raises DataLoadError on missing file/meta/rows and on
+validation ERRORs; provenance in df.attrs; 78 tests pass (Claude Code output). All 5 roadmap criteria met.
+Stake fractional rules checked (BROKER_FEES §4): min US$10, market/stop orders only, precision not stated.
 
 TESTS RUN (2026-10-20, Steps 2.4–2.5):
 - uv run pytest → "78 passed in 1.09s" (crosscheck 13, loader 10, smoke 1, storage 6, tiingo 15, validation 33)

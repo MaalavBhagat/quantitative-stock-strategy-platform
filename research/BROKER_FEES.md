@@ -36,3 +36,12 @@ One-off FX cost to get into USD at the start (and back out at the end) applies t
   site 2026-10-17; withdrawal FX 0.55% confirmed 2026-10-20
   (https://hellostake.com/support/funding-and-withdrawal/withdrawal/26014595952153).
 - This is research modelling, not a recommendation to switch brokers.
+
+## 4. Stake fractional-share rules (checked 2026-10-20)
+Source: [Stake – fractional shares](https://hellostake.com/au/blog/stake-updates/fractional-shares-44ba6f) [OFFICIAL]
+- Minimum order US$10 (excluding brokerage).
+- Fractional orders: market and stop orders only — NO limit orders. (Fits our model: T+1 open = market order.)
+- Precision: "multiple decimal places" (example 4.3142 shares); maximum NOT stated → D3's 6 dp stays an [ASSUMPTION].
+- Settlement values rounded to the nearest cent.
+- Fractional positions can be sold in part or whole at any time.
+- Dividends paid pro rata; amounts below a minimum (e.g. US$0.01) may not be credited.
