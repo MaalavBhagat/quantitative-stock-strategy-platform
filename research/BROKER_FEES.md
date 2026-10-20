@@ -8,7 +8,7 @@ Rule: every number has a source. Anything without one is marked UNVERIFIED.
 | CommSec (standard) | US$5 or 0.12%, whichever is greater | 0.55% | Every trade (auto-converts AUD↔USD) | Not stated on fee page | [CommSec rates & fees](https://static.commsec.com.au/support/rates-and-fees.html) |
 | CommSec (Intl Shares Plus) | US$9.95 or 0.20%, whichever is greater | 0.55% | Avoidable if USD held in Plus wallet | Not stated | same as above |
 | Interactive Brokers (Fixed) | US$0.005/share, min US$1, max 1% of trade | 0.03% auto; ~0.002% (min US$2) if converted manually | Once, if you convert manually and hold USD | Yes (UNVERIFIED for AU accounts — check) | [IBKR AU commissions](https://www.interactivebrokers.com.au/en/pricing/commissions-home.php) |
-| Stake (Wall St) | US$3 per trade (0.01% above US$30k) | 0.55% | When funding — "no FX fees per trade" (withdrawal FX UNVERIFIED) | Yes, min US$10 | VERIFIED 2026-10-17: [Stake AU pricing](https://hellostake.com/au/pricing); also [Finder](https://www.finder.com.au/share-trading/stake) |
+| Stake (Wall St) | US$3 per trade (0.01% above US$30k) | 0.55% | When funding — "no FX fees per trade" (withdrawal FX 0.55% VERIFIED 2026-10-20 — Stake support page) | Yes, min US$10 | VERIFIED 2026-10-17: [Stake AU pricing](https://hellostake.com/au/pricing); also [Finder](https://www.finder.com.au/share-trading/stake) |
 | moomoo AU | US$0.99 per trade + pass-through fees | FX spread, rate not published | On conversion | Yes | [moomoo AU pricing](https://moomoo.com/au/pricing) |
 
 Not counted above: bid-ask spread (all brokers), US SEC/FINRA fees (tiny on sells).
@@ -33,5 +33,6 @@ One-off FX cost to get into USD at the start (and back out at the end) applies t
   biggest factor.
 - Plan: model 3 cost scenarios — LOW (IBKR-like), MID (Stake-like), HIGH (CommSec standard).
 - DECISION 2026-10-17: Stake = MAIN case (Goggy knows it). Stake fees verified on Stake's own
-  site 2026-10-17 (withdrawal FX still unconfirmed).
+  site 2026-10-17; withdrawal FX 0.55% confirmed 2026-10-20
+  (https://hellostake.com/support/funding-and-withdrawal/withdrawal/26014595952153).
 - This is research modelling, not a recommendation to switch brokers.

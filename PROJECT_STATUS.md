@@ -1,13 +1,13 @@
 # PROJECT_STATUS.md
 Last updated: 2026-10-20
 
-CURRENT PHASE: Phase 1 — Development Environment and Repository (ready for verification)
-CURRENT TASK: Phase 1 verification by chat Claude
+CURRENT PHASE: Phase 2 — Historical Market Data (In progress)
+CURRENT TASK: Step 2.2 — download AAPL + XOM 2010–2016 from Tiingo (prompt: prompts/05_phase2_step2.2_download.md)
 
 PHASE STATES (Not started / In progress / Blocked / Verified):
 - Phase 0  Feasibility & research design ........ VERIFIED (2026-10-18)
-- Phase 1  Dev environment & repository ......... ready for verification — all criteria met, decisions applied (2026-10-20)
-- Phase 2  Historical market data ............... Not started
+- Phase 1  Dev environment & repository ......... VERIFIED (2026-10-20)
+- Phase 2  Historical market data ............... In progress
 - Phase 3  Portfolio accounting engine .......... Not started
 - Phase 4  Backtesting engine ................... Not started
 - Phase 5  Strategy laboratory .................. Not started
@@ -51,12 +51,19 @@ COMPLETED:
   (D8 changed: lock in backtest/experiment runner, not data loading). ruff format applied
   (research/calc_feasibility.py only; script output diffed identical before/after).
   → Phase 1: ready for verification — all criteria met, decisions applied
+- .env created by Goggy 2026-10-20 (TIINGO_API_KEY set, 40 chars, git-ignored — checked without printing it).
+- Step 2.1 DATA_SOURCES.md — DONE 2026-10-20 (chat Claude, official Tiingo/Stake pages).
+  Findings: Tiingo free = 50 req/h, 1,000/day, 1 GB/mo, "Internal Use Only"; raw + adj OHLCV, divCash on ex-date,
+  splitFactor; NO dividend pay date; delisted coverage unknown. Stake withdrawal FX 0.55% VERIFIED.
+  yfinance: always pass auto_adjust=False.
+- PHASE 1 VERIFIED by chat Claude 2026-10-20: checked commits 6ea91d0..632f381 on disk, clean tree,
+  ruff-format commit touches only calc_feasibility.py, PROJECT_GUIDE v1.1 has D1–D9 approved and D8
+  (runner-level lock) in §2/§4/§7/§9; Claude Code's fresh-clone test + pytest/ruff output accepted.
 
 IN PROGRESS:
-- Phase 1 verification by chat Claude
+- Step 2.2 — prompt 05 ready
 
 BLOCKED / OPEN QUESTIONS:
-- Stake withdrawal FX not confirmed (check AU_Pricing.pdf in Phase 2)
 - Stake fractional-share precision UNVERIFIED (D3 assumes 6 dp — check in Phase 3)
 
 SETUP FACTS (stated by Goggy, 2026-10-17):
@@ -115,7 +122,8 @@ IMPORTANT DECISIONS:
      (only Goggy sets it) · D9 type hints required on every function in src/; no type-checker yet.
 
 NEXT ACTION:
-- Chat Claude verifies Phase 1, then Phase 2 Step 2.1 (DATA_SOURCES.md)
+- Desktop Code session: "Read prompts/05_phase2_step2.2_download.md and do exactly what it says."
+- Paste the report back to chat. Then Step 2.3 (data validation + yfinance cross-check).
 
 TESTS RUN (2026-10-20, prompt 04 — decisions applied):
 - uv run ruff format . → "1 file reformatted, 18 files left unchanged" (research/calc_feasibility.py)

@@ -8,7 +8,7 @@ Numbers are produced by `research/calc_feasibility.py` — re-run it to check. N
 |---|---|---|---|
 | Stake brokerage | US$3/trade; 0.01% above US$30k | VERIFIED (Stake site) | [Stake AU pricing](https://hellostake.com/au/pricing) |
 | Stake FX | 0.55%, only when funding — "no FX fees per trade" | VERIFIED (Stake site) | same |
-| Stake FX on withdrawal | assumed 0.55% | UNVERIFIED (Finder says yes; Stake page silent) — check AU_Pricing.pdf | [Finder – Stake](https://www.finder.com.au/share-trading/stake) |
+| Stake FX on withdrawal | 0.55% | VERIFIED 2026-10-20 (Stake support) | [Stake withdrawals](https://hellostake.com/support/funding-and-withdrawal/withdrawal/26014595952153) |
 | Stake fractional | Yes, from US$10 | VERIFIED (Stake site) | [Stake AU pricing](https://hellostake.com/au/pricing) |
 | IBKR fixed | US$0.005/share, min US$1, max 1%; FX ~0.002% manual | SOURCED | [IBKR AU](https://www.interactivebrokers.com.au/en/pricing/commissions-home.php) |
 | CommSec standard | US$5 or 0.12% (greater); FX 0.55% each trade | SOURCED | [CommSec fees](https://static.commsec.com.au/support/rates-and-fees.html) |
@@ -63,7 +63,6 @@ Not an issue on Stake (fractional). Matters for CommSec (assume no fractional) a
 - AUD/USD fixed at 0.69; real rate moves and adds currency gain/loss (affects buy-and-hold too).
 - Tax (CGT) ignored — frequent selling creates taxable gains; buy-and-hold defers them. This
   favours buy-and-hold in real life. Noted as a known limit.
-- Stake withdrawal FX not confirmed on Stake's own page.
 
 ## 6. Open items
 - Check Stake AU_Pricing.pdf for withdrawal FX + any other US fees (Phase 2).
