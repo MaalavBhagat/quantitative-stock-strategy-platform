@@ -1,0 +1,14 @@
+[
+  {"date": "2014-06-04T00:00:00.000Z", "open": 600.0, "high": 610.0, "low": 595.0, "close": 605.0, "volume": 1000000,
+   "adjOpen": 85.0, "adjHigh": 86.5, "adjLow": 84.5, "adjClose": 86.0, "adjVolume": 7000000,
+   "divCash": 0.0, "splitFactor": 1.0},
+  {"date": "2014-06-05T00:00:00.000Z", "open": 606.0, "high": 612.0, "low": 601.0, "close": 610.0, "volume": 1100000,
+   "adjOpen": 86.1, "adjHigh": 87.0, "adjLow": 85.4, "adjClose": 86.7, "adjVolume": 7700000,
+   "divCash": 3.29, "splitFactor": 1.0},
+  {"date": "2014-06-06T00:00:00.000Z", "open": 611.0, "high": 615.0, "low": 607.0, "close": 614.0, "volume": 900000,
+   "adjOpen": 87.3, "adjHigh": 87.9, "adjLow": 86.7, "adjClose": 87.7, "adjVolume": 6300000,
+   "divCash": 0.0, "splitFactor": 1.0},
+  {"date": "2014-06-09T00:00:00.000Z", "open": 88.0, "high": 89.0, "low": 87.5, "close": 88.5, "volume": 7500000,
+   "adjOpen": 88.0, "adjHigh": 89.0, "adjLow": 87.5, "adjClose": 88.5, "adjVolume": 7500000,
+   "divCash": 0.0, "splitFactor": 7.0}
+]

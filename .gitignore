@@ -2,7 +2,7 @@
 .env
 
 # Downloaded market data (personal-use licence) — never commit
-data/
+/data/
 
 # Python environment and caches
 .venv/
