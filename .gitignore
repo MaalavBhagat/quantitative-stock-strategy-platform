@@ -1,0 +1,15 @@
+# Secrets — never commit
+.env
+
+# Downloaded market data (personal-use licence) — never commit
+data/
+
+# Python environment and caches
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+
+# macOS
+.DS_Store

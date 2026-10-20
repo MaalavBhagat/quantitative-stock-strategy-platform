@@ -1,0 +1,616 @@
+Quantitative Stock Strategy Research Platform
+Master Project Roadmap and Implementation Plan
+Suggested project name: Quantitative Stock Strategy Research Platform
+Master specification: QUANTITATIVE_STOCK_STRATEGY_PROJECT.txt
+Detailed project guide: PROJECT_GUIDE.md
+Research methodology: RESEARCH_METHODOLOGY.md
+1. Project structure at a glance
+The project will be divided into 12 phases.
+Phase	Name	Main outcome
+0	Feasibility and research design	Determine what is worth building
+1	Development environment and repository	Establish a clean development foundation
+2	Historical market data	Build a reliable data pipeline
+3	Portfolio accounting engine	Track cash, shares, dividends, and portfolio value
+4	Backtesting engine	Simulate historical trading accurately
+5	Trading strategy laboratory	Implement and compare multiple strategies
+6	Research validation	Test robustness and investigate misleading results
+7	Company research and screening	Identify suitable companies systematically
+8	Interactive dashboard	Build the research interface
+9	Market context and AI news analysis	Investigate whether additional information helps
+10	Integration, security, and reliability	Prepare a stable, reproducible application
+11	CV, GitHub, and portfolio presentation	Turn the project into a professional portfolio piece
+
+
+Recommended development order: Follow this sequence initially, but allow individual tasks to move earlier when a genuine dependency requires it.
+For example, basic company selection may be needed during Phase 0, while the full screening engine belongs in Phase 7.
+Phase 0 — Feasibility and Research Design
+Objective
+Determine whether the project is technically feasible, whether the required data is accessible, and how to test the investment hypothesis fairly.
+Do not build the application yet.
+Step 0.1 — Define the research hypothesis
+Investigate whether selling shares after small price increases and repurchasing them after declines can outperform buy-and-hold.
+Define the main evaluation objectives:
+1. Portfolio growth.
+2. Risk management.
+3. Reliability of results.
+Identify alternative explanations for any apparent success, including luck, market trends, survivorship bias, and unrealistic execution assumptions.
+Deliverable: research/RESEARCH_QUESTIONS.md
+Step 0.2 — Evaluate candidate markets
+Investigate US, Indian, and Australian equities.
+Compare:
+- Historical data availability.
+- Data quality.
+- Cost of access.
+- Currency considerations.
+- Corporate-action coverage.
+- Historical financial data.
+- Trading-cost information.
+- Practicality for a small investor.
+Start with the market that offers the best combination of accessibility and research suitability.
+Do not assume the easiest market to obtain data for is necessarily the cheapest market to trade in.
+Deliverable: research/MARKET_SELECTION.md
+Step 0.3 — Select initial candidate companies
+Investigate a small set of companies, potentially including Apple and Microsoft.
+Include Reliance Industries if the selected data source supports the required research.
+Document why each candidate is included.
+Do not describe any company as incapable of bankruptcy.
+Do not use today's successful companies as the sole basis for historical conclusions.
+Deliverable: research/INITIAL_UNIVERSE.md
+Step 0.4 — Investigate the AUD $1,000 constraint
+Estimate how starting capital interacts with:
+- Whole-share prices.
+- Fractional-share availability.
+- Minimum order values.
+- Brokerage.
+- Spreads.
+- Currency conversion.
+- Trading frequency.
+Calculate illustrative break-even price movements under several cost assumptions.
+Clearly distinguish verified broker fees from hypothetical scenarios.
+Deliverable: research/SMALL_ACCOUNT_FEASIBILITY.md
+Step 0.5 — Define the initial experiments
+Specify how to compare:
+- Buy-and-hold.
+- Fixed profit-target trading.
+- Pullback-based re-entry.
+- Mean reversion.
+- Trend-aware trading.
+Define what constitutes a meaningful result and what evidence would cause you to reject the original hypothesis.
+Deliverable: research/EXPERIMENT_PLAN.md
+Phase 0 completion criteria
+- The research hypothesis is clearly defined.
+- The initial market is selected with documented reasoning.
+- Data providers have been evaluated.
+- The initial experiment plan exists.
+- The principal limitations are documented.
+- No unsupported claim of profitability has been made.
+Phase 1 — Development Environment and Repository
+Objective
+Create a professional development foundation that AI coding agents can extend safely.
+Step 1.1 — Inspect the development environment
+Determine:
+- Operating system.
+- Python installation.
+- IDE or editor.
+- Git availability.
+- AI coding agent workflow.
+Give me instructions appropriate to my actual environment rather than assuming everything is installed.
+Step 1.2 — Create the repository
+Use a clear, maintainable structure.
+quantitative-stock-strategy-platform/
+│
+├── README.md
+├── PROJECT_GUIDE.md
+├── QUANTITATIVE_STOCK_STRATEGY_PROJECT.txt
+├── RESEARCH_METHODOLOGY.md
+├── DATA_SOURCES.md
+├── TESTING.md
+├── CHANGELOG.md
+├── pyproject.toml
+├── .gitignore
+├── .env.example
+│
+├── config/
+│   ├── default.yaml
+│   └── example_experiment.yaml
+│
+├── data/
+│   ├── raw/
+│   ├── processed/
+│   └── cache/
+│
+├── research/
+│   ├── RESEARCH_QUESTIONS.md
+│   ├── MARKET_SELECTION.md
+│   ├── INITIAL_UNIVERSE.md
+│   ├── EXPERIMENT_PLAN.md
+│   └── SMALL_ACCOUNT_FEASIBILITY.md
+│
+├── src/
+│   └── quant_research/
+│       ├── data/
+│       ├── screening/
+│       ├── portfolio/
+│       ├── execution/
+│       ├── backtesting/
+│       ├── strategies/
+│       ├── metrics/
+│       ├── research/
+│       ├── news/
+│       ├── reporting/
+│       └── dashboard/
+│
+├── tests/
+│   ├── unit/
+│   ├── integration/
+│   ├── accounting/
+│   └── backtesting/
+│
+├── reports/
+│   ├── experiments/
+│   └── figures/
+│
+└── scripts/
+
+The exact structure may change as implementation progresses. Do not create empty modules merely to make the repository look complete.
+Keep downloaded data and credentials out of Git unless there is a specific, justified reason to version a small dataset.
+Step 1.3 — Configure Python and dependencies
+Establish:
+- A reproducible Python environment.
+- Dependency management.
+- Formatting and linting.
+- Automated testing.
+- Git version control.
+Prefer a small dependency set initially.
+Step 1.4 — Create development conventions
+Document:
+- Naming conventions.
+- Module responsibilities.
+- Testing expectations.
+- Error handling.
+- Coding-agent rules.
+- Documentation requirements.
+Phase 1 completion criteria
+- The project runs in a clean environment.
+- Dependencies are documented.
+- Git is configured.
+- Tests can be executed.
+- The project guide explains how to begin development.
+Phase 2 — Historical Market Data
+Objective
+Build a reliable historical data pipeline before implementing trading strategies.
+Step 2.1 — Evaluate data providers
+Compare appropriate providers for:
+- Historical prices.
+- Dividends.
+- Stock splits.
+- Historical company fundamentals.
+- Trading volume.
+- Bid-ask spreads, if available.
+- Historical news, if available.
+Document pricing, limitations, and usage rights.
+Step 2.2 — Download a small initial dataset
+Start with one or two companies and a manageable historical period.
+Do not download an enormous universe before validating the pipeline.
+Step 2.3 — Validate the data
+Check for:
+- Missing dates.
+- Duplicate observations.
+- Incorrect price values.
+- Unexpected gaps.
+- Inconsistent currencies.
+- Missing dividends.
+- Corporate-action inconsistencies.
+Step 2.4 — Establish data conventions
+Define:
+- Timestamp handling.
+- Trading calendars.
+- Currency conventions.
+- Raw versus adjusted prices.
+- Missing-data treatment.
+- Data caching.
+- Data versioning.
+Never silently substitute adjusted closing prices for executable market prices.
+Step 2.5 — Document limitations
+Record what the selected provider cannot establish reliably.
+For example, daily OHLC data cannot always establish which intraday threshold was reached first.
+Phase 2 completion criteria
+- Historical data can be retrieved reproducibly.
+- Data-quality checks exist.
+- Source limitations are documented.
+- The pipeline handles missing observations safely.
+- The initial dataset is suitable for basic experiments.
+Phase 3 — Portfolio Accounting Engine
+Objective
+Build the financial accounting foundation before implementing sophisticated trading logic.
+This phase is critical. Incorrect accounting can make an unprofitable strategy appear profitable.
+Step 3.1 — Implement cash accounting
+Track:
+- Initial capital.
+- Cash available.
+- Cash spent on purchases.
+- Cash received from sales.
+- Transaction costs.
+- Dividends.
+- Remaining cash.
+Prevent spending unavailable funds.
+Step 3.2 — Implement whole-share positions
+Support buying and selling whole shares.
+Validate quantity, price, cash, and ownership.
+Step 3.3 — Implement fractional-share positions
+Support fractional-share simulations where configured.
+Make fractional trading availability a market- and broker-specific assumption.
+Test fractional position sizing and cash calculations independently.
+Step 3.4 — Implement transaction costs
+Support configurable:
+- Brokerage.
+- Spreads.
+- Slippage.
+- Currency conversion.
+- Other relevant fees.
+Clearly label estimates and unverified assumptions.
+Step 3.5 — Implement dividends
+Track dividend income separately from price returns.
+Where supported, account for entitlement dates, payment dates, withholding taxes, and reinvestment.
+Prevent dividend double-counting.
+Step 3.6 — Implement corporate actions
+Support stock splits and other relevant actions where the data permits.
+Document unsupported actions.
+Step 3.7 — Implement portfolio valuation
+Calculate:
+Total portfolio value = cash + market value of holdings + other explicitly modelled assets or liabilities
+Track share count, cash, realised profit or loss, unrealised profit or loss, and total portfolio value separately.
+Step 3.8 — Write accounting tests
+Create small, manually calculable examples.
+Verify that the results match independently calculated values.
+Phase 3 completion criteria
+- Cash balances are correct.
+- Share quantities are correct.
+- Dividends are accounted for consistently.
+- Corporate actions do not silently corrupt holdings.
+- Transaction costs are included.
+- Portfolio valuation is independently validated.
+Phase 4 — Backtesting Engine
+Objective
+Simulate historical trading decisions using realistic information and execution assumptions.
+Step 4.1 — Define the simulation timeline
+Separate:
+1. Information available at the time.
+2. Signal generation.
+3. Trading decision.
+4. Order submission.
+5. Simulated execution.
+6. Portfolio accounting.
+Step 4.2 — Prevent look-ahead bias
+A strategy cannot use future prices or information that was not available when its decision was made.
+For example, a signal calculated from today's closing price should not automatically execute at that same closing price.
+Step 4.3 — Implement order execution
+Define how the simulation handles:
+- Next-session execution.
+- Price gaps.
+- Missing market data.
+- Trading costs.
+- Unavailable funds.
+- Unavailable shares.
+- Minimum order sizes.
+- End-of-period open positions.
+Step 4.4 — Implement buy-and-hold
+Build the first benchmark using the same portfolio accounting system.
+Step 4.5 — Implement portfolio metrics
+Calculate:
+- Portfolio value over time.
+- Cumulative returns.
+- Drawdowns.
+- Transaction costs.
+- Dividends.
+- Cash balances.
+- Holdings.
+Step 4.6 — Test execution edge cases
+Test rising, falling, and sideways price series.
+Test ambiguous daily price movements where the order of intraday events is unknown.
+Use a conservative, documented approach rather than assuming the most profitable sequence.
+Phase 4 completion criteria
+- Buy-and-hold is correctly implemented.
+- Orders follow the documented execution model.
+- Portfolio accounting integrates correctly.
+- Look-ahead bias controls are in place.
+- The engine passes synthetic-data tests.
+Phase 5 — Trading Strategy Laboratory
+Objective
+Implement multiple strategies using the same validated backtesting engine.
+Step 5.1 — Fixed profit target
+Sell after a configurable price increase and attempt to repurchase at a defined lower threshold.
+Step 5.2 — Pullback strategy
+Sell under an explicit rule and wait for a defined decline from a documented reference price.
+Step 5.3 — Mean-reversion strategy
+Investigate price deviations from statistically defined references.
+Step 5.4 — Trend-aware strategy
+Test whether trend filters help avoid selling during sustained rallies or buying repeatedly during sustained declines.
+Step 5.5 — Hybrid strategy
+Combine strategies only after the individual components have been evaluated.
+Step 5.6 — Parameter configuration
+Allow the user to configure thresholds and other parameters without modifying strategy source code.
+Step 5.7 — Strategy comparison
+Run strategies using consistent:
+- Initial capital.
+- Data.
+- Test periods.
+- Cost assumptions.
+- Execution assumptions.
+- Benchmark methodology.
+Phase 5 completion criteria
+- Each strategy has explicit rules.
+- Strategies pass independent tests.
+- Results can be reproduced.
+- The system does not select a winner merely because it generated the most trades.
+- All strategies are compared against buy-and-hold.
+Phase 6 — Research Validation and Robustness
+Objective
+Determine whether the results provide credible evidence of a trading advantage.
+Step 6.1 — Establish a development and evaluation split
+Separate data used for strategy development from data reserved for evaluation.
+Step 6.2 — Run out-of-sample tests
+Evaluate strategies on historical data that was not used to develop their rules.
+Do not repeatedly optimise against the same evaluation period and continue describing it as unseen data.
+Step 6.3 — Run parameter sensitivity tests
+Test whether performance depends on a narrowly selected threshold.
+Step 6.4 — Test transaction-cost sensitivity
+Evaluate performance under multiple plausible cost assumptions.
+Step 6.5 — Examine market regimes
+Investigate performance in rising, falling, sideways, and volatile markets.
+Step 6.6 — Evaluate reliability
+Investigate:
+- Consistency across companies.
+- Consistency across time periods.
+- Dependence on a small number of trades.
+- Sensitivity to execution assumptions.
+- Sensitivity to parameter changes.
+- Potential survivorship and selection bias.
+Step 6.7 — Document unsuccessful experiments
+Record what failed, why it may have failed, and what the evidence supports.
+Phase 6 completion criteria
+- Out-of-sample results are reported.
+- Cost sensitivity is documented.
+- Parameter sensitivity is documented.
+- Limitations are explicit.
+- Results are not presented as proof of future profitability.
+Phase 7 — Company Research and Screening
+Objective
+Identify candidate companies using a repeatable methodology.
+Step 7.1 — Implement financial indicators
+Where data is available, evaluate profitability, cash flow, debt, liquidity, and earnings stability.
+Step 7.2 — Implement trading indicators
+Evaluate liquidity, volatility, spreads where available, and historical price behaviour.
+Step 7.3 — Build a screening methodology
+Create a transparent ranking system.
+Explain why each company qualifies.
+Step 7.4 — Address historical selection bias
+Avoid selecting companies solely because they are successful today.
+Use point-in-time information where possible and document limitations where it is unavailable.
+Step 7.5 — Compare companies
+Test whether strategy behaviour varies meaningfully across companies.
+Do not assume the strategy is universally applicable.
+Phase 7 completion criteria
+- Screening criteria are documented.
+- Company rankings are explainable.
+- Data limitations are visible.
+- Historical conclusions account for selection bias where possible.
+Phase 8 — Interactive Dashboard
+Objective
+Make the research engine usable through an interactive interface.
+Use Streamlit initially unless research shows a better alternative.
+Step 8.1 — Overview page
+Show the selected company, strategy, starting capital, test period, and key results.
+Step 8.2 — Company research page
+Display financial indicators, liquidity, volatility, and screening information.
+Step 8.3 — Strategy laboratory
+Allow users to configure parameters and run comparable experiments.
+Step 8.4 — Performance dashboard
+Display equity curves, drawdowns, dividends, costs, cash, and holdings.
+Step 8.5 — Trade explorer
+Allow inspection of individual simulated trades and their portfolio effects.
+Step 8.6 — Research reports
+Generate summaries of performance, limitations, and experiment settings.
+Step 8.7 — Export functionality
+Export results, trade logs, charts, and configurations.
+Phase 8 completion criteria
+- The dashboard uses the validated engine.
+- Results are consistent with independent calculations.
+- Important assumptions are visible.
+- Failed experiments are not hidden.
+- Results can be exported and reproduced.
+Phase 9 — Market Context and AI News Analysis
+Objective
+Investigate whether additional information improves the existing strategy.
+Do not start this phase until the baseline research engine is reliable.
+Step 9.1 — Evaluate market-context features
+Investigate momentum, volatility, trading volume, and broad-market conditions.
+Step 9.2 — Evaluate historical news availability
+Investigate suitable sources, timestamps, historical coverage, costs, and licensing.
+Step 9.3 — Develop a news classification prototype
+If appropriate, classify news into documented categories such as earnings, guidance, acquisitions, and regulatory developments.
+Step 9.4 — Prevent temporal leakage
+Only use news that was available at the simulated decision time.
+Step 9.5 — Compare against simpler models
+Compare price-only strategies with strategies incorporating market context or news.
+Step 9.6 — Evaluate incremental value
+Investigate whether additional information improves out-of-sample performance after costs.
+Phase 9 completion criteria
+- News sources and limitations are documented.
+- Historical decisions use only available information.
+- AI-generated interpretations are distinguished from verified facts.
+- Additional complexity is justified by evidence or explicitly labelled exploratory.
+Phase 10 — Integration, Security, and Reliability
+Objective
+Make the application stable, maintainable, and reproducible.
+Step 10.1 — Integration testing
+Verify that data ingestion, accounting, execution, strategies, and reporting work together correctly.
+Step 10.2 — Error handling
+Test network failures, unavailable data, malformed responses, and invalid configurations.
+Step 10.3 — Security
+Protect credentials and keep secrets out of source control.
+Step 10.4 — Reproducibility
+Record data sources, experiment parameters, software versions, and other relevant metadata.
+Step 10.5 — Performance and usability
+Improve slow operations where justified.
+Avoid premature optimisation.
+Step 10.6 — Documentation audit
+Ensure instructions match the actual implementation.
+Phase 10 completion criteria
+- Core workflows run reproducibly.
+- Integration tests pass.
+- Important failures are handled clearly.
+- Security-sensitive information is protected.
+- Known limitations are documented.
+Phase 11 — CV and GitHub Portfolio
+Objective
+Present the finished work professionally without exaggerating its capabilities.
+Step 11.1 — Finalise the documentation
+Maintain:
+- README.md
+- PROJECT_GUIDE.md
+- RESEARCH_METHODOLOGY.md
+- DATA_SOURCES.md
+- TESTING.md
+- CHANGELOG.md
+Step 11.2 — Create a reproducible demonstration
+Prepare an example experiment that another person can run using the documented setup.
+Step 11.3 — Create screenshots and diagrams
+Include:
+- Architecture diagram.
+- Strategy comparison.
+- Portfolio equity curve.
+- Drawdown chart.
+- Research dashboard.
+- Example trade analysis.
+Clearly label simulated results.
+Step 11.4 — Prepare CV content
+Create:
+- A concise project description.
+- Three to five technical bullet points.
+- A list of technologies actually used.
+- A GitHub project description.
+- An interview demonstration outline.
+Step 11.5 — Prepare for technical questions
+Be ready to explain:
+- How the backtesting engine works.
+- How look-ahead bias is prevented.
+- How dividends are accounted for.
+- How trading costs are modelled.
+- How strategies are compared.
+- What the results do and do not establish.
+Phase 11 completion criteria
+- The repository is understandable.
+- Setup instructions work.
+- A reproducible demonstration exists.
+- The CV summary reflects actual accomplishments.
+- No unsupported claims are made about profitability or reliability.
+2. How to work with coding AI agents
+Do not give your coding agent the entire roadmap and ask it to build everything at once.
+Use this workflow for each task:
+1. Read the relevant phase.
+2. Identify the smallest incomplete task.
+3. Give the agent the task-specific instructions.
+4. Ask it to inspect the existing repository.
+5. Let it implement the task.
+6. Run the tests.
+7. Inspect the actual changes.
+8. Resolve errors.
+9. Update the documentation.
+10. Mark the task complete only after the acceptance criteria pass.
+Keep a project status file:
+PROJECT_STATUS.md
+It should contain:
+CURRENT PHASE:
+CURRENT TASK:
+
+COMPLETED:
+- ...
+
+IN PROGRESS:
+- ...
+
+BLOCKED:
+- ...
+
+KNOWN BUGS:
+- ...
+
+IMPORTANT DECISIONS:
+- ...
+
+NEXT ACTION:
+- ...
+
+TESTS RUN:
+- ...
+
+TEST RESULTS:
+- ...
+
+This makes it easier to resume development in a new AI coding session without losing context.
+3. Standard prompt for each coding task
+Use this prompt as a template whenever you assign work to your coding AI agent.
+You are working on the Quantitative Stock Strategy Research Platform.
+
+Read the following files before making changes:
+- QUANTITATIVE_STOCK_STRATEGY_PROJECT.txt
+- PROJECT_GUIDE.md
+- PROJECT_STATUS.md
+- Any documentation directly relevant to this task.
+
+TASK:
+[Insert one specific task.]
+
+OBJECTIVE:
+Explain what this task must accomplish and why it matters.
+
+CONSTRAINTS:
+- Preserve existing working functionality.
+- Inspect the current implementation before modifying files.
+- Do not rewrite unrelated modules.
+- Do not invent unavailable data or unsupported results.
+- Do not conceal errors or failing tests.
+- Follow the documented architecture.
+- Maintain realistic financial assumptions.
+- Avoid look-ahead bias and data leakage.
+- Update relevant documentation.
+
+IMPLEMENTATION:
+1. Identify the files that need to change.
+2. Explain the proposed approach.
+3. Implement the smallest complete solution.
+4. Add relevant automated tests.
+5. Run the available tests.
+6. Inspect the final changes.
+7. Report remaining limitations.
+
+ACCEPTANCE CRITERIA:
+[Insert specific, testable conditions.]
+
+COMPLETION REPORT:
+- Files changed.
+- Functionality implemented.
+- Tests executed.
+- Actual test results.
+- Known issues.
+- Remaining limitations.
+- Recommended next task.
+
+Do not claim that a task is complete unless the available evidence
+supports that conclusion.
+
+4. Rules for marking phases complete
+A phase is not complete merely because the code has been written.
+Use these four states:
+- Not started: No implementation work has begun.
+- In progress: Work is underway.
+- Blocked: A dependency or unresolved issue prevents completion.
+- Verified: Acceptance criteria have been checked and the results documented.
+A phase should become Verified only when:
+1. The deliverables exist.
+2. The implementation meets its acceptance criteria.
+3. Relevant tests have been run.
+4. Failures and limitations are documented.
+5. The documentation reflects the actual implementation.
+Do not mark a phase verified if critical tests are failing.
