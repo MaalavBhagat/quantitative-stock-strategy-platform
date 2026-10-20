@@ -2,11 +2,11 @@
 Last updated: 2026-10-20
 
 CURRENT PHASE: Phase 1 — Development Environment and Repository (ready for verification)
-CURRENT TASK: Goggy to answer DECISIONS D1–D9 in PROJECT_GUIDE.md §9; then Phase 1 verification
+CURRENT TASK: Phase 1 verification by chat Claude
 
 PHASE STATES (Not started / In progress / Blocked / Verified):
 - Phase 0  Feasibility & research design ........ VERIFIED (2026-10-18)
-- Phase 1  Dev environment & repository ......... Phase 1: ready for verification (2026-10-20)
+- Phase 1  Dev environment & repository ......... ready for verification — all criteria met, decisions applied (2026-10-20)
 - Phase 2  Historical market data ............... Not started
 - Phase 3  Portfolio accounting engine .......... Not started
 - Phase 4  Backtesting engine ................... Not started
@@ -47,18 +47,17 @@ COMPLETED:
   (pyproject.toml + uv.lock + README) · Git configured ✓ (identity set, private GitHub remote, pushes OK) ·
   tests can be executed ✓ (uv run pytest: 1 passed) · project guide explains how to begin ✓ (PROJECT_GUIDE.md §1)
   → Phase 1: ready for verification (NOT marked Verified — Goggy + chat Claude verify after D1–D9)
+- Step 1.4 DONE 2026-10-20 (prompt 04): D1–D9 approved by Goggy and recorded in PROJECT_GUIDE.md v1.1 §9
+  (D8 changed: lock in backtest/experiment runner, not data loading). ruff format applied
+  (research/calc_feasibility.py only; script output diffed identical before/after).
+  → Phase 1: ready for verification — all criteria met, decisions applied
 
 IN PROGRESS:
-- Phase 1 verification — waiting on DECISIONS D1–D9
+- Phase 1 verification by chat Claude
 
 BLOCKED / OPEN QUESTIONS:
 - Stake withdrawal FX not confirmed (check AU_Pricing.pdf in Phase 2)
-- OPEN DECISIONS (PROJECT_GUIDE.md §9, recommendation in brackets):
-  D1 money number type [hybrid: Decimal in ledger, float for prices/metrics] ·
-  D2 cash rounding [cents, against us] · D3 fractional precision [6 dp, round down; Stake UNVERIFIED] ·
-  D4 trading calendar [NYSE calendar library, Phase 2] · D5 branches [branch per code task] ·
-  D6 dirty runs [allowed in dev, marked; clean for validation/final] · D7 formatter [ruff format] ·
-  D8 final-test lock in code [yes] · D9 type hints in src/ [required]
+- Stake fractional-share precision UNVERIFIED (D3 assumes 6 dp — check in Phase 3)
 
 SETUP FACTS (stated by Goggy, 2026-10-17):
 - Computer: Mac. Coding tool: Claude Code in the Claude desktop app (2026-10-20).
@@ -104,12 +103,26 @@ IMPORTANT DECISIONS:
 - 2026-10-18: Q4.11 added — which market/company types suit the strategy (answer after Phase 6/7).
 - 2026-10-17: Starting pair AAPL (with momentum) + XOM (without steady momentum) — Goggy's choice. Downloaded data never goes into the public repo (licence).
 - 2026-10-17: H1 v2 + H2–H7 approved. H1 v2 is the main hypothesis. H2–H6 tested only after H1 baseline; H7 exploratory.
+- 2026-10-20: Coding conventions D1–D9 approved by Goggy (full text: PROJECT_GUIDE.md §9):
+  D1 money = Decimal in portfolio/ + execution/ (cash, fees, shares), float for prices/signals/metrics, one tested
+     conversion point at the fill · D2 cash rounded to cents at each ledger entry, against us (pay up, receive down) ·
+  D3 fractional shares 6 dp, bought round down [ASSUMPTION — check Stake in Phase 3] ·
+  D4 NYSE calendar library (Phase 2); date mismatches fail loudly ·
+  D5 docs → main; code tasks on phase<N>-<task> branch, merged when tests pass (Claude Code runs + explains) ·
+  D6 dirty runs allowed in dev, labelled; validation + final-test runs clean · D7 ruff format adopted ·
+  D8 (CHANGED) final-test lock in backtest/experiment runner: data download + quality checks may cover all years,
+     but no strategy/backtest/metric/chart/summary stat on dates ≥ 2021-01-01 unless final_test_unlocked: true
+     (only Goggy sets it) · D9 type hints required on every function in src/; no type-checker yet.
 
 NEXT ACTION:
-- Steps 1.2 + 1.3 independently checked by chat Claude 2026-10-20 — OK.
-- Goggy: answer DECISIONS D1–D9 (PROJECT_GUIDE.md §9) with chat Claude.
-- Then: record answers (guide + IMPORTANT DECISIONS), apply D7 (ruff format) in its own commit if approved,
-  and Goggy + chat Claude verify Phase 1. After that: Phase 2, Step 2.1 (data providers).
+- Chat Claude verifies Phase 1, then Phase 2 Step 2.1 (DATA_SOURCES.md)
+
+TESTS RUN (2026-10-20, prompt 04 — decisions applied):
+- uv run ruff format . → "1 file reformatted, 18 files left unchanged" (research/calc_feasibility.py)
+- calc_feasibility.py output before vs after format: identical (diff)
+- uv run pytest → "1 passed in 0.01s"
+- uv run ruff check . → "All checks passed!"
+- uv run ruff format --check . → "19 files already formatted"
 
 TESTS RUN (2026-10-20, Step 1.4):
 - uv run pytest → "1 passed in 0.01s"

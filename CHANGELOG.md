@@ -14,3 +14,10 @@
   modules, naming, units & conventions, testing, error handling, config, Git workflow,
   and open DECISIONS D1–D9 for Goggy. Documentation only; no code changed.
 - PROJECT_STATUS.md: Phase 1 check done → "Phase 1: ready for verification".
+
+## 2026-10-20 — Conventions approved (version stays 0.1.0)
+- `research/calc_feasibility.py` reformatted with `ruff format` (spacing only; output diffed identical).
+- `PROJECT_GUIDE.md` v1.1: D1–D9 recorded as approved by Goggy 2026-10-20. D8 changed: the
+  final-test lock (dates ≥ 2021-01-01) sits in the backtest / experiment runner, not data loading;
+  unlock only via `final_test_unlocked: true`, set by Goggy.
+- PROJECT_STATUS.md: Step 1.4 done; D1–D9 added to IMPORTANT DECISIONS; Phase 1 ready for verification.

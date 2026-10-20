@@ -1,5 +1,5 @@
 # PROJECT_GUIDE.md — how we write code in this project (Phase 1, Step 1.4)
-Status: v1 draft — 2026-10-20. Items marked **DECISION** wait for Goggy's approval (list in §9).
+Status: v1.1 — 2026-10-20. Conventions D1–D9 approved by Goggy 2026-10-20 (summary in §9).
 Rules for Claude Code live in [CLAUDE.md](CLAUDE.md) — this guide adds the *how*, it does not repeat them.
 Labels: [ASSUMPTION] = our choice, can change · [UNVERIFIED] = fact still to check.
 
@@ -9,7 +9,7 @@ Labels: [ASSUMPTION] = our choice, can change · [UNVERIFIED] = fact still to ch
 
 **Start (read in this order)**
 1. [CLAUDE.md](CLAUDE.md) — hard rules (read automatically by Claude Code).
-2. [PROJECT_STATUS.md](PROJECT_STATUS.md) — current phase, task, NEXT ACTION, open decisions.
+2. [PROJECT_STATUS.md](PROJECT_STATUS.md) — current phase, task, NEXT ACTION, decisions.
 3. The task prompt in `prompts/` (or Goggy's instruction) + the `research/` file it names.
 4. This guide, for anything about code style, units, tests or Git.
 
@@ -21,7 +21,7 @@ anything system-wide.
 |---|---|---|
 | 1 | `uv run pytest` | all tests pass (real output pasted in the report) |
 | 2 | `uv run ruff check .` | "All checks passed!" |
-| 3 | `uv run ruff format --check .` | no files to reformat (once DECISION D7 is approved) |
+| 3 | `uv run ruff format --check .` | no files to reformat (D7) |
 | 4 | Update `PROJECT_STATUS.md` + `CHANGELOG.md` | completed, decisions, next action, tests + results |
 | 5 | `git status` → commit → `git push` | no `data/` or `.env` staged; tree clean afterwards |
 
@@ -47,13 +47,13 @@ anything system-wide.
 phase needs them (no empty modules).
 | Module | Phase | Its job | It must NOT |
 |---|---|---|---|
-| `data/` | 2 | Download, validate, cache and load prices, dividends, splits | trade, compute signals, or silently fill/fix bad data |
+| `data/` | 2 | Download, validate, cache and load prices, dividends, splits (all years, incl. 2021+, for quality checks only — D8) | trade, compute signals, chart or summarise 2021+ prices, or silently fill/fix bad data |
 | `portfolio/` | 3 | The ledger: cash, shares, costs, dividends, valuation (the only place cash changes) | decide when to trade or read future prices |
 | `execution/` | 3–4 | Turn an order into a fill: next-open price, gaps, costs, rounding | decide *whether* to trade; use the signal day's close as the fill price |
-| `backtesting/` | 4 | Run the day-by-day timeline: data → signal → order → fill → ledger | contain strategy rules or fee numbers |
+| `backtesting/` | 4 | Run the day-by-day timeline: data → signal → order → fill → ledger | contain strategy rules or fee numbers; run on dates ≥ 2021-01-01 while locked (D8) |
 | `strategies/` | 5 | Read past data, return "buy / sell / hold" signals | touch cash or shares directly; see any data after day T |
 | `metrics/` | 4, 6 | Returns, drawdown, Sharpe, round trips, time in cash | change results or re-run trades |
-| `research/` | 6 | Experiment runner: grids, periods, walk-forward, saving run records | open the final test period without Goggy's go-ahead |
+| `research/` | 6 | Experiment runner: grids, periods, walk-forward, saving run records | run anything on dates ≥ 2021-01-01 unless `final_test_unlocked: true` (D8) |
 | `screening/` | 7 | Company screens and suitability profiles | feed results back into backtests silently |
 | `reporting/` | 6+ | Tables and charts built from saved results only | type or edit any number by hand |
 | `dashboard/` | 8 | Streamlit app to view saved results | run new experiments or hold logic of its own |
@@ -79,6 +79,7 @@ Planned test folders (roadmap): `tests/unit/`, `tests/accounting/`, `tests/backt
 | Strategies | ID from EXPERIMENT_PLAN + name | `s1_profit_target`, `s0_buy_and_hold` |
 
 Names say what a thing *is*, including its unit (see §4). No single letters except loop counters.
+D9: every function in `src/` has type hints (e.g. `def apply_fee(cash_usd: Decimal) -> Decimal:`); no type-checker tool yet.
 
 ---
 
@@ -88,24 +89,25 @@ Names say what a thing *is*, including its unit (see §4). No single letters exc
 |---|---|
 | Currency | Every money name ends in its currency: `cash_usd`, `capital_aud`, `fee_usd`. Never a bare `cash`. Converting needs an explicit `aud_per_usd` / `usd_per_aud` rate, named that way. |
 | Percentages | Stored as decimals: `0.02` means 2%. Names end in `_pct` only if they hold decimals too (`target_rise_pct = 0.03`). Multiply by 100 **only** when printing. |
-| Dates | Trading days are plain dates (no time of day), on the US stock-market (NYSE) calendar. Never mix timezones; never store a timestamp where a date is meant. |
+| Dates | Trading days are plain dates (no time of day), on the US stock-market (NYSE) calendar. Never mix timezones; never store a timestamp where a date is meant. D4: an NYSE calendar library is added in Phase 2 and the data's dates are checked against it — mismatches fail loudly. |
 | Prices | Raw vs adjusted always in the name: `open_raw`, `close_raw`, `close_adj`. **Trading uses raw prices only.** Adjusted prices are for analysis (e.g. total-return checks) only. |
 | Timing | Decision on day T close → fill at day T+1 open (EXPERIMENT_PLAN §1). Code must make the T+1 step explicit. |
 | Same-bar conflicts | If one daily bar hits both a buy and a sell level, assume the worse order for us. |
 | Shares | Fractional shares are the MAIN case; whole shares is a sensitivity setting (EXPERIMENT_PLAN §1). |
-| Final test period | Data from 2021-01-01 onward stays closed until Goggy says so (see DECISION D8). |
+| Final test period (D8) | Data for 2021+ may be downloaded and quality-checked (missing dates, bad prices). But no strategy, backtest or metric runs on dates ≥ 2021-01-01, and no charts or summary stats of 2021+ prices are made, unless `final_test_unlocked: true` — set only by Goggy. |
 
-**Number type for money — DECISION D1**
+**Number type for money — D1, approved 2026-10-20: hybrid**
 | Option | Pros | Cons |
 |---|---|---|
 | `float` everywhere | simple; fast; works directly with pandas | tiny rounding errors (0.1 + 0.2 ≠ 0.3) that build up over thousands of trades; hand-calculated tests need "approximately equal" |
 | `Decimal` everywhere | exact cents; tests match hand calculations exactly | slower; awkward with pandas price tables |
 | **Hybrid (recommended)** | `Decimal` inside `portfolio/` + `execution/` (cash, fees, shares); `float` for price tables, signals and metrics; convert at one place (the fill) | two number types to keep apart (the conversion point must be tested) |
 
-Recommendation: **hybrid**. The ledger is where an error makes a losing strategy look profitable,
-so it should be exact; the speed cost is small (a few thousand trades per run).
+Chosen: **hybrid** — `Decimal` in `portfolio/` + `execution/` (cash, fees, shares); `float` for prices,
+signals and metrics; **one tested conversion point at the fill**. Reason: the ledger is where an error
+makes a losing strategy look profitable, so it must be exact; the speed cost is small.
 
-**Rounding — DECISION D2 and D3**
+**Rounding — D2 and D3, approved 2026-10-20**
 - Cash: round to whole cents (0.01 USD / 0.01 AUD) at every ledger entry, **against us**: costs and
   amounts we pay round *up*, amounts we receive round *down*. This keeps results conservative.
 - Fractional shares: store up to **6 decimal places** [ASSUMPTION — Stake's real precision is
@@ -156,7 +158,10 @@ so it should be exact; the speed cost is small (a few thousand trades per run).
 - API keys come only from `.env` (copy of `.env.example`), never from config files or code.
 - Every run saves (EXPERIMENT_PLAN §8): the exact config, data source + download date, git commit,
   and the results table. Failed and losing runs are kept, never deleted.
-- Runs with uncommitted code changes are marked "dirty" in their record (DECISION D6).
+- D8 lock: every experiment config has `final_test_unlocked: false` by default. The backtest /
+  experiment runner refuses dates ≥ 2021-01-01 while it is false. Only Goggy changes it to `true`.
+- D6: runs with uncommitted code changes are allowed while developing but labelled "dirty" in their
+  record. Validation and final-test runs must come from a clean, committed state.
 
 ---
 
@@ -166,26 +171,25 @@ so it should be exact; the speed cost is small (a few thousand trades per run).
 |---|---|
 | Small commits | One task = one commit (or a few). Message style: `Phase N: <what changed>`. |
 | Before committing | `git status` — check no `data/`, `.env`, `.venv/` files are listed. Tests + ruff pass. |
-| Branches | Docs-only tasks may go straight to `main`. Code tasks from Phase 2 on use a branch `phase<N>-<task>`, merged into `main` when tests pass (DECISION D5). |
+| Branches | Docs-only tasks may go straight to `main`. Code tasks from Phase 2 on use a branch `phase<N>-<task>`, merged into `main` when tests pass (D5). Claude Code runs the branch commands and explains each one. |
 | Never commit | `data/` (licence), `.env` (keys), anything with a real API key. `.gitignore` enforces the first and last; check anyway. |
 | Push | After each completed task: `git push`. GitHub repo stays **private** until Goggy decides otherwise. |
 | History | Never rewrite pushed history (no force-push) without Goggy's OK. |
 
 ---
 
-## 9. Open DECISIONS for Goggy
+## 9. Approved conventions (Goggy, 2026-10-20)
 
-| # | Decision | Recommendation (1 line) |
+| # | Topic | Approved rule |
 |---|---|---|
-| D1 | Number type for money | Hybrid: exact `Decimal` in the ledger (portfolio/execution), `float` for prices, signals, metrics. |
+| D1 | Number type for money | Hybrid: `Decimal` in `portfolio/` + `execution/` (cash, fees, shares); `float` for prices, signals, metrics; one tested conversion point at the fill. |
 | D2 | Cash rounding | Round to cents at each ledger entry, against us (pay → up, receive → down). |
-| D3 | Fractional share precision | 6 decimal places, round shares bought down [ASSUMPTION until Stake's real precision is checked in Phase 3]. |
-| D4 | Trading calendar | Use an NYSE calendar library (added in Phase 2) and check the data's dates against it; mismatches fail loudly. |
-| D5 | Branches | `main` for docs; a `phase<N>-<task>` branch for each code task, merged when tests pass. |
-| D6 | Dirty runs | Allowed while developing but marked "dirty"; validation and final-test runs must be from a clean, committed state. |
-| D7 | Code formatter | Adopt `ruff format` (same tool, no new dependency). First run would only re-space `research/calc_feasibility.py` — no logic change; apply it in its own small commit. |
-| D8 | Final-test lock in code | `data/` loading refuses dates ≥ 2021-01-01 unless a setting named for Goggy's go-ahead is switched on. |
-| D9 | Type hints | Required on every function in `src/` (they make units and money types visible); no type-checker tool yet. |
+| D3 | Fractional share precision | 6 decimal places, shares bought round down [ASSUMPTION — check Stake's real precision in Phase 3]. |
+| D4 | Trading calendar | NYSE calendar library added in Phase 2; date mismatches fail loudly. |
+| D5 | Branches | Docs straight to `main`; each code task on a `phase<N>-<task>` branch, merged when tests pass. Claude Code runs and explains the branch commands. |
+| D6 | Dirty runs | Allowed in development, labelled "dirty"; validation and final-test runs must be clean. |
+| D7 | Code formatter | `ruff format` adopted (applied 2026-10-20, no logic change). |
+| D8 | Final-test lock (changed from proposal) | Lock sits in the backtest / experiment runner, not data loading. Download + quality checks may cover all years. No strategy, backtest, metric, chart or summary stat on dates ≥ 2021-01-01 unless `final_test_unlocked: true` — set only by Goggy. |
+| D9 | Type hints | Required on every function in `src/`; no type-checker yet. |
 
-Once approved, each line moves to PROJECT_STATUS.md "IMPORTANT DECISIONS" and the word DECISION is
-removed from this file (logged in CHANGELOG.md).
+Changing any of these later: log it in CHANGELOG.md and PROJECT_STATUS.md "IMPORTANT DECISIONS".
