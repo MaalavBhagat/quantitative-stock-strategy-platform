@@ -21,3 +21,12 @@
   final-test lock (dates ≥ 2021-01-01) sits in the backtest / experiment runner, not data loading;
   unlock only via `final_test_unlocked: true`, set by Goggy.
 - PROJECT_STATUS.md: Step 1.4 done; D1–D9 added to IMPORTANT DECISIONS; Phase 1 ready for verification.
+
+## 2026-10-20 — Phase 2, Step 2.2: Tiingo download (version stays 0.1.0)
+- Runtime dependencies: pandas, httpx, python-dotenv.
+- `quant_research.data.tiingo`: `fetch_daily_prices`, `fetch_meta`, `parse_prices` — columns renamed to
+  PROJECT_GUIDE §4 names, plain dates, API key only in the request header, retries on 429/5xx/network errors.
+- `quant_research.data.storage`: `save_raw_prices` writes CSV + `.meta.json` (no key), refuses overwrite.
+- `scripts/download_initial_dataset.py`: AAPL + XOM, 2010-01-01 → 2016-12-31, prints a summary.
+- Offline tests with a made-up fixture (`tests/fixtures/tiingo_prices_sample.json`) and mocked HTTP.
+- Fix: `.gitignore` now ignores only the top-level `/data/` (the old `data/` rule also hid `src/quant_research/data/`).

@@ -2,7 +2,7 @@
 Last updated: 2026-10-20
 
 CURRENT PHASE: Phase 2 — Historical Market Data (In progress)
-CURRENT TASK: Step 2.2 — download AAPL + XOM 2010–2016 from Tiingo (prompt: prompts/05_phase2_step2.2_download.md)
+CURRENT TASK: Step 2.3 — validate the initial dataset (prompt not written yet)
 
 PHASE STATES (Not started / In progress / Blocked / Verified):
 - Phase 0  Feasibility & research design ........ VERIFIED (2026-10-18)
@@ -59,9 +59,33 @@ COMPLETED:
 - PHASE 1 VERIFIED by chat Claude 2026-10-20: checked commits 6ea91d0..632f381 on disk, clean tree,
   ruff-format commit touches only calc_feasibility.py, PROJECT_GUIDE v1.1 has D1–D9 approved and D8
   (runner-level lock) in §2/§4/§7/§9; Claude Code's fresh-clone test + pytest/ruff output accepted.
+- Step 2.2 Tiingo download — DONE 2026-10-20 (prompt 05, branch phase2-tiingo-download, merged to main):
+  src/quant_research/data/tiingo.py (fetch_daily_prices, fetch_meta; key in Authorization header; retry 429/5xx/
+  network with backoff, then clear error), src/quant_research/data/storage.py (CSV + .meta.json, refuses overwrite),
+  scripts/download_initial_dataset.py, 21 new offline tests. Runtime deps: pandas 3.0.6, httpx 0.28.1, python-dotenv 1.2.4.
+  Real run (2 API calls, 2026-10-20 05:38 UTC, code commit 454e5d4, git_dirty false):
+    AAPL: 1762 rows, 2010-01-04 → 2016-12-30, 18 non-zero dividends, 1 split row (2014-06-09, split_factor 7.000007),
+          no missing values in any column.
+    XOM:  1762 rows, 2010-01-04 → 2016-12-30, 28 non-zero dividends, no split rows, no missing values.
+  Files (git-ignored): data/raw/tiingo/{AAPL,XOM}_2010-01-01_2016-12-31.csv + .meta.json.
+  .gitignore fixed: `data/` → `/data/` (old rule also hid src/quant_research/data/ — caught before commit).
+
+FINDINGS (Step 2.2, from the real download — to check in Step 2.3):
+- Raw `date` from Tiingo looks like '2010-01-04T00:00:00.000Z' (midnight, labelled UTC). Code drops the time part
+  and treats it as the US trading date; any non-midnight time fails loudly. Matches DATA_SOURCES [UNVERIFIED] row.
+- AAPL 2014 split factor is 7.000007, NOT exactly 7 → validation must compare with a tolerance and record the
+  official ratio (7-for-1 [UNVERIFIED here — confirm from a second source in Step 2.3]).
+- Raw prices change 7× across the split (2014-06-06 close_raw 645.57 → 2014-06-09 close_raw 93.70) → raw prices
+  can never be used across a split without the split adjustment in the accounting engine (Phase 3).
+- Adjusted prices are much lower than raw even after the 2014 split (AAPL 2014-06-09 close_raw 93.70 vs
+  close_adj 20.52, ratio ≈ 4.57). Likely cause: later corporate actions (e.g. AAPL's 2020 split) + dividend
+  adjustment [UNVERIFIED — explain in Step 2.3]. Means adjusted values depend on download date; we keep raw +
+  download date and never trade on adjusted (DATA_SOURCES §4).
+- AAPL dividends: 18 non-zero rows in 2010–2016; XOM: 28. Plausibility check (e.g. vs yfinance) is Step 2.3.
+- 1762 trading days in both files — check against the NYSE calendar (D4) in Step 2.3.
 
 IN PROGRESS:
-- Step 2.2 — prompt 05 ready
+- Step 2.3 — needs a prompt (data validation + yfinance cross-check + NYSE calendar)
 
 BLOCKED / OPEN QUESTIONS:
 - Stake fractional-share precision UNVERIFIED (D3 assumes 6 dp — check in Phase 3)
@@ -122,8 +146,13 @@ IMPORTANT DECISIONS:
      (only Goggy sets it) · D9 type hints required on every function in src/; no type-checker yet.
 
 NEXT ACTION:
-- Desktop Code session: "Read prompts/05_phase2_step2.2_download.md and do exactly what it says."
-- Paste the report back to chat. Then Step 2.3 (data validation + yfinance cross-check).
+- Step 2.3 (data validation): write prompt 06 in chat, then run it in the desktop Code session.
+
+TESTS RUN (2026-10-20, Step 2.2):
+- uv run pytest → "22 passed in 0.99s" (test_smoke 1, test_storage 6, test_tiingo 15)
+- uv run ruff check . → "All checks passed!"
+- uv run ruff format --check . → "27 files already formatted"
+- Key check: first 6 chars of TIINGO_API_KEY (read from .env, not printed) NOT found in staged files or data/.
 
 TESTS RUN (2026-10-20, prompt 04 — decisions applied):
 - uv run ruff format . → "1 file reformatted, 18 files left unchanged" (research/calc_feasibility.py)
