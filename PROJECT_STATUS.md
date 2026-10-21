@@ -2,7 +2,7 @@
 Last updated: 2026-10-20
 
 CURRENT PHASE: Phase 4 — Backtesting Engine (In progress)
-CURRENT TASK: Steps 4.4–4.6 — buy-and-hold on real data, RBA FX, metrics, edge cases (prompt 12, not written yet)
+CURRENT TASK: Steps 4.4–4.6 — buy-and-hold on real data, RBA FX, metrics, edge cases, Phase 4 check (prompt: prompts/12_phase4_steps4.4-4.6_buyhold_metrics.md)
 
 PHASE STATES (Not started / In progress / Blocked / Verified):
 - Phase 0  Feasibility & research design ........ VERIFIED (2026-10-18)
@@ -287,15 +287,13 @@ IMPORTANT DECISIONS:
      (only Goggy sets it) · D9 type hints required on every function in src/; no type-checker yet.
 
 NEXT ACTION:
-- Chat Claude reviews Steps 4.1–4.3, then writes prompt 12 (buy-and-hold on real AAPL + XOM, RBA FX, metrics,
-  edge cases, Phase 4 check).
-- Phase 4 plan: 11 = engine core (DONE) · 12 = buy-and-hold on real data + RBA FX + metrics + edge cases + Phase 4 check.
+- Desktop Code session: "Read prompts/12_phase4_steps4.4-4.6_buyhold_metrics.md and do exactly what it says."
+- DECISION 2026-10-21 (Goggy): dividend reinvestment = only when cash ≥ US$100 (option b), for every strategy.
 
-PHASE 3 VERIFIED by chat Claude 2026-10-20: main at f162ea5. Golden scenario matches chat Claude's independent answer
-key exactly (after Goggy's decision: withholding = 15% of cents-rounded gross; code had taxed unrounded gross → 1c diff;
-expected values were never edited). Whole-share scenario re-computed independently by chat Claude: 555.90 idle,
-US$7,227.53, AUD 9,583.69 — matches. 151 tests; mutation checks caught. All 6 roadmap criteria met; unsupported items listed.
-AUD/USD source chosen: RBA daily 4 pm Sydney rate (DATA_SOURCES §9; personal non-commercial use, attribute RBA).
+CHAT CLAUDE CHECK OF STEPS 4.1–4.3 (2026-10-21): main at 7d971ff, clean tree. Read engine.py loop: split → dividend →
+fills at open_raw → valuation at close_raw → strategy gets table.iloc[:i+1].copy(); leftover orders EXPIRED.
+run.py checks the D8 lock before loading data. Report's mutation finding (spy check missed same-day fills → rule added)
+accepted. → Steps 4.1–4.3 VERIFIED.
 
 TESTS RUN (2026-10-21, Steps 4.1–4.3):
 - uv run pytest → "189 passed in 1.39s" (backtesting: engine 15, fills 18, run 5; accounting 73; data 78)
