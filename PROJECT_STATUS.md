@@ -1,15 +1,15 @@
 # PROJECT_STATUS.md
 Last updated: 2026-10-20
 
-CURRENT PHASE: Phase 4 — Backtesting Engine (In progress)
-CURRENT TASK: Steps 4.4–4.6 — buy-and-hold on real data, RBA FX, metrics, edge cases, Phase 4 check (prompt: prompts/12_phase4_steps4.4-4.6_buyhold_metrics.md)
+CURRENT PHASE: Phase 4 — Backtesting Engine (ready for verification)
+CURRENT TASK: Phase 4 verification by chat Claude
 
 PHASE STATES (Not started / In progress / Blocked / Verified):
 - Phase 0  Feasibility & research design ........ VERIFIED (2026-10-18)
 - Phase 1  Dev environment & repository ......... VERIFIED (2026-10-20)
 - Phase 2  Historical market data ............... VERIFIED (2026-10-20)
 - Phase 3  Portfolio accounting engine .......... VERIFIED (2026-10-20)
-- Phase 4  Backtesting engine ................... In progress
+- Phase 4  Backtesting engine ................... ready for verification (2026-10-21)
 - Phase 5  Strategy laboratory .................. Not started
 - Phase 6  Research validation .................. Not started
 - Phase 7  Company research & screening ......... Not started
@@ -219,13 +219,47 @@ FINDINGS (Step 2.3):
   Bug found + fixed while testing: first max_affordable could stop below the true maximum when the fee grows
   with size (CommSec / IBKR cap) — never overspent, but under-invested; replaced with exact binary search.
 
+- Steps 4.4–4.6 + RBA FX — DONE 2026-10-21 (prompt 12, plan approved incl. xlrd + 2 RBA downloads; branch
+  phase4-buyhold-metrics, merged to main).
+  RBA: 2010-2013.xls + 2014-2017.xls (sheet Data, Series ID FXRUSD), downloaded once to /data/raw/rba/ + .meta.json;
+  data/fx.py (latest rate ≤ day, > 5 days stale → error, range 0.40–1.20, sorted, no duplicates). Real-data findings:
+  one "N/A" cell (2015-05-25, US holiday) → skipped, not filled; a 6-day gap between RBA rows (Easter + Anzac Day 2011)
+  → my own extra row-gap check was stricter than the prompt and was changed to a log; the prompt's 5-day LOOKUP
+  limit holds for every NYSE session 2010–2016 (max age 5 days; 50 sessions use an earlier day's rate).
+  Config: fx_source rba (default) | fixed; reinvest_min_cash_usd "100". Engine setting withholding_rate (default 15%).
+  strategies/buy_and_hold.py (S0: day-1 close max_affordable → day-2 open; reinvest when cash ≥ US$100; passes the
+  look-ahead spy check). metrics/performance.py (total return, CAGR, max drawdown + dates, volatility, Sharpe rf 0,
+  worst year, fees, spread, dividends, days in cash, round trips, AUD via daily RBA rate). execution/intrabar.py
+  resolve_intrabar (both levels in a bar → assume the worse order: flat → buy only, holding → sell only).
+  REAL RUNS (development period, SIMULATED/HISTORICAL; report reports/runs/s0_dev_2010-2016.md, records /data/runs/):
+    AAPL: US$9,082.76 → US$37,069.58 at last close (liquidation 37,047.33) · AUD 10,000 → AUD 50,917.02 ·
+          CAGR 22.30% USD / 26.23% AUD · max DD −43.79% (2012-09-19 → 2013-04-19) · vol 26.19% · Sharpe 0.90 ·
+          fees US$51.00 · spread US$5.63 · dividends net US$2,239.50 · 17 buys · days in cash 0.06%.
+    XOM:  US$9,082.76 → US$13,954.00 (liquidation 13,944.02) · AUD 19,164.34 · CAGR 6.34% USD / 9.76% AUD ·
+          max DD −31.87% (2014-06-23 → 2015-08-25) · vol 18.82% · Sharpe 0.42 · fees US$42.00 · spread US$5.53 ·
+          dividends net US$2,027.33 · 14 buys · days in cash 0.06%.
+  SANITY CHECK: S0 vs adjusted-price return — AAPL 308.13% vs 315.19% (gap 7.06 pts, relative −1.70%);
+    XOM 53.63% vs 58.77% (gap 5.14 pts, relative −3.24%). Prompt's "~3 points" STOP rule TRIGGERED → investigated:
+    withholding explains 5.43 / 4.32 pts (no-withholding what-if 313.56% / 57.95%); fees + spread ≈ 1.2 pts; the rest
+    matches day-2 open vs close entry. Direction correct (S0 lower). Goggy accepted 2026-10-21; check now relative.
+  Mutation check: withholding removed → gap shrinks by 5.43 / 4.32 pts (visible); max drawdown measured from the
+  first value instead of the running peak → test_max_drawdown_with_dates fails; restored → all pass.
+- PHASE 4 CHECK (2026-10-21, by Claude Code) — NOT marked Verified:
+  buy-and-hold correct ✓ (S0 tests incl. reinvest rule; real runs; independent adjusted-price sanity check explained) ·
+  orders follow the documented model ✓ (T close → T+1 open tests; gaps fill at open; rejections logged; EXPIRED) ·
+  accounting integrates ✓ (engine drives the ledger; cash identity exact in multi-day + edge runs; golden scenario) ·
+  look-ahead controls in place ✓ (truncated copy, read-only view, no price field, reusable spy check incl. same-day
+  rule; same-close mutation → 9 failures) ·
+  passes synthetic tests ✓ (rising, falling, sideways, gaps, split + dividend same day, cash just short, intrabar).
+  → Phase 4: ready for verification
+
 IN PROGRESS:
-- Phase 4: Steps 4.4–4.6 next (prompt 12)
+- Phase 4 verification by chat Claude
 
 BLOCKED / OPEN QUESTIONS:
 - Stake fractional-share precision UNVERIFIED (D3 assumes 6 dp — check in Phase 3)
-- AUD/USD source CHOSEN (RBA daily 4 pm Sydney, DATA_SOURCES §9) but not implemented yet — run configs use
-  TEMPORARY usd_per_aud_start/end values until prompt 12. RBA file names / columns still [UNVERIFIED].
+- Sanity-check limit: relative shortfall ≤ 5% vs the adjusted-price return is an [ASSUMPTION] — chat Claude to confirm.
+- RBA files after 2017 (2018-2022.xls, 2023-current) not downloaded — needed only for validation / final test periods.
 - XOM 2014-07-28 Tiingo/Yahoo close differ 1.085% — unexplained (third source?)
 - XOM pre-ex-date closes (2010-02-05, 2010-05-10): Tiingo vs Yahoo differ by exactly the dividend — which is right?
 - Delisted stocks: can Tiingo price history be downloaded for tickers with endDate in the past? (survivorship; untested)
@@ -274,6 +308,9 @@ IMPORTANT DECISIONS:
 - 2026-10-18: Q4.11 added — which market/company types suit the strategy (answer after Phase 6/7).
 - 2026-10-17: Starting pair AAPL (with momentum) + XOM (without steady momentum) — Goggy's choice. Downloaded data never goes into the public repo (licence).
 - 2026-10-17: H1 v2 + H2–H7 approved. H1 v2 is the main hypothesis. H2–H6 tested only after H1 baseline; H7 exploratory.
+- 2026-10-21: Dividend reinvestment only when cash ≥ US$100 (reinvest_min_cash_usd), every strategy (Goggy, option b).
+- 2026-10-21: S0 sanity gap (7.06 / 5.14 pts) accepted by Goggy after investigation; check uses a relative limit (5%).
+- 2026-10-21: S0 "buy at the first open" = first possible open after the first close (EXPERIMENT_PLAN §10).
 - 2026-10-20: Dividend withholding = 15% of the gross rounded DOWN to cents, then rounded UP (Goggy, golden scenario).
 - 2026-10-20: Coding conventions D1–D9 approved by Goggy (full text: PROJECT_GUIDE.md §9):
   D1 money = Decimal in portfolio/ + execution/ (cash, fees, shares), float for prices/signals/metrics, one tested
@@ -287,13 +324,17 @@ IMPORTANT DECISIONS:
      (only Goggy sets it) · D9 type hints required on every function in src/; no type-checker yet.
 
 NEXT ACTION:
-- Desktop Code session: "Read prompts/12_phase4_steps4.4-4.6_buyhold_metrics.md and do exactly what it says."
-- DECISION 2026-10-21 (Goggy): dividend reinvestment = only when cash ≥ US$100 (option b), for every strategy.
+- Chat Claude verifies Phase 4, then Phase 5 Step 5.1 (S1 profit target)
 
 CHAT CLAUDE CHECK OF STEPS 4.1–4.3 (2026-10-21): main at 7d971ff, clean tree. Read engine.py loop: split → dividend →
 fills at open_raw → valuation at close_raw → strategy gets table.iloc[:i+1].copy(); leftover orders EXPIRED.
 run.py checks the D8 lock before loading data. Report's mutation finding (spy check missed same-day fills → rule added)
 accepted. → Steps 4.1–4.3 VERIFIED.
+
+TESTS RUN (2026-10-21, Steps 4.4–4.6):
+- uv run pytest → "224 passed in 1.53s" (+ fx 7, buy_and_hold 6, performance 10, edge_cases 11, run +1)
+- uv run ruff check . → "All checks passed!" · uv run ruff format --check . → "80 files already formatted"
+- scripts/run_s0_dev.py --report → real runs AAPL + XOM, sanity check passed (relative rule), report written
 
 TESTS RUN (2026-10-21, Steps 4.1–4.3):
 - uv run pytest → "189 passed in 1.39s" (backtesting: engine 15, fills 18, run 5; accounting 73; data 78)

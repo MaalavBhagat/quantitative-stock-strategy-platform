@@ -25,7 +25,11 @@ EXAMPLE = Path(__file__).resolve().parents[2] / "config" / "s0_buy_and_hold_aapl
 
 
 def base_config(**changes):
-    return replace(load_config(EXAMPLE), ticker="TEST", share_mode="whole", **changes)
+    # tests never use real RBA data: fixed made-up rates unless a test passes its own FxSeries
+    defaults = {"fx_source": "fixed", "usd_per_aud_start": D("0.69"), "usd_per_aud_end": D("0.69")}
+    return replace(
+        load_config(EXAMPLE), ticker="TEST", share_mode="whole", **{**defaults, **changes}
+    )
 
 
 class BuyTenOnFirstClose:
@@ -60,7 +64,8 @@ def test_example_config_loads():
         "stake",
         False,
     )
-    assert c.initial_aud == D(10000) and c.usd_per_aud_start == D("0.69")
+    assert c.initial_aud == D(10000)
+    assert (c.fx_source, c.usd_per_aud_start, c.reinvest_min_cash_usd) == ("rba", None, D(100))
 
 
 def test_config_rejects_floats_unknown_keys_and_bad_dates():
@@ -74,6 +79,7 @@ def test_config_rejects_floats_unknown_keys_and_bad_dates():
         "spread_level": "normal",
         "share_mode": "whole",
         "initial_aud": "10000",
+        "fx_source": "fixed",
         "usd_per_aud_start": "0.69",
         "usd_per_aud_end": "0.69",
     }
@@ -88,6 +94,10 @@ def test_config_rejects_floats_unknown_keys_and_bad_dates():
         parse_config({**raw, "end": date(2009, 1, 1)})
     with pytest.raises(TypeError, match="true or false"):
         parse_config({**raw, "final_test_unlocked": "yes"})
+    with pytest.raises(ValueError, match="needs usd_per_aud_start"):
+        parse_config({**raw, "usd_per_aud_end": None})
+    with pytest.raises(ValueError, match="fx_source"):
+        parse_config({**raw, "fx_source": "yahoo"})
 
 
 def test_final_test_lock_refuses_before_loading_anything(tmp_path):
@@ -145,3 +155,31 @@ def test_run_record_contents(tmp_path):
         D(fill["fill_price_usd"]),
         D(fill["fee_total_usd"]),
     ) == (D(100), D("100.05"), D("3.00"))
+
+
+def test_rba_fx_uses_first_trade_day_and_last_day_rates(tmp_path):
+    from quant_research.data.fx import build_series
+
+    # made-up series: 2 June 0.60, 3 June 0.69 (first trade day = day 2), 4 June 0.75 (last day)
+    fx = build_series(
+        [
+            (date(2014, 6, 2), D("0.60")),
+            (date(2014, 6, 3), D("0.69")),
+            (date(2014, 6, 4), D("0.75")),
+        ]
+    )
+    cfg = base_config(
+        fx_source="rba",
+        usd_per_aud_start=None,
+        usd_per_aud_end=None,
+        start=date(2014, 6, 2),
+        end=date(2014, 6, 4),
+    )
+    out = run_backtest(
+        cfg, BuyTenOnFirstClose(), load_fn=fake_loader([]), runs_dir=tmp_path, fx_series=fx
+    )
+    # same numbers as test_run_record_contents (0.69 in, 0.75 out) → 6,862.05 start, AUD 9,222.32 end
+    s = out.summary
+    assert (s["usd_per_aud_start"], s["usd_per_aud_start_for_day"]) == (D("0.69"), date(2014, 6, 3))
+    assert (s["usd_per_aud_end"], s["usd_per_aud_end_for_day"]) == (D("0.75"), date(2014, 6, 4))
+    assert (s["start_cash_usd"], s["end_aud_after_liquidation"]) == (D("6862.05"), D("9222.32"))

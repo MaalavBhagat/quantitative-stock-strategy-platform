@@ -1,5 +1,5 @@
 # Example run config (Phase 4). Money and rates are quoted strings so they are read exactly (no floats).
-# S0 buy-and-hold is built in prompt 12; this file shows the format and is used to check the D8 lock.
+# S0 buy-and-hold on AAPL, development period (allowed under D8).
 run_name: s0_buy_and_hold_aapl_dev
 strategy: s0_buy_and_hold
 ticker: AAPL
@@ -9,7 +9,7 @@ broker: stake              # stake | ibkr_fixed | commsec_standard
 spread_level: normal       # tight | normal | wide  [ASSUMPTION levels]
 share_mode: fractional     # fractional (MAIN) | whole (sensitivity)
 initial_aud: "10000"
-usd_per_aud_start: "0.69"  # TEMPORARY placeholder [ASSUMPTION] — RBA series replaces it in prompt 12
-usd_per_aud_end: "0.69"    # TEMPORARY placeholder [ASSUMPTION] — RBA series replaces it in prompt 12
+fx_source: rba             # RBA daily AUD/USD (DATA_SOURCES §9); "fixed" + usd_per_aud_start/end for tests
 min_order_usd: "10"        # Stake minimum (BROKER_FEES §4)
+reinvest_min_cash_usd: "100"  # reinvest dividends only once cash >= US$100 (Goggy 2026-10-21)
 final_test_unlocked: false # D8 — only Goggy may change this

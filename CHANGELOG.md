@@ -80,3 +80,12 @@
   max-affordable sizing, gaps, rejections with reasons).
 - `config/s0_buy_and_hold_aapl_dev.yaml` example (FX rates temporary).
 - Tests: `tests/backtesting/` (engine, fills, run) — synthetic only.
+
+## 2026-10-21 — Phase 4, Steps 4.4–4.6: buy-and-hold, metrics, edge cases, RBA FX (version stays 0.1.0)
+- Dependency: `xlrd` (reads the RBA .xls files).
+- `quant_research.data.fx` + `scripts/download_rba_fx.py`: RBA AUD/USD (FXRUSD), latest rate ≤ day, 5-day staleness limit.
+- `RunConfig`: `fx_source` (rba | fixed), `reinvest_min_cash_usd` (US$100); engine setting `withholding_rate`.
+- `quant_research.strategies` (S0 `BuyAndHold`, registry); `quant_research.metrics.performance`;
+  `execution.intrabar.resolve_intrabar` (worse order); fills record `position_after`.
+- `scripts/run_s0_dev.py` → `reports/runs/s0_dev_2010-2016.md` (summary numbers only; sanity check + what-if).
+- Configs for AAPL + XOM (development period). EXPERIMENT_PLAN §1/§2/§10 updated (S0 wording, reinvest rule).

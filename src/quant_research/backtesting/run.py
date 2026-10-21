@@ -18,6 +18,7 @@ import pandas as pd
 import yaml
 
 from quant_research.backtesting.engine import EngineResult, EngineSettings, Strategy, run_engine
+from quant_research.data.fx import FxSeries, load_usd_per_aud
 from quant_research.data.loader import load_prices
 from quant_research.data.storage import git_state
 from quant_research.execution.costs import aud_to_usd, fx_fee_settings, usd_to_aud
@@ -45,13 +46,21 @@ class RunConfig:
     spread_level: str
     share_mode: str
     initial_aud: Decimal
-    usd_per_aud_start: Decimal  # TEMPORARY — replaced by the RBA series in prompt 12
-    usd_per_aud_end: Decimal  # TEMPORARY — replaced by the RBA series in prompt 12
+    fx_source: str = "rba"  # "rba" (DATA_SOURCES §9) or "fixed" (uses the two rates below; tests)
+    usd_per_aud_start: Decimal | None = None  # only for fx_source: fixed
+    usd_per_aud_end: Decimal | None = None  # only for fx_source: fixed
     min_order_usd: Decimal | None = Decimal(10)
+    reinvest_min_cash_usd: Decimal = Decimal(100)  # Goggy 2026-10-21 — applies to every strategy
     final_test_unlocked: bool = False
 
 
-DECIMAL_FIELDS = {"initial_aud", "usd_per_aud_start", "usd_per_aud_end", "min_order_usd"}
+DECIMAL_FIELDS = {
+    "initial_aud",
+    "usd_per_aud_start",
+    "usd_per_aud_end",
+    "min_order_usd",
+    "reinvest_min_cash_usd",
+}
 
 
 def parse_config(raw: dict[str, Any]) -> RunConfig:
@@ -62,7 +71,7 @@ def parse_config(raw: dict[str, Any]) -> RunConfig:
         raise ValueError(f"unknown config keys: {sorted(unknown)}")
     values = dict(raw)
     for key in DECIMAL_FIELDS & set(values):
-        if values[key] is None and key == "min_order_usd":
+        if values[key] is None and key in ("min_order_usd", "usd_per_aud_start", "usd_per_aud_end"):
             continue
         if isinstance(values[key], float):
             raise TypeError(
@@ -80,6 +89,12 @@ def parse_config(raw: dict[str, Any]) -> RunConfig:
         raise ValueError(f"config is missing required keys: {exc}") from None
     if config.end < config.start:
         raise ValueError(f"end {config.end} is before start {config.start}")
+    if config.fx_source not in ("rba", "fixed"):
+        raise ValueError(f"fx_source must be 'rba' or 'fixed', got {config.fx_source!r}")
+    if config.fx_source == "fixed" and (
+        config.usd_per_aud_start is None or config.usd_per_aud_end is None
+    ):
+        raise ValueError("fx_source 'fixed' needs usd_per_aud_start and usd_per_aud_end")
     return config
 
 
@@ -104,6 +119,7 @@ class RunOutcome:
     run_dir: Path
     result: EngineResult
     summary: dict[str, Any]
+    fx: FxSeries | None  # the RBA series used (None for fx_source: fixed)
 
 
 def _jsonable(value: Any) -> Any:
@@ -133,21 +149,35 @@ def run_backtest(
     load_fn: Callable[..., pd.DataFrame] = load_prices,
     runs_dir: Path = DEFAULT_RUNS_DIR,
     repo_dir: Path = PROJECT_ROOT,
+    fx_series: FxSeries | None = None,
 ) -> RunOutcome:
-    """Lock check → load → AUD→USD → engine → USD→AUD → save the run record."""
+    """Lock check → load → AUD→USD → engine → USD→AUD → save the run record.
+
+    FX (rba): start conversion at the rate for the first possible trade day (day 2 = the first
+    open after the first close); end conversion at the last day's rate. Latest RBA rate ≤ day.
+    """
     check_final_test_lock(config)  # before loading anything
     started = datetime.now(UTC)
     prices = load_fn(config.ticker, config.start, config.end)
     provenance = prices.attrs.get("provenance")
 
+    first_trade_day = prices["date"].iloc[1] if len(prices) > 1 else prices["date"].iloc[0]
+    last_day = prices["date"].iloc[-1]
+    if config.fx_source == "rba":
+        fx_series = fx_series if fx_series is not None else load_usd_per_aud()
+        usd_per_aud_start = fx_series.on(first_trade_day)
+        usd_per_aud_end = fx_series.on(last_day)
+    else:
+        fx_series = None
+        usd_per_aud_start, usd_per_aud_end = config.usd_per_aud_start, config.usd_per_aud_end
     rate_in, min_in = fx_fee_settings(config.broker, "in")
-    fx_in = aud_to_usd(config.initial_aud, config.usd_per_aud_start, rate_in, min_in)
+    fx_in = aud_to_usd(config.initial_aud, usd_per_aud_start, rate_in, min_in)
     settings = EngineSettings(
         config.broker, config.spread_level, config.share_mode, config.min_order_usd
     )
     result = run_engine(prices, config.ticker, strategy, settings, fx_in.amount_out)
     rate_out, min_out = fx_fee_settings(config.broker, "out")
-    fx_out = usd_to_aud(result.liquidation_value_usd, config.usd_per_aud_end, rate_out, min_out)
+    fx_out = usd_to_aud(result.liquidation_value_usd, usd_per_aud_end, rate_out, min_out)
     finished = datetime.now(UTC)
 
     run_id = f"{started:%Y%m%dT%H%M%SZ}_{config.run_name}"
@@ -158,6 +188,11 @@ def run_backtest(
     p = result.portfolio
     summary = {
         "initial_aud": config.initial_aud,
+        "fx_source": config.fx_source,
+        "usd_per_aud_start": usd_per_aud_start,
+        "usd_per_aud_start_for_day": first_trade_day,
+        "usd_per_aud_end": usd_per_aud_end,
+        "usd_per_aud_end_for_day": last_day,
         "fx_in_fee_usd": fx_in.fee_usd,
         "start_cash_usd": fx_in.amount_out,
         "last_close_value_usd": result.last_close_value_usd,
@@ -179,7 +214,8 @@ def run_backtest(
         "config": asdict(config),
         "data_provenance": asdict(provenance) if provenance is not None else None,
         **git_state(repo_dir),
-        "fx_note": "usd_per_aud_start/end are TEMPORARY config values (RBA series in prompt 12)",
+        "fx_files": list(fx_series.source_files) if fx_series is not None else None,
+        "fx_note": "RBA daily AUD/USD (FXRUSD), latest rate dated <= day; source: Reserve Bank of Australia",
         "summary": summary,
     }
     (run_dir / "run.json").write_text(
@@ -223,4 +259,4 @@ def run_backtest(
     )
     _write_csv(run_dir / "equity.csv", [asdict(e) for e in result.equity])
     logger.info("run %s saved to %s", run_id, run_dir)
-    return RunOutcome(run_id, run_dir, result, summary)
+    return RunOutcome(run_id, run_dir, result, summary, fx_series)

@@ -16,7 +16,7 @@ Labels: [ASSUMPTION] = our choice, can change · [UNVERIFIED] = fact still to ch
 | Gaps | If T+1 opens far past the threshold, we fill at that open (could be better or worse) |
 | Shares | MAIN = fractional (Stake allows). Sensitivity = whole shares only |
 | Costs | MAIN = Stake + normal spread (0.05%/side). Also LOW (IBKR), HIGH (CommSec), tight/wide spread |
-| Dividends | Entitled if holding at the close before the ex-date; cash credited ON the ex-date [ASSUMPTION — Tiingo gives no pay date; same rule for all strategies]. US withholding tax 15% with W-8BEN (30% without) — VERIFIED 2026-10-20, [Stake support](https://hellostake.com/au/support/documents-and-statements/taxes-and-forms/26011219005337) |
+| Dividends | Entitled if holding at the close before the ex-date; cash credited ON the ex-date [ASSUMPTION — Tiingo gives no pay date; same rule for all strategies]. US withholding tax 15% with W-8BEN (30% without) — VERIFIED 2026-10-20, [Stake support](https://hellostake.com/au/support/documents-and-statements/taxes-and-forms/26011219005337). **Reinvestment (every strategy): only when cash ≥ US$100** (`reinvest_min_cash_usd`; Goggy 2026-10-21 — a US$3 fee on a ~US$25 dividend would cost ~12%) |
 | Cash | Earns 0% interest [ASSUMPTION — conservative; Stake cash interest not modelled] |
 | End of test | Any open position valued at last close minus selling costs (fair to both sides) |
 | Currency | Results reported in USD (main) and AUD (secondary) |
@@ -28,7 +28,8 @@ using the "assume the worse order" rule.)
 ## 2. Strategies (exact rules)
 
 **S0 — Buy-and-hold (benchmark)**
-- Buy at the first open. Hold to the end. Reinvest dividends at the next open after pay date.
+- Buy at the first possible open after the first close (= day-2 open; T close → T+1 open rule). Hold to the end.
+  Reinvest dividend cash at the next open once cash ≥ US$100 (`reinvest_min_cash_usd`).
 
 **S1 — Fixed profit target (tests H1)**
 - Start: buy at first open. Entry price E = buy price.
@@ -125,3 +126,6 @@ Same structure applies to H2–H6 (H2 uses Sharpe / drawdown instead of final va
 - 2026-10-20: Dividend withholding 15% (W-8BEN) verified on Stake support page.
 - 2026-10-20: Dividend cash timing changed from 'pay date' to 'ex-date' — Tiingo has no pay date (DATA_SOURCES.md). Before any backtest, so no results affected.
 - 2026-10-18: Approved. Q4.11 (suitability profile) to be answered from H5/H6 results.
+- 2026-10-21: S0 wording "buy at the first open" → "first possible open after the first close" (day-2 open),
+  because every decision is made at a close and filled at the next open (§1). Before any S1–S4 result.
+- 2026-10-21: Dividend reinvestment only when cash ≥ US$100, for every strategy (Goggy's decision, option b).

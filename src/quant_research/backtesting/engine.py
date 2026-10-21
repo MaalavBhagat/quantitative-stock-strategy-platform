@@ -22,7 +22,7 @@ import pandas as pd
 from quant_research.execution.costs import apply_spread, fee_usd
 from quant_research.execution.fills import FillResult, Rejection, fill_order
 from quant_research.execution.orders import OrderIntent
-from quant_research.portfolio.ledger import Portfolio
+from quant_research.portfolio.ledger import US_WITHHOLDING_W8BEN, Portfolio
 from quant_research.portfolio.money import round_receive, to_decimal_price
 
 logger = logging.getLogger(__name__)
@@ -51,6 +51,7 @@ class EngineSettings:
     spread_level: str
     share_mode: str
     min_order_usd: Decimal | None
+    withholding_rate: Decimal = US_WITHHOLDING_W8BEN  # 15% with W-8BEN; what-if / sensitivity only
 
 
 @dataclass(frozen=True)
@@ -120,7 +121,9 @@ def run_engine(
             ledger.apply_split(day, ticker, to_decimal_price(split))
         dividend = float(row["div_cash_usd"])
         if dividend > 0:
-            ledger.apply_dividend(day, ticker, to_decimal_price(dividend))
+            ledger.apply_dividend(
+                day, ticker, to_decimal_price(dividend), settings.withholding_rate
+            )
         # 2. OPEN — fill yesterday's orders at today's open
         if queued:
             open_raw = _decimal(row["open_raw"], f"open price for {ticker}", day)

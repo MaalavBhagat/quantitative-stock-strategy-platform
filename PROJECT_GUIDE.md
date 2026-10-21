@@ -47,7 +47,7 @@ anything system-wide.
 | `.gitignore`, `.env.example` | what Git must never save; template for API keys |
 | `data/` (git-ignored) | downloaded market data — never committed (licence): `raw/tiingo/`, `cache/yfinance/`, `reference/tiingo/` |
 
-**Modules** — inside `src/quant_research/`. `data/` (Phase 2), `portfolio/` + `execution/` (Phase 3) and `backtesting/` (Phase 4) exist; the rest are
+**Modules** — inside `src/quant_research/`. `data/` (Phase 2), `portfolio/` + `execution/` (Phase 3), `backtesting/`, `strategies/` and `metrics/` (Phase 4) exist; the rest are
 *not created yet* and get created only when a phase needs them (no empty modules).
 | Module | Phase | Its job | It must NOT |
 |---|---|---|---|
@@ -55,8 +55,8 @@ anything system-wide.
 | `portfolio/` — **created** (`money`, `ledger`) | 3 | The ledger: cash, shares, costs, dividends, valuation (the only place cash changes) | decide when to trade or read future prices |
 | `execution/` — **created** (`costs`, `orders`, `fills`) | 3–4 | Turn an order into a fill: next-open price, gaps, costs, rounding | decide *whether* to trade; use the signal day's close as the fill price |
 | `backtesting/` — **created** (`engine`, `run`, `lookahead`, `synthetic`) | 4 | Run the day-by-day timeline: data → signal → order → fill → ledger. Strategy interface: `on_close(day, history, portfolio_view) -> list[OrderIntent]` (no price field) | contain strategy rules or fee numbers; run on dates ≥ 2021-01-01 while locked (D8) |
-| `strategies/` | 5 | Read past data, return "buy / sell / hold" signals | touch cash or shares directly; see any data after day T |
-| `metrics/` | 4, 6 | Returns, drawdown, Sharpe, round trips, time in cash | change results or re-run trades |
+| `strategies/` — **created** (`buy_and_hold` = S0, `registry`) | 4–5 | Read past data, return order intents (reinvest only when cash ≥ `reinvest_min_cash_usd`) | touch cash or shares directly; see any data after day T |
+| `metrics/` — **created** (`performance`) | 4, 6 | Returns, CAGR, drawdown + dates, volatility, Sharpe, worst year, costs, dividends, time in cash, round trips (floats OK) | change results or re-run trades |
 | `research/` | 6 | Experiment runner: grids, periods, walk-forward, saving run records | run anything on dates ≥ 2021-01-01 unless `final_test_unlocked: true` (D8) |
 | `screening/` | 7 | Company screens and suitability profiles | feed results back into backtests silently |
 | `reporting/` | 6+ | Tables and charts built from saved results only | type or edit any number by hand |

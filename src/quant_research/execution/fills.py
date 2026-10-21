@@ -35,6 +35,7 @@ class FillResult:
     fee: FeeBreakdown
     gap_pct: Decimal | None  # open vs previous close (None on the first day)
     entry: LedgerEntry
+    position_after: Decimal  # shares held right after this fill (0 = full exit)
 
 
 @dataclass(frozen=True)
@@ -150,5 +151,15 @@ def fill_order(
 
     spread_cost = abs(fill - reference) * qty
     return FillResult(
-        day, intent.ticker, intent.side, qty, reference, fill, spread_cost, fee, gap, entry
+        day,
+        intent.ticker,
+        intent.side,
+        qty,
+        reference,
+        fill,
+        spread_cost,
+        fee,
+        gap,
+        entry,
+        ledger.position(intent.ticker).quantity,
     )
