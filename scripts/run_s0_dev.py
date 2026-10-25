@@ -26,10 +26,12 @@ from quant_research.strategies.registry import make_strategy
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 CONFIGS = ["config/s0_buy_and_hold_aapl_dev.yaml", "config/s0_buy_and_hold_xom_dev.yaml"]
 REPORT = PROJECT_ROOT / "reports" / "runs" / "s0_dev_2010-2016.md"
-# STOP rule. Prompt 12 said "gap > ~3 points"; on 2026-10-21 the real runs exceeded it (AAPL 7.06,
-# XOM 5.14 points), the gap was fully explained (mostly 15% withholding) and Goggy accepted, asking for
-# a RELATIVE limit: S0 may not beat the adjusted return, nor end more than 5% below it [ASSUMPTION 5%].
-MAX_RELATIVE_SHORTFALL = 0.05
+# STOP rule (changed 2026-10-25, approved by Goggy — chat Claude found the 5% limit too loose: a ~4% bug
+# would pass). Two parts, so tax drag (depends on dividend yield) is checked separately from costs:
+#   (1) S0 return must be LOWER than the adjusted-price return;
+#   (2) the no-withholding what-if must be within 1.0% RELATIVE of the adjusted return (only costs +
+#       entry timing remain in that gap).
+WHAT_IF_MAX_RELATIVE = 0.01
 
 
 @dataclass(frozen=True)
@@ -49,6 +51,11 @@ class Row:
     def relative(self) -> float:
         """(1 + S0 return) / (1 + adjusted return) − 1."""
         return (1 + self.perf.total_return_usd) / (1 + self.adjusted_return) - 1
+
+    @property
+    def what_if_relative(self) -> float:
+        """(1 + no-withholding what-if) / (1 + adjusted return) − 1."""
+        return (1 + self.no_withholding_return) / (1 + self.adjusted_return) - 1
 
 
 def adjusted_price_return(ticker: str, start: date, end: date, first_fill_day: date) -> float:
@@ -96,13 +103,15 @@ def main() -> int:
         print(
             f"{config.ticker}: run {out.run_id} | S0 {perf.total_return_usd:.4%} | adjusted "
             f"{row.adjusted_return:.4%} | gap {row.gap_points:.2f} pts | relative {row.relative:+.3%} | "
-            f"no-withholding what-if {row.no_withholding_return:.4%} | fills {len(out.result.fills)}"
+            f"no-withholding what-if {row.no_withholding_return:.4%} (relative {row.what_if_relative:+.3%}) | "
+            f"fills {len(out.result.fills)}"
         )
     problems = [
-        f"{r.config.ticker}: S0 {r.perf.total_return_usd:.4%} vs adjusted {r.adjusted_return:.4%} "
-        f"(relative {r.relative:+.2%})"
+        f"{r.config.ticker}: S0 {r.perf.total_return_usd:.4%} vs adjusted {r.adjusted_return:.4%}; "
+        f"no-withholding what-if relative {r.what_if_relative:+.2%}"
         for r in rows
-        if r.perf.total_return_usd > r.adjusted_return or r.relative < -MAX_RELATIVE_SHORTFALL
+        if r.perf.total_return_usd >= r.adjusted_return
+        or abs(r.what_if_relative) > WHAT_IF_MAX_RELATIVE
     ]
     if problems:
         print("STOP — sanity check failed, report NOT written:\n  " + "\n  ".join(problems))
@@ -220,14 +229,15 @@ def build_report(rows: list[Row]) -> str:
         "",
         (
             "| | S0 USD return | Adjusted-price return | Gap (points) | Relative | S0 with NO withholding "
-            "(what-if) | Explained by withholding (points) | Rest (points) |"
+            "(what-if) | What-if relative (limit ±1%) | Explained by withholding (points) | Rest (points) |"
         ),
-        "|---|---|---|---|---|---|---|---|",
+        "|---|---|---|---|---|---|---|---|---|",
     ]
     for r in rows:
         lines.append(
             f"| {r.config.ticker} | {pct(r.perf.total_return_usd)} | {pct(r.adjusted_return)} | "
             f"{r.gap_points:.2f} | {r.relative:+.2%} | {pct(r.no_withholding_return)} | "
+            f"{r.what_if_relative:+.2%} | "
             f"{(r.no_withholding_return - r.perf.total_return_usd) * 100:.2f} | "
             f"{(r.adjusted_return - r.no_withholding_return) * 100:.2f} |"
         )
@@ -238,12 +248,13 @@ def build_report(rows: list[Row]) -> str:
         "reinvesting only once cash reaches US$100, and entering at the day-2 open while the adjusted return",
         "is measured from the day-2 close (this last part can be + or −).",
         "",
-        "**Check rule.** Prompt 12 said the gap should be ≤ ~3 points. It was exceeded (AAPL, XOM), so it was",
-        "investigated: removing withholding alone (what-if above) closes most of it, and the rest matches",
-        "fees + spread + entry timing. In 'points' a gap looks bigger on a large return (AAPL ×4), so Goggy",
-        "accepted the result (2026-10-21) and the check now uses a relative limit: S0 must not beat the",
-        "adjusted return and must not end more than 5% below it [ASSUMPTION — 5%]. The what-if is computed",
-        "by this script with the engine setting withholding_rate = 0; it is not a saved run.",
+        "**Check rule (changed 2026-10-25, approved by Goggy).** (1) S0 must be LOWER than the adjusted-price",
+        "return. (2) The no-withholding what-if must be within 1.0% RELATIVE of the adjusted return — tax drag",
+        "depends on the dividend yield, so it is checked separately; only costs + entry timing remain in that",
+        'gap, so 1% still catches real bugs. History: prompt 12\'s "~3 points" rule was exceeded (AAPL, XOM),',
+        "investigated and accepted (2026-10-21); a 5% relative limit was then judged too loose by chat Claude",
+        "(a ~4% bug would pass). The what-if is computed by this script with the engine setting",
+        "withholding_rate = 0; it is not a saved run.",
         "",
         "## 3. Config and data used",
         "",
