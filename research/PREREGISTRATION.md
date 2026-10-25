@@ -110,3 +110,8 @@ times, orders, fills, equity). Reports contain summary numbers only (licence). F
      INCONCLUSIVE = anything else.
    - S0 itself is the benchmark (no verdict). Regime rule as logged above. Any bug found during runs → STOP, report,
      fix, log here, re-run ALL runs; never re-run only the ones that changed."
+- 2026-10-25: Cost-model correction BEFORE any validation run (Goggy approved): CommSec converts AUD↔USD inside every
+  trade (0.55% FX charged per trade), so the separate start/end AUD↔USD conversion fee for CommSec is now 0 — before,
+  the FX was counted twice on the first buy and on the final conversion. Stake and IBKR unchanged (they convert once at
+  deposit / withdrawal). No earlier result used CommSec, so nothing already reported changes. Affects the CommSec and
+  stress (wide + CommSec) variants in §4 / R4.

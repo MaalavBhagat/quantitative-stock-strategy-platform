@@ -134,14 +134,17 @@ def apply_spread(
 
 
 def fx_fee_settings(broker: str, direction: Literal["in", "out"] = "in") -> tuple[Decimal, Decimal]:
-    """(fee_rate, min_fee_usd) for converting at the start ('in') or end ('out')."""
+    """(fee_rate, min_fee_usd) for converting at the start ('in') or end ('out'). CommSec: 0 (per-trade FX)."""
     if broker == "stake":
         rate = cost("stake.fx_rate") if direction == "in" else cost("stake.fx_rate_withdrawal")
         return rate, Decimal(0)
     if broker == "ibkr_fixed":
         return cost("ibkr.fx_rate"), cost("ibkr.fx_min_usd")
     if broker == "commsec_standard":
-        return cost("commsec.fx_rate"), Decimal(0)
+        # CommSec converts AUD↔USD inside EVERY trade (fee_usd charges 0.55% FX per trade), so there is no separate
+        # start/end conversion fee — charging both would count the FX twice on the first buy and the last sale
+        # (bug fixed 2026-10-25 before any validation run, Goggy; PREREGISTRATION §9).
+        return Decimal(0), Decimal(0)
     raise ValueError(f"unknown broker {broker!r} — choose one of {', '.join(BROKERS)}")
 
 

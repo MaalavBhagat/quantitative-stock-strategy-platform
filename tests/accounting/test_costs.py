@@ -137,3 +137,26 @@ def test_stake_round_trip_matches_feasibility_estimate():
     round_trip_cost = D("6910.00") - p.cash_usd
     assert round_trip_cost == D("12.90")
     assert abs(round_trip_cost / D(6900) - D("0.0019")) < D("0.0001")
+
+
+def test_commsec_fx_is_charged_once_not_twice():
+    # CommSec converts inside every trade (0.55% FX in fee_usd), so start/end conversion fees are 0.
+    assert fx_fee_settings("commsec_standard", "in") == (D(0), D(0))
+    assert fx_fee_settings("commsec_standard", "out") == (D(0), D(0))
+    rate, minimum = fx_fee_settings("commsec_standard", "in")
+    start = aud_to_usd(D("10000"), D("0.69"), rate, minimum)
+    # 10,000 AUD × 0.69 = 6,900.00 USD, no conversion fee at the start
+    assert (start.fee_usd, start.amount_out) == (D("0.00"), D("6900.00"))
+    # the first buy then pays its FX ONCE, inside the trade: 0.55% × 6,900 = 37.95 (+ brokerage 8.28)
+    assert fee_usd("commsec_standard", D("6900"), D(30)).fx_usd == D("37.95")
+    # at the end: liquidation already paid the sell's FX; converting back adds no second fee
+    rate, minimum = fx_fee_settings("commsec_standard", "out")
+    end = usd_to_aud(D("6900.00"), D("0.69"), rate, minimum)
+    # 6,900.00 / 0.69 = 10,000.00 AUD exactly, fee 0
+    assert (end.fee_usd, end.amount_out) == (D("0.00"), D("10000.00"))
+
+
+def test_stake_and_ibkr_still_pay_their_start_end_conversion():
+    assert fx_fee_settings("stake", "in") == (D("0.0055"), D(0))
+    assert fx_fee_settings("stake", "out") == (D("0.0055"), D(0))
+    assert fx_fee_settings("ibkr_fixed", "in") == (D("0.00002"), D("2.00"))
