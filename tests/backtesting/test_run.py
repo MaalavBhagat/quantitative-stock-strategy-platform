@@ -272,3 +272,12 @@ def test_saved_config_yaml_reads_back_unchanged(tmp_path):
     assert parse_config(yaml.safe_load(config_to_yaml(cfg))) == cfg
     out = run_backtest(cfg, BuyTenOnFirstClose(), load_fn=fake_loader([]), runs_dir=tmp_path)
     assert parse_config(yaml.safe_load((out.run_dir / "config.yaml").read_text())) == cfg
+
+
+def test_fills_csv_has_realised_pnl_and_position_after(tmp_path):
+    cfg = base_config(start=date(2014, 6, 2), end=date(2014, 6, 4))
+    out = run_backtest(cfg, BuyTenOnFirstClose(), load_fn=fake_loader([]), runs_dir=tmp_path)
+    with (out.run_dir / "fills.csv").open() as f:
+        (fill,) = list(csv.DictReader(f))
+    # a buy: no realised P&L (blank), 10 shares held afterwards
+    assert (fill["realised_pnl_usd"], D(fill["position_after"])) == ("", D(10))

@@ -333,6 +333,8 @@ def run_backtest(
                 "fx_usd": f.fee.fx_usd,
                 "fee_total_usd": f.fee.total_usd,
                 "gap_pct": f.gap_pct,
+                "realised_pnl_usd": f.entry.realised_pnl_usd,  # sells only (after fees, average cost)
+                "position_after": f.position_after,
             }
             for f in result.fills
         ],
