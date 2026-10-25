@@ -89,3 +89,11 @@
   `execution.intrabar.resolve_intrabar` (worse order); fills record `position_after`.
 - `scripts/run_s0_dev.py` → `reports/runs/s0_dev_2010-2016.md` (summary numbers only; sanity check + what-if).
 - Configs for AAPL + XOM (development period). EXPERIMENT_PLAN §1/§2/§10 updated (S0 wording, reinvest rule).
+
+## 2026-10-25 — Phase 5, Steps 5.1, 5.2, 5.6: S1 + S2 (version stays 0.1.0)
+- S0 sanity check tightened: no-withholding what-if within 1% relative of the adjusted return (Goggy).
+- `quant_research.strategies.profit_target`: S1 fixed profit target, S2 pullback from peak; remembered prices
+  are split-adjusted on split days (bug found by the AAPL trade-list check, fixed before reporting).
+- `PortfolioView.fills` (read-only past fills); `RunConfig.profit_target_x` / `rebuy_dip_y` / `grid_override`.
+- Metrics: stranded episode, longest cash spell. TODO Phase 6: best-3-trades-removed.
+- `scripts/run_s1_s2_dev.py` → `reports/experiments/s1_s2_dev_2010-2016.md` (66 runs, development period only).

@@ -2,7 +2,7 @@
 Last updated: 2026-10-20
 
 CURRENT PHASE: Phase 5 — Strategy laboratory (In progress)
-CURRENT TASK: Steps 5.1–5.2 — S1 profit target + S2 pullback (prompt: prompts/13_phase5_steps5.1-5.2_s1_s2.md)
+CURRENT TASK: chat Claude verifies the S1 trade list; then prompt 14 (S3 mean reversion + S4 trend filter)
 
 PHASE STATES (Not started / In progress / Blocked / Verified):
 - Phase 0  Feasibility & research design ........ VERIFIED (2026-10-18)
@@ -258,8 +258,27 @@ FINDINGS (Step 2.3):
   what-if 313.56% / 57.95% — all identical to the engine to the cent. AUD 50,917.02 re-derived from liquidation value.
   All 5 roadmap criteria met.
 
+- Steps 5.1 (S1), 5.2 (S2), 5.6 (configurable) — DONE 2026-10-25 (prompt 13, plan approved incl. read-only fill
+  history; branch phase5-s1-s2, merged to main). strategies/profit_target.py: FixedProfitTarget (S1), PullbackFromPeak
+  (S2) — E from the strategy's own entry fill (top-ups don't change it), sell all at close ≥ E(1+X), rebuy at
+  close ≤ S(1−Y) (S1) or P(1−Y), P = running high close since the sale-fill day (S2); no top-ups in cash.
+  PortfolioView.fills (read-only past fills). RunConfig profit_target_x / rebuy_dip_y on the §3 grid
+  (grid_override for exploratory). Metrics: stranded (+ days), longest cash spell.
+  BUG FOUND by the trade-list check + FIXED (Goggy decision 2026-10-25): AAPL's 7:1 split (2014-06-09) made the
+  remembered raw prices wrong → a fake "dip" rebuy on 2014-06-10 (lowest pre-split close 222.25 never reached the
+  215.89 level). E, S, P are now divided by the snapped split ratio on split days (EXPERIMENT_PLAN §2 + §10).
+  The pre-fix run records stay in /data/runs/ (never deleted) but are NOT used; the report is from commit 987c81c.
+  DEVELOPMENT-PERIOD RESULTS (SIMULATED, HISTORICAL, exploration only — reports/experiments/s1_s2_dev_2010-2016.md):
+    S1 AAPL: beat S0 in 0/16, stranded 16/16 (sold early 2010, never rebought), excess −294.8 … −306.6 pts.
+    S2 AAPL: beat S0 in 0/16, stranded 0/16, round trips 13–33, excess −62.7 … −224.5 pts.
+    S1 XOM: beat S0 in 4/16 (all Y = 2%), stranded 16/16, excess −48.8 … +23.5 pts.
+    S2 XOM: beat S0 in 3/16, stranded 0/16, excess −23.6 … +7.2 pts.
+  No winner picked; validation/final periods not run; cost/spread sensitivity and "best 3 trades removed" = Phase 6.
+  Mutation checks: S1 sells at the same day's close → 9 tests fail (incl. 6 look-ahead checks); S2 P = sale price →
+  2 fail; no split adjustment → 2 fail; all restored.
+
 IN PROGRESS:
-- Phase 5: Steps 5.1–5.2 (S1 + S2) — prompt 13
+- Chat Claude: re-compute the S1 AAPL X=5% Y=5% trade list (report Appendix A) from the raw CSV
 
 BLOCKED / OPEN QUESTIONS:
 - Stake fractional-share precision UNVERIFIED (D3 assumes 6 dp — check in Phase 3)
@@ -314,6 +333,7 @@ IMPORTANT DECISIONS:
 - 2026-10-17: H1 v2 + H2–H7 approved. H1 v2 is the main hypothesis. H2–H6 tested only after H1 baseline; H7 exploratory.
 - 2026-10-21: Dividend reinvestment only when cash ≥ US$100 (reinvest_min_cash_usd), every strategy (Goggy, option b).
 - 2026-10-21: S0 sanity gap (7.06 / 5.14 pts) accepted by Goggy after investigation; check uses a relative limit (5%).
+- 2026-10-25: S1/S2 remembered prices (E, S, P) are divided by the snapped split ratio on split days (Goggy).
 - 2026-10-25: Sanity rule changed, approved by Goggy (chat Claude: 5% too loose): (1) S0 < adjusted-price return;
   (2) no-withholding what-if within 1.0% relative of the adjusted return. Re-run: AAPL −0.39%, XOM −0.52% — pass;
   S0 numbers identical (308.13% / 53.63%), only the check text changed.
@@ -331,12 +351,17 @@ IMPORTANT DECISIONS:
      (only Goggy sets it) · D9 type hints required on every function in src/; no type-checker yet.
 
 NEXT ACTION:
-- Desktop Code session: prompt 13 (sanity-rule tightening, then S1 + S2 on the development period).
+- chat Claude verifies the S1 trade list, then prompt 14: S3 mean reversion + S4 trend filter
 
 CHAT CLAUDE CHECK OF STEPS 4.1–4.3 (2026-10-21): main at 7d971ff, clean tree. Read engine.py loop: split → dividend →
 fills at open_raw → valuation at close_raw → strategy gets table.iloc[:i+1].copy(); leftover orders EXPIRED.
 run.py checks the D8 lock before loading data. Report's mutation finding (spy check missed same-day fills → rule added)
 accepted. → Steps 4.1–4.3 VERIFIED.
+
+TESTS RUN (2026-10-25, Steps 5.1–5.2):
+- uv run pytest → "241 passed in 2.22s" (+ profit_target 14, metrics +2, run +1)
+- uv run ruff check . → "All checks passed!" · uv run ruff format --check . → "85 files already formatted"
+- scripts/run_s1_s2_dev.py → 66 runs (64 S1/S2 + 2 S0), report written, code commit 987c81c (clean)
 
 TESTS RUN (2026-10-21, Steps 4.4–4.6):
 - uv run pytest → "224 passed in 1.53s" (+ fx 7, buy_and_hold 6, performance 10, edge_cases 11, run +1)

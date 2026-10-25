@@ -55,7 +55,7 @@ anything system-wide.
 | `portfolio/` — **created** (`money`, `ledger`) | 3 | The ledger: cash, shares, costs, dividends, valuation (the only place cash changes) | decide when to trade or read future prices |
 | `execution/` — **created** (`costs`, `orders`, `fills`) | 3–4 | Turn an order into a fill: next-open price, gaps, costs, rounding | decide *whether* to trade; use the signal day's close as the fill price |
 | `backtesting/` — **created** (`engine`, `run`, `lookahead`, `synthetic`) | 4 | Run the day-by-day timeline: data → signal → order → fill → ledger. Strategy interface: `on_close(day, history, portfolio_view) -> list[OrderIntent]` (no price field) | contain strategy rules or fee numbers; run on dates ≥ 2021-01-01 while locked (D8) |
-| `strategies/` — **created** (`buy_and_hold` = S0, `registry`) | 4–5 | Read past data, return order intents (reinvest only when cash ≥ `reinvest_min_cash_usd`) | touch cash or shares directly; see any data after day T |
+| `strategies/` — **created** (`buy_and_hold` = S0, `profit_target` = S1 + S2, `registry`) | 4–5 | Read past data, return order intents (reinvest only when cash ≥ `reinvest_min_cash_usd`) | touch cash or shares directly; see any data after day T |
 | `metrics/` — **created** (`performance`) | 4, 6 | Returns, CAGR, drawdown + dates, volatility, Sharpe, worst year, costs, dividends, time in cash, round trips (floats OK) | change results or re-run trades |
 | `research/` | 6 | Experiment runner: grids, periods, walk-forward, saving run records | run anything on dates ≥ 2021-01-01 unless `final_test_unlocked: true` (D8) |
 | `screening/` | 7 | Company screens and suitability profiles | feed results back into backtests silently |
@@ -133,6 +133,11 @@ makes a losing strategy look profitable, so it must be exact; the speed cost is 
 - Valuation: market value = quantity × close rounded DOWN to cents; unrealised P&L = market value − cost basis;
   a held ticker without a close price is an error (never valued at 0 or at an old price).
 - Dividend withholding = 15% of the cents-rounded gross, rounded UP (decided by Goggy 2026-10-20, golden scenario).
+
+**Strategy price memory (Phase 5, Goggy 2026-10-25)** — a strategy that remembers a price (entry E, sale S,
+peak P) must divide it by the snapped split ratio on a split day, before reading that day's fills. Strategies
+learn their own fill prices only from `PortfolioView.fills` (read-only, past fills only). X/Y come from config and
+must be on the EXPERIMENT_PLAN §3 grid (`grid_override: true` = exploratory, logged).
 
 **Daily event order — rule (Phase 3, approved 2026-10-20)**
 - Each day, per ticker: **split → dividend → trades (at the open)**. The ledger refuses any other order.
