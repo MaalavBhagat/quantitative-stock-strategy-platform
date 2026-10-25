@@ -2,7 +2,7 @@
 Last updated: 2026-10-20
 
 CURRENT PHASE: Phase 5 — Strategy laboratory (In progress)
-CURRENT TASK: chat Claude verifies the S3/S4 trade lists; then prompt 15 (5.5 hybrid decision + 5.7 comparison + Phase 5 check)
+CURRENT TASK: Steps 5.5 + 5.7 — no-hybrid decision, comparison, PRE-REGISTRATION, Phase 5 check (prompt: prompts/15_phase5_steps5.5-5.7_close.md)
 
 PHASE STATES (Not started / In progress / Blocked / Verified):
 - Phase 0  Feasibility & research design ........ VERIFIED (2026-10-18)
@@ -370,13 +370,15 @@ IMPORTANT DECISIONS:
      (only Goggy sets it) · D9 type hints required on every function in src/; no type-checker yet.
 
 NEXT ACTION:
-- chat Claude verifies trade lists, then prompt 15: Step 5.5 hybrid decision + 5.7 comparison + Phase 5 check
+- Desktop Code session: "Read prompts/15_phase5_steps5.5-5.7_close.md and do exactly what it says."
+- DECISION 2026-10-25 (Goggy): no new hybrid strategy (Step 5.5); S1–S4 frozen for validation.
 
-CHAT CLAUDE CHECK OF S1/S2 (2026-10-25): main at 41821b0. Re-implemented S1 + S2 independently (own code, raw CSVs,
-split rule ÷ ratio) → Appendix A trades identical (2010-01-05 buy 42.289013 @214.7073; 2010-03-12 sell @227.256315,
-cash 9,607.44). All 64 grid cells reproduced: 63 exact, 1 differs by 0.1 pt (rounding of S0 baseline). → Steps 5.1, 5.2,
-5.6 VERIFIED. Interpretation: S1 is stranded in 16/16 runs on both stocks (sold, never rebought). S1 XOM's 4 "wins"
-came while 73–88% of days were in cash during XOM's 2014–16 fall → regime effect, not evidence of skill.
+CHAT CLAUDE CHECK OF S3/S4 (2026-10-25): main at 3598355. Independent re-implementation (own code, raw + warm-up CSVs,
+split-adjusted-as-of-T, sample std, SMA200 slope over 20 days): Appendix A S3 AAPL k2 w20 → 37 fills, same trades,
+final US$12,715.06; Appendix B S4-S1 AAPL 5/5 → 2 fills, final US$13,902.70. All 76 grid cells reproduced (exact, or
+≤0.4 pt in S4-S2 AAPL from S0-baseline rounding). → Steps 5.3, 5.4 VERIFIED.
+Reading: S4-S2 AAPL beats S0 in 14/16 (up to +217 pts) but rests on a few big dips (2015-08-24 crash) and is 1 stock,
+dev period, after 70 settings tried → hypothesis only. Phase 6 + pre-registration decide.
 
 TESTS RUN (2026-10-25, Steps 5.3–5.4):
 - uv run pytest → "266 passed in 2.13s" (+ indicators 7, s3_s4 12, loader warm-up 3, engine 2, run 1)
