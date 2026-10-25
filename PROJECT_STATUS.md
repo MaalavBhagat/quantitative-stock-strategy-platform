@@ -1,16 +1,16 @@
 # PROJECT_STATUS.md
 Last updated: 2026-10-20
 
-CURRENT PHASE: Phase 4 — Backtesting Engine (ready for verification)
-CURRENT TASK: Phase 4 verification by chat Claude
+CURRENT PHASE: Phase 5 — Strategy laboratory (In progress)
+CURRENT TASK: Steps 5.1–5.2 — S1 profit target + S2 pullback (prompt: prompts/13_phase5_steps5.1-5.2_s1_s2.md)
 
 PHASE STATES (Not started / In progress / Blocked / Verified):
 - Phase 0  Feasibility & research design ........ VERIFIED (2026-10-18)
 - Phase 1  Dev environment & repository ......... VERIFIED (2026-10-20)
 - Phase 2  Historical market data ............... VERIFIED (2026-10-20)
 - Phase 3  Portfolio accounting engine .......... VERIFIED (2026-10-20)
-- Phase 4  Backtesting engine ................... ready for verification (2026-10-21)
-- Phase 5  Strategy laboratory .................. Not started
+- Phase 4  Backtesting engine ................... VERIFIED (2026-10-25)
+- Phase 5  Strategy laboratory .................. In progress
 - Phase 6  Research validation .................. Not started
 - Phase 7  Company research & screening ......... Not started
 - Phase 8  Interactive dashboard ................ Not started
@@ -253,8 +253,13 @@ FINDINGS (Step 2.3):
   passes synthetic tests ✓ (rising, falling, sideways, gaps, split + dividend same day, cash just short, intrabar).
   → Phase 4: ready for verification
 
+- PHASE 4 VERIFIED by chat Claude 2026-10-25: rebuilt S0 independently from the raw Tiingo CSVs with separate code
+  (no engine) → AAPL US$37,069.58, XOM US$13,954.00, net dividends 2,239.50 / 2,027.33, fees 51 / 42, no-withholding
+  what-if 313.56% / 57.95% — all identical to the engine to the cent. AUD 50,917.02 re-derived from liquidation value.
+  All 5 roadmap criteria met.
+
 IN PROGRESS:
-- Phase 4 verification by chat Claude
+- Phase 5: Steps 5.1–5.2 (S1 + S2) — prompt 13
 
 BLOCKED / OPEN QUESTIONS:
 - Stake fractional-share precision UNVERIFIED (D3 assumes 6 dp — check in Phase 3)
@@ -324,7 +329,7 @@ IMPORTANT DECISIONS:
      (only Goggy sets it) · D9 type hints required on every function in src/; no type-checker yet.
 
 NEXT ACTION:
-- Chat Claude verifies Phase 4, then Phase 5 Step 5.1 (S1 profit target)
+- Desktop Code session: prompt 13 (sanity-rule tightening, then S1 + S2 on the development period).
 
 CHAT CLAUDE CHECK OF STEPS 4.1–4.3 (2026-10-21): main at 7d971ff, clean tree. Read engine.py loop: split → dividend →
 fills at open_raw → valuation at close_raw → strategy gets table.iloc[:i+1].copy(); leftover orders EXPIRED.
