@@ -122,9 +122,61 @@ def build_series(rows: list[tuple[date, Decimal]], source_files: tuple[str, ...]
     return FxSeries(tuple(dates), tuple(r for _, r in rows), source_files)
 
 
+TRIM_CUTOFF = date(2020, 12, 31)  # RBA 2018-2022.xls is kept only up to here (D8, Goggy 2026-10-25)
+
+
+def parse_trimmed_csv(path: Path) -> list[tuple[date, Decimal]]:
+    """(date, usd_per_aud) rows from a trimmed RBA extract (CSV: date,usd_per_aud). Must end ≤ 2020-12-31."""
+    import csv
+
+    with path.open(encoding="utf-8") as handle:
+        rows = [
+            (date.fromisoformat(r["date"]), Decimal(r["usd_per_aud"]))
+            for r in csv.DictReader(handle)
+        ]
+    if rows and max(d for d, _ in rows) > TRIM_CUTOFF:
+        raise FxDataError(
+            f"{path.name} contains dates after {TRIM_CUTOFF} — final-test data must not be on disk"
+        )
+    return rows
+
+
+def trim_rba_xls(source: Path, out_csv: Path, url: str, downloaded_at_utc: str) -> Path:
+    """Write ONLY the rows dated ≤ 2020-12-31 of an RBA .xls to out_csv (+ .meta.json). Source is not kept here."""
+    import csv
+
+    rows = parse_rba_xls(source)
+    kept = [(d, r) for d, r in rows if d <= TRIM_CUTOFF]
+    with out_csv.open("w", newline="", encoding="utf-8") as handle:
+        writer = csv.writer(handle)
+        writer.writerow(["date", "usd_per_aud"])
+        writer.writerows((d.isoformat(), str(r)) for d, r in kept)
+    meta = {
+        "source": "Reserve Bank of Australia — historical daily exchange rates",
+        "url": url,
+        "downloaded_at_utc": downloaded_at_utc,
+        "sheet": "Data",
+        "series_id": USD_SERIES_ID,
+        "original_file": source.name,
+        "original_rows_with_usd_rate": len(rows),
+        "original_last_date": str(rows[-1][0]),
+        "trimmed_to": str(TRIM_CUTOFF),
+        "rows_kept": len(kept),
+        "first_date": str(kept[0][0]),
+        "last_date": str(kept[-1][0]),
+        "rows_dropped_after_cutoff": len(rows) - len(kept),
+        "note": "Trimmed at download (Goggy 2026-10-25): rows after 2020-12-31 were never saved here and the original "
+        "file was deleted, so no final-test-period (D8) rate is on disk. Values unchanged (FXRUSD).",
+        "licence_note": "RBA: personal, non-commercial use, attributed — never commit",
+    }
+    meta_path = out_csv.with_suffix(".meta.json")
+    meta_path.write_text(json.dumps(meta, indent=2) + "\n", encoding="utf-8")
+    return meta_path
+
+
 def load_usd_per_aud(data_dir: Path = DEFAULT_RBA_DIR) -> FxSeries:
-    """Read every RBA .xls in data_dir (each needs its .meta.json) into one validated series."""
-    files = sorted(data_dir.glob("*.xls"))
+    """Read every RBA .xls (and trimmed .csv) in data_dir (each needs its .meta.json) into one validated series."""
+    files = sorted([*data_dir.glob("*.xls"), *data_dir.glob("*.csv")])
     if not files:
         raise FxDataError(
             f"no RBA files in {data_dir} — run `uv run python scripts/download_rba_fx.py`"
@@ -135,7 +187,7 @@ def load_usd_per_aud(data_dir: Path = DEFAULT_RBA_DIR) -> FxSeries:
             raise FxDataError(
                 f"{path.name} has no .meta.json — data without a download record is not used"
             )
-        rows += parse_rba_xls(path)
+        rows += parse_rba_xls(path) if path.suffix == ".xls" else parse_trimmed_csv(path)
     return build_series(sorted(rows), tuple(p.name for p in files))
 
 

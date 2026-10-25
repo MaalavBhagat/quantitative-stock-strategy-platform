@@ -112,3 +112,12 @@
   roll-up, multiple-testing note, reproducibility 5/5) — computed from saved run records.
 - `research/PREREGISTRATION.md` v1 + git tag `prereg-v1` — Phase 6 tests and judgement fixed before any 2017–2020 data.
 - Fix: saved `config.yaml` now reads back unchanged (dates kept as dates); round-trip test.
+
+## 2026-10-25 — Phase 6 data step (prompt 16) (version stays 0.1.0)
+- Downloader: optional ticker list; refuses END ≥ 2021-01-01. 20 new Tiingo files (6 new stocks × 3 periods +
+  AAPL/XOM 2017–2020); Yahoo cache 2008–2020 for all 8; RBA 2018–2020 kept from 2018-2022.xls (trimmed, original deleted).
+- `data.fx`: trimmed RBA CSV support (refuses rows after 2020-12-31). `data.crosscheck`: optional constant non-split
+  later factor (prices only, value never reported).
+- `scripts/validate_phase6_data.py` → `reports/data_validation/phase6_all_stocks_2008-2020.md` (all 0 ERROR;
+  flat-bar scan; same-share-basis special-dividend check).
+- PREREGISTRATION §6 + §9: regime rule (before any validation data). DATA_SOURCES §8–§10, INITIAL_UNIVERSE (Stake).

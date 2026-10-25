@@ -87,7 +87,11 @@ These rules are what the code does now (`src/quant_research/data/`); Phase 3+ co
 | Split factor not exact (AAPL 7.000007) | Using it as-is would create fractional share drift | Snap to nearest realistic ratio (§7 row 5); WARNING if not within 1e-4 of one |
 | Yahoo values split-adjusted even with `auto_adjust=False` | Naive comparisons would look wildly wrong | Basis detected from the data and converted (`crosscheck.detect_split_basis`); fails loudly if unexplained |
 | **Unsupported:** reverse splits that leave a fraction in whole-share mode (cash-in-lieu) | Can't model the cash paid for the fraction | Ledger raises NotImplementedError (none in our data so far). Fractional mode rounds down to 6 dp and notes the dropped fraction |
-| Other corporate actions (spin-offs, mergers, special distributions in `splitFactor`) | Not modelled | Not present in AAPL/XOM 2010–2016 (validation found only the 2014 split); check again for each new ticker |
+| Other corporate actions (spin-offs, mergers, special distributions in `splitFactor`) | Not modelled | Checked for all 8 tickers 2008–2020 (Phase 6): only splits found — AAPL 7:1 2014-06-09, AAPL 4:1 2020-08-31, KO 2:1 2012-08-13; no split factor away from a simple ratio; no dividend > 2× the median on one share basis. Check again for any new ticker or period |
+
+| **Tiingo bad bar (found Phase 6):** INTC 2014-06-13 has open = high = low = close = 27.96 (the previous close repeated) with volume 3.6× median; Yahoo shows the real day (+6.8%) | Signals/fills on that day would use a stale price (development period only) | Reported in reports/data_validation/phase6_all_stocks_2008-2020.md §4; NOT fixed. It is the only flat bar in all 24 files. The 9 checks don't catch it (no rule for flat bars) |
+| Yahoo applies a later NON-split adjustment to AT&T (T) prices but not its dividends (found Phase 6) | A plain Yahoo comparison for T fails ("basis not explained") | crosscheck(allow_constant_later_factor=True): a constant factor, value never reported (it describes the locked period, D8); T then agrees with Tiingo on days, splits and dividends |
+| Same-day cross-source differences on 2014-07-28 for XOM (+1.085%) and T (−1.953%) | Unknown which source is right | Listed, not fixed (third source needed) |
 
 ## 9. AUD/USD exchange rate source (chosen 2026-10-20, for portfolio start/end conversion)
 | Item | Value | Label / source |
@@ -98,4 +102,15 @@ These rules are what the code does now (`src/quant_research/data/`); Phase 3+ co
 | Licence | Personal, non-commercial use, unaltered, attributed to the RBA | [OFFICIAL] [RBA copyright](https://www.rba.gov.au/copyright/) → store under /data/, cite RBA in reports |
 | Timing rule | 4 pm Sydney is BEFORE the US open of the same calendar day. Conversion on US trading day T uses the latest RBA rate dated ≤ T (Sydney date). No rate that day → previous available rate, logged; more than 5 calendar days old → ERROR. [ASSUMPTION] | implemented: `data/fx.py` (`FxSeries.on`) |
 | Exact file names / columns | `2010-2013.xls`, `2014-2017.xls` (old Excel .xls, read with `xlrd`), sheet **Data**, header row "Series ID", USD column **FXRUSD** ("A$1=USD", WM/Reuters), dates in column 1. 2010–2013: 1,003 rates; 2014–2017: 1,003 rates (+1 "N/A" on 2015-05-25, skipped). Downloaded once 2026-10-21 to /data/raw/rba/ with .meta.json | [CHECKED — our download] |
+| 2018–2020 file | `2018-2022.xls` downloaded once 2026-10-25 to a scratch folder, ONLY rows ≤ 2020-12-31 kept as `data/raw/rba/2018-2020_from_2018-2022.csv` (755 rates, 2018-01-02 → 2020-12-31; 501 later rows dropped), original deleted (Goggy's decision, D8). The loader refuses a trimmed file with any row after 2020-12-31 | [CHECKED] |
+| Coverage 2010–2020 | 2,761 rates 2010-01-04 → 2020-12-31, range 0.5571–1.1055; every NYSE session 2010–2020 (2,769) has a rate ≤ 5 days old (77 use an earlier day's rate) | [CHECKED] |
 | Coverage check | 2,006 rates 2010-01-04 → 2017-12-29, range 0.6867–1.1055. Every NYSE session 2010–2016 has a rate ≤ 5 days old (50 sessions use an earlier day's rate). Longest gap between RBA rows: 6 days (Easter + Anzac Day 2011) | [CHECKED] |
+
+## 10. Phase 6 data inventory (downloaded 2026-10-25, prompt 16)
+| Data | Files | Notes |
+|---|---|---|
+| Tiingo daily prices | 24: AAPL MSFT KO PG XOM INTC T SPY × warm-up 2008–2009, development 2010–2016, validation 2017–2020 | 20 new API calls; every file 0 ERROR / 0 WARNING; joins clean on the NYSE calendar (3,274 sessions each) |
+| Yahoo cross-check cache | 8: one per ticker, 2008-01-01 → 2020-12-31 (data/cache/yfinance/) | 8 yfinance requests; days, splits, dividend dates agree everywhere |
+| RBA AUD/USD | 2010-2013.xls, 2014-2017.xls, 2018-2020_from_2018-2022.csv | see §9 |
+| Nothing dated ≥ 2021-01-01 | — | scan of every data file on disk, 2026-10-25: 0 found (D8) |
+Report: reports/data_validation/phase6_all_stocks_2008-2020.md.

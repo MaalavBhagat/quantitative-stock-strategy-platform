@@ -24,7 +24,7 @@ We reduce it by picking roles and by including weak performers on purpose.
 | 5 | XOM | ExxonMobil | Cyclical — long up/down swings with oil [UNVERIFIED detail] | Tests different market regimes (H5) |
 | 6 | INTC | Intel | Former leader with a long decline [UNVERIFIED detail] | Key "non-winner": does buying dips keep losing money? |
 | 7 | T | AT&T | Long sideways/weak period + corporate actions (spin-off) [UNVERIFIED detail] | Tests sideways markets AND corporate-action handling |
-| 8 | SPY | S&P 500 ETF | Whole-market benchmark | Shows if results are just "the market went up"; ETF on Stake [UNVERIFIED] |
+| 8 | SPY | S&P 500 ETF | Whole-market benchmark | Shows if results are just "the market went up"; ETF on Stake — VERIFIED 2026-10-25 ([Stake SPY page](https://hellostake.com/au/invest/wall-st/stocks/spy)) |
 
 Mix: 2 winners · 2 calm/defensive · 1 cyclical · 2 weak/sideways · 1 market ETF.
 
@@ -53,3 +53,8 @@ Mix: 2 winners · 2 calm/defensive · 1 cyclical · 2 weak/sideways · 1 market 
 ## 6. Open items
 - 8-stock list kept; starting pair = AAPL + XOM (Goggy, 2026-10-17).
 - Phase 2: confirm every ticker is on Tiingo free + Stake; confirm the [UNVERIFIED] notes from price data.
+
+## Tradeability on Stake Wall St (checked 2026-10-25, Phase 6 prompt 16)
+All 8 have a Stake AU Wall St page stating the security can be bought on Stake [OFFICIAL]:
+AAPL, MSFT, KO, PG, XOM, INTC, T, SPY — `https://hellostake.com/au/invest/wall-st/stocks/<ticker>`.
+Stock list unchanged. (XOM's page heading reads "EXXONMOBIL HOLDINGS CORP" — noted, not investigated.)

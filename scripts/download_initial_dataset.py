@@ -1,8 +1,9 @@
 """Phase 2, Step 2.2: download the small initial dataset (AAPL + XOM, 2010-2016) from Tiingo.
 
-Run from the project folder:  uv run python scripts/download_initial_dataset.py [START END]
-  default dates 2010-01-01 2016-12-31; warm-up for indicators (prompt 14): 2008-01-01 2009-12-31
-Needs TIINGO_API_KEY in .env. Uses 2 API calls. Refuses to overwrite existing files.
+Run from the project folder:  uv run python scripts/download_initial_dataset.py [START END [TICKERS]]
+  default dates 2010-01-01 2016-12-31, default tickers AAPL,XOM; warm-up (prompt 14): 2008-01-01 2009-12-31
+  TICKERS = comma list, e.g. MSFT,KO,PG,INTC,T,SPY (prompt 16). One API call per ticker.
+Needs TIINGO_API_KEY in .env. Refuses to overwrite existing files. Never asks for dates ≥ 2021-01-01 (D8 hygiene).
 """
 
 import logging
@@ -49,11 +50,21 @@ def summarise(ticker: str, df: pd.DataFrame) -> None:
 
 
 def main() -> int:
-    global START, END
-    if len(sys.argv) == 3:
+    global START, END, TICKERS
+    if len(sys.argv) in (3, 4):
         START, END = date.fromisoformat(sys.argv[1]), date.fromisoformat(sys.argv[2])
+        if len(sys.argv) == 4:
+            TICKERS = [t.strip().upper() for t in sys.argv[3].split(",") if t.strip()]
     elif len(sys.argv) != 1:
-        print("usage: download_initial_dataset.py [START END]  (YYYY-MM-DD)", file=sys.stderr)
+        print(
+            "usage: download_initial_dataset.py [START END [TICKERS]]  (YYYY-MM-DD)",
+            file=sys.stderr,
+        )
+        return 2
+    if END >= date(2021, 1, 1):
+        print(
+            "refused: END ≥ 2021-01-01 — the final test period stays locked (D8)", file=sys.stderr
+        )
         return 2
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
     load_dotenv(PROJECT_ROOT / ".env")

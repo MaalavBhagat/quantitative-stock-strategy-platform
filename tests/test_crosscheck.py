@@ -162,3 +162,20 @@ def test_other_difference_stays_unexplained():
     merged = merge_sources(tiingo_table(), yahoo)
     factor, _ = detect_split_basis(merged)
     assert explain_close_differences(merged, factor)[0]["note"] == "unexplained"
+
+
+def test_constant_non_simple_later_factor_only_when_allowed():
+    yahoo = yahoo_table(later_split=1.0)
+    yahoo["yahoo_close"] = (
+        yahoo["yahoo_close"] / 1.324
+    )  # made-up non-split adjustment after the table
+    # Yahoo's DIVIDENDS are NOT scaled by that later non-split factor (as seen for AT&T)
+    merged = merge_sources(tiingo_table(), yahoo)
+    with pytest.raises(ValueError, match="not explained"):
+        detect_split_basis(merged)  # default: only simple split ratios
+    factor, info = detect_split_basis(merged, allow_constant_later_factor=True)
+    assert info["non_simple_later_factor"] is True
+    assert info["later_split_ratio_implied"] == "non-simple (not shown)"
+    assert compare_closes(merged, factor)["max_abs_pct"] == pytest.approx(0.0, abs=1e-12)
+    full = crosscheck(tiingo_table(), yahoo, allow_constant_later_factor=True)
+    assert full["dividends"]["max_abs_pct"] == pytest.approx(0.0, abs=1e-12)

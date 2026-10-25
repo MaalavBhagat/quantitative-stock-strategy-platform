@@ -128,7 +128,9 @@ def merge_sources(tiingo: pd.DataFrame, yahoo: pd.DataFrame) -> pd.DataFrame:
     return tiingo.merge(yahoo, on="date", how="inner").sort_values("date").reset_index(drop=True)
 
 
-def detect_split_basis(merged: pd.DataFrame) -> tuple[pd.Series, dict[str, Any]]:
+def detect_split_basis(
+    merged: pd.DataFrame, allow_constant_later_factor: bool = False
+) -> tuple[pd.Series, dict[str, Any]]:
     """Find the factor that turns Yahoo's split-adjusted values back into Tiingo raw values.
 
     factor[t] = 1 / (later_split_ratio × product of Tiingo split factors after t), where
@@ -144,7 +146,13 @@ def detect_split_basis(merged: pd.DataFrame) -> tuple[pd.Series, dict[str, Any]]
     segment = is_split.cumsum()
     last_median = float(q[segment == segment.max()].median())
     later_ratio = nearest_simple_ratio(1.0 / last_median)
-    factor = 1.0 / (float(later_ratio) * after)
+    later = float(later_ratio)
+    non_simple_later = False
+    if allow_constant_later_factor and abs(1.0 / last_median - later) / later > BASIS_REL_TOL:
+        # Yahoo applied a NON-split adjustment after the table ends (e.g. a spin-off recorded as a "split").
+        # Use that constant factor as measured; callers must not report its value (D8).
+        later, non_simple_later = 1.0 / last_median, True
+    factor = 1.0 / (later * after)
     segments = []
     for idx in merged.groupby(segment).groups.values():
         median_q = float(q[idx].median())
@@ -166,7 +174,13 @@ def detect_split_basis(merged: pd.DataFrame) -> tuple[pd.Series, dict[str, Any]]
             )
     info = {
         "yahoo_close_is_split_adjusted": bool((factor != 1.0).any()),
-        "later_split_ratio_implied": f"{later_ratio.numerator}:{later_ratio.denominator}",
+        "later_split_ratio_implied": "non-simple (not shown)"
+        if non_simple_later
+        else f"{later_ratio.numerator}:{later_ratio.denominator}",
+        "non_simple_later_factor": non_simple_later,
+        "later_factor": later
+        if non_simple_later
+        else 1.0,  # internal only — never report its value (D8)
         "segments": segments,
     }
     return factor, info
@@ -247,15 +261,21 @@ def compare_splits(merged: pd.DataFrame) -> dict[str, Any]:
     }
 
 
-def crosscheck(tiingo: pd.DataFrame, yahoo: pd.DataFrame) -> dict[str, Any]:
+def crosscheck(
+    tiingo: pd.DataFrame, yahoo: pd.DataFrame, allow_constant_later_factor: bool = False
+) -> dict[str, Any]:
     """Run every comparison and return one result dictionary."""
     merged = merge_sources(tiingo, yahoo)
-    factor, basis = detect_split_basis(merged)
+    factor, basis = detect_split_basis(merged, allow_constant_later_factor)
     return {
         "trading_days": compare_trading_days(tiingo, yahoo),
         "basis": basis,
         "closes": compare_closes(merged, factor),
         "close_differences_explained": explain_close_differences(merged, factor),
-        "dividends": compare_dividends(merged, factor),
+        # A non-split later adjustment (e.g. a spin-off recorded by Yahoo as a "split") was found to apply to
+        # Yahoo's PRICES but not its DIVIDENDS (AT&T, Phase 6 data check) → dividends use the split part only.
+        "dividends": compare_dividends(
+            merged, factor * basis["later_factor"] if basis["non_simple_later_factor"] else factor
+        ),
         "splits": compare_splits(merged),
     }

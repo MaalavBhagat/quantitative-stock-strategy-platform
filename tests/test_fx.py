@@ -65,3 +65,24 @@ def test_load_without_files_or_meta_is_a_clear_error(tmp_path):
     (tmp_path / "2010-2013.xls").write_bytes(b"not used")
     with pytest.raises(FxDataError, match="meta.json"):
         load_usd_per_aud(tmp_path)
+
+
+def test_trimmed_csv_loads_and_refuses_post_2020_rows(tmp_path):
+    import json
+
+    from quant_research.data.fx import parse_trimmed_csv
+
+    good = tmp_path / "2018-2020_from_2018-2022.csv"
+    good.write_text("date,usd_per_aud\n2020-12-30,0.7650\n2020-12-31,0.7700\n")
+    assert parse_trimmed_csv(good) == [
+        (date(2020, 12, 30), D("0.7650")),
+        (date(2020, 12, 31), D("0.7700")),
+    ]
+    (tmp_path / "2018-2020_from_2018-2022.meta.json").write_text(json.dumps({"note": "made up"}))
+    assert load_usd_per_aud(tmp_path).on(date(2020, 12, 31)) == D(
+        "0.7700"
+    )  # lookup only; no 2021 row exists
+    bad = tmp_path / "bad.csv"
+    bad.write_text("date,usd_per_aud\n2020-12-31,0.7700\n2021-01-04,0.7800\n")
+    with pytest.raises(FxDataError, match="after 2020-12-31"):
+        parse_trimmed_csv(bad)

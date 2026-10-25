@@ -323,8 +323,25 @@ FINDINGS (Step 2.3):
   5/5 reproductions accepted.
 - 2026-10-25: Pre-registration change (§9, before any validation data): regime rule for H5 (Goggy's decision).
 
+- Phase 6 data step — DONE 2026-10-25 (prompt 16, plan approved incl. the RBA trim + no after-end estimate; branch
+  phase6-data, merged to main). DATA QUALITY ONLY — no strategy, backtest, metric or summary stat of 2017–2020 prices.
+  Downloads: 20 Tiingo calls (MSFT KO PG INTC T SPY × 3 periods + AAPL/XOM 2017–2020) → 24 files total; 8 Yahoo requests
+  (2008–2020, cache); RBA 2018-2022.xls once → kept ONLY ≤ 2020-12-31 (755 rates), original deleted.
+  Validation (reports/data_validation/phase6_all_stocks_2008-2020.md): all 24 files 0 ERROR / 0 WARNING; joins
+  warm-up → dev → validation clean (3,274 NYSE sessions each). Splits: AAPL 7:1 2014-06-09, AAPL 4:1 2020-08-31,
+  KO 2:1 2012-08-13. Dividends: 8 / 28 / 16 per file (AAPL: 0 / 18 / 16). SPY behaves like the stocks (no splits,
+  quarterly dividends). No special distributions / odd split factors (same-share-basis rule). Yahoo agrees on days,
+  splits, dividend dates for all 8.
+  FINDINGS: (1) Tiingo bad bar INTC 2014-06-13 (O=H=L=C=27.96, prior close repeated, volume 3.6× median; Yahoo +6.8%)
+  — reported, NOT fixed; only flat bar in 24 files; the 9 checks don't detect flat bars. (2) Yahoo applies a later
+  non-split adjustment to T prices (not dividends) → compared with a constant factor whose value is never reported (D8).
+  (3) 2014-07-28 cross-source differences for XOM (+1.085%) and T (−1.953%). (4) First naive dividend flag rule gave 8
+  false AAPL alarms (pre-split dividends) → rule fixed to one share basis before reporting.
+  Stake tradeability: all 8 VERIFIED on Stake AU Wall St pages (incl. SPY). Lock: tests pass, manual 2021 run REFUSED
+  before loading; 1,773 date columns/files scanned — nothing ≥ 2021-01-01; downloader now refuses END ≥ 2021-01-01.
+
 IN PROGRESS:
-- Phase 6 data step (prompt 16)
+- chat Claude checks the Phase 6 data report
 
 BLOCKED / OPEN QUESTIONS:
 - Stake fractional-share precision UNVERIFIED (D3 assumes 6 dp — check in Phase 3)
@@ -400,9 +417,14 @@ IMPORTANT DECISIONS:
      (only Goggy sets it) · D9 type hints required on every function in src/; no type-checker yet.
 
 NEXT ACTION:
-- Desktop Code session: "Read prompts/16_phase6_data_validation_period.md and do exactly what it says."
+- chat Claude checks the data report, then prompt 17: validation runs per PREREGISTRATION
 - DECISION 2026-10-25 (Goggy): regime rule = per stock, per calendar year, S0 return ≥ +10% UP, ≤ −10% DOWN, else SIDEWAYS.
-  Prompt 16 Step 0 writes it into PREREGISTRATION §9 before any validation data is downloaded.
+  DONE: written into PREREGISTRATION §6 + §9 (commit 9dfe4df) before any validation data was downloaded.
+
+TESTS RUN (2026-10-25, Phase 6 data step):
+- uv run pytest → "269 passed in 2.23s" · ruff check → "All checks passed!" · ruff format --check → "99 files already formatted"
+- scripts/validate_phase6_data.py → 24 files + 8 joins: 0 ERROR, 0 WARNING; 0 flags; 1 flat bar (INTC 2014-06-13)
+- lock: 2 lock tests pass; manual 2021-03-31 run REFUSED (loader not called); 0 dates ≥ 2021-01-01 on disk
 
 TESTS RUN (2026-10-25, Steps 5.5–5.7):
 - uv run pytest → "267 passed in 3.40s" (+ config.yaml round-trip test)
