@@ -48,10 +48,17 @@ using the "assume the worse order" rule.)
 **S3 — Mean reversion (tests H4)**
 - z = (close − 20-day average) ÷ 20-day standard deviation.
 - SELL when z ≥ +k. REBUY when z ≤ −k.  Starts invested.
+- Exact choices (2026-10-25): window w = the grid value (20 or 50), INCLUDES day T; std = sample std
+  (ddof = 1); prices = split-adjusted-as-of-T closes (raw closes ÷ splits up to T only — never close_adj,
+  which contains later splits and dividends). Dividend top-ups while invested (cash ≥ US$100), none in cash.
 
 **S4 — Trend-filtered (tests H3)**
 - Same as S1 or S2, but **no selling** while close > 200-day average AND the 200-day average is
   higher than it was 20 days ago (= strong uptrend). Rebuy rules unchanged.
+- Exact choices (2026-10-25): close and SMA200 both from split-adjusted-as-of-T closes; SMA200_(T−20) from
+  the same series; not enough history → no uptrend (filter off). E, S, P handled as S1/S2 (÷ split ratio).
+- Indicator warm-up (S3, S4): 2008-01-01 → 2009-12-31 rows are used ONLY to compute indicators; trading
+  and all metrics start on the period's first day as before (S0/S1/S2 reproduced exactly with warm-up rows).
 
 **Splits (all strategies with remembered prices, Goggy 2026-10-25):** E, S and P are raw prices per share;
 on a split day they are divided by the snapped split ratio before that day's fills are read, so a
@@ -136,3 +143,7 @@ Same structure applies to H2–H6 (H2 uses Sharpe / drawdown instead of final va
 - 2026-10-25: S1/S2 split handling made explicit (the plan didn't mention splits): remembered prices E, S, P
   are divided by the snapped split ratio on the split day. Found by the AAPL S1 trade-list check: the 7:1
   split on 2014-06-09 had triggered a fake "dip" rebuy. Development-period runs only; re-run after the fix.
+- 2026-10-25: S3/S4 exact choices recorded in §2 (z window includes T, ddof = 1, split-adjusted-as-of-T
+  prices, 2008–2009 warm-up for indicators only).
+- 2026-10-25: S4 run on ALL 16 X/Y combinations for both S4-S1 and S4-S2 — broader than §3's "≤ 8", so
+  that no "best region" is chosen from development results (avoids cherry-picking). Development period only.

@@ -97,3 +97,11 @@
 - `PortfolioView.fills` (read-only past fills); `RunConfig.profit_target_x` / `rebuy_dip_y` / `grid_override`.
 - Metrics: stranded episode, longest cash spell. TODO Phase 6: best-3-trades-removed.
 - `scripts/run_s1_s2_dev.py` → `reports/experiments/s1_s2_dev_2010-2016.md` (66 runs, development period only).
+
+## 2026-10-25 — Phase 5, Steps 5.3–5.4: S3 + S4, indicator warm-up (version stays 0.1.0)
+- Warm-up data 2008–2009 (download script takes START END); `load_prices_with_warmup`; `RunConfig.warmup_start`;
+  `run_engine(trade_start=…)` — strategies see warm-up rows, nothing is traded or measured before the start.
+- `quant_research.strategies.indicators` (split-adjusted-as-of-T closes, z-score, SMA, strong uptrend).
+- S3 `MeanReversion`; S4 `TrendFilteredProfitTarget` / `TrendFilteredPullback`; config `mr_k` / `mr_window` grid.
+- `scripts/run_s3_s4_dev.py` → `reports/experiments/s3_s4_dev_2010-2016.md` (78 runs + warm-up proof, dip caveat).
+- EXPERIMENT_PLAN §2 exact S3/S4 choices; §10 S4 on all 16 X/Y.

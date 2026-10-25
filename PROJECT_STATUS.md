@@ -2,7 +2,7 @@
 Last updated: 2026-10-20
 
 CURRENT PHASE: Phase 5 — Strategy laboratory (In progress)
-CURRENT TASK: Steps 5.3–5.4 — S3 mean reversion + S4 trend filter, dev period (prompt: prompts/14_phase5_steps5.3-5.4_s3_s4.md)
+CURRENT TASK: chat Claude verifies the S3/S4 trade lists; then prompt 15 (5.5 hybrid decision + 5.7 comparison + Phase 5 check)
 
 PHASE STATES (Not started / In progress / Blocked / Verified):
 - Phase 0  Feasibility & research design ........ VERIFIED (2026-10-18)
@@ -277,8 +277,27 @@ FINDINGS (Step 2.3):
   Mutation checks: S1 sells at the same day's close → 9 tests fail (incl. 6 look-ahead checks); S2 P = sale price →
   2 fail; no split adjustment → 2 fail; all restored.
 
+- Steps 5.3 (S3) + 5.4 (S4) — DONE 2026-10-25 (prompt 14, plan approved incl. 2 Tiingo warm-up calls; branch
+  phase5-s3-s4, merged to main). Warm-up data AAPL + XOM 2008-01-01 → 2009-12-31 (505 rows each, 0 missing, XOM 8
+  dividends, no splits) via scripts/download_initial_dataset.py START END; loader.load_prices_with_warmup joins
+  warm-up + main (join validated on the NYSE calendar; real files join 2009-12-31 → 2010-01-04 with no warnings);
+  RunConfig.warmup_start + run_engine(trade_start). strategies/indicators.py: split-adjusted-as-of-T closes (never
+  close_adj), z-score (window incl. T, ddof 1), SMA, strong uptrend. S3 MeanReversion (k × w grid); S4
+  TrendFilteredProfitTarget / TrendFilteredPullback (no sell in a strong uptrend; S4 on all 16 X/Y — §10).
+  WARM-UP PROOF: S0 ×2 + all 64 S1/S2 re-run with warm-up rows → 66 of 66 final values identical to the saved
+  report, to the cent (reproductions under /data/runs/_reproductions/).
+  DEVELOPMENT-PERIOD RESULTS (SIMULATED, HISTORICAL, exploration only — reports/experiments/s3_s4_dev_2010-2016.md):
+    Beat S0 / stranded: AAPL S3 0/6, 5 stranded · S4-S1 0/16, 16 stranded · S4-S2 14/16, 0 stranded (5% days in cash)
+                        XOM  S3 1/6, 6 stranded · S4-S1 7/16, 12 stranded · S4-S2 9/16, 0 stranded
+    Filter helped (S4 − base): AAPL S4-S1 16/16, S4-S2 16/16 · XOM S4-S1 8/16, S4-S2 12/16.
+  CHECKED, NOT A BUG: S4-S2 AAPL beats S0 by up to +217 pts while mostly invested — all 12 round trips of the top run
+    sold above entry and 10/12 rebought cheaper; the biggest gain is the 2015-08-24 crash-day open (−18.2% vs the
+    sale). Few large dips carry it → Phase 6 "best 3 trades removed" needed. Caveat written into the report.
+  Mutation checks: close_adj instead of split-adjusted → 1 test fails; z window ending at T+1 (engine passes one
+  extra row) → 9 look-ahead checks fail (S3, S4-S1, S4-S2); "SMA rising" dropped → 2 tests fail; all restored.
+
 IN PROGRESS:
-- Chat Claude: re-compute the S1 AAPL X=5% Y=5% trade list (report Appendix A) from the raw CSV
+- Chat Claude: re-compute the S3 AAPL k2.0 w20 and S4-S1 AAPL X5% Y5% trade lists (report Appendices A, B)
 
 BLOCKED / OPEN QUESTIONS:
 - Stake fractional-share precision UNVERIFIED (D3 assumes 6 dp — check in Phase 3)
@@ -351,13 +370,18 @@ IMPORTANT DECISIONS:
      (only Goggy sets it) · D9 type hints required on every function in src/; no type-checker yet.
 
 NEXT ACTION:
-- Desktop Code session: "Read prompts/14_phase5_steps5.3-5.4_s3_s4.md and do exactly what it says." (plan first)
+- chat Claude verifies trade lists, then prompt 15: Step 5.5 hybrid decision + 5.7 comparison + Phase 5 check
 
 CHAT CLAUDE CHECK OF S1/S2 (2026-10-25): main at 41821b0. Re-implemented S1 + S2 independently (own code, raw CSVs,
 split rule ÷ ratio) → Appendix A trades identical (2010-01-05 buy 42.289013 @214.7073; 2010-03-12 sell @227.256315,
 cash 9,607.44). All 64 grid cells reproduced: 63 exact, 1 differs by 0.1 pt (rounding of S0 baseline). → Steps 5.1, 5.2,
 5.6 VERIFIED. Interpretation: S1 is stranded in 16/16 runs on both stocks (sold, never rebought). S1 XOM's 4 "wins"
 came while 73–88% of days were in cash during XOM's 2014–16 fall → regime effect, not evidence of skill.
+
+TESTS RUN (2026-10-25, Steps 5.3–5.4):
+- uv run pytest → "266 passed in 2.13s" (+ indicators 7, s3_s4 12, loader warm-up 3, engine 2, run 1)
+- uv run ruff check . → "All checks passed!" · uv run ruff format --check . → "92 files already formatted"
+- scripts/run_s3_s4_dev.py → 78 runs (76 S3/S4 + 2 S0) + 64 reproductions; warm-up proof 66/66; commit 8f3cf46 (clean)
 
 TESTS RUN (2026-10-25, Steps 5.1–5.2):
 - uv run pytest → "241 passed in 2.22s" (+ profit_target 14, metrics +2, run +1)
