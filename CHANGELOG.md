@@ -131,3 +131,11 @@
 - CommSec start/end FX fee removed (per-trade FX covers it; logged in PREREGISTRATION §9 before any run).
 - Flat-bar validation check; fills.csv gains realised P&L + position_after; prereg-v1.1 (R1–R6 definitions).
 - scripts/run_validation.py (3,976 runs) + scripts/report_validation.py → reports/experiments/validation_2017-2020.md.
+
+## 2026-10-26 — Phase 6 close: Step 6.7 + Phase 6 check (prompt 18) (version stays 0.1.0)
+- `reports/RESULTS_SUMMARY.md`: plain-English answer (all five strategies REJECTED on validation 2017–2020), headline
+  table, why it failed, limits, small-investor facts (not financial advice), H2/H5/H6 not judged.
+- `scripts/validation_headline.py` → `reports/experiments/validation_headline_2017-2020.md` (from saved run records).
+- `research/FAILED_EXPERIMENTS.md` (failures and our own mistakes, dated, with evidence) and
+  `research/FINAL_TEST_OPTIONS.md` (options only; 2021+ stays locked).
+- README "Findings so far"; PROJECT_STATUS: Phase 6 ready for verification.

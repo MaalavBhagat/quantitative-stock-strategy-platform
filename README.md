@@ -8,6 +8,12 @@ investment advice.
 
 See `PROJECT_BRIEF.md` (summary), `PROJECT_STATUS.md` (progress) and `research/` (design).
 
+## Findings so far
+
+- On the 2017–2020 validation period, all five "sell after a rise, rebuy after a dip" strategies were **REJECTED** against buy-and-hold under rules fixed in advance (simulated, historical; not financial advice).
+- Main reasons: selling early left the strategies stranded in cash while prices kept rising, and earlier "winners" did not persist.
+- Plain-English summary with sources: [`reports/RESULTS_SUMMARY.md`](reports/RESULTS_SUMMARY.md). The 2021+ final test has not been run.
+
 ## Setup (macOS)
 
 1. Install [uv](https://docs.astral.sh/uv/) once: `brew install uv`

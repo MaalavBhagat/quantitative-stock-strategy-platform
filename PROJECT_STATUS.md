@@ -1,5 +1,5 @@
 # PROJECT_STATUS.md
-Last updated: 2026-10-20
+Last updated: 2026-10-26
 
 CURRENT PHASE: Phase 6 — Research validation (In progress)
 CURRENT TASK: Phase 6 Step 6.7 — results summary, failed-experiments log, final-test options, Phase 6 check (prompt: prompts/18_phase6_step6.7_failures_close.md)
@@ -11,7 +11,7 @@ PHASE STATES (Not started / In progress / Blocked / Verified):
 - Phase 3  Portfolio accounting engine .......... VERIFIED (2026-10-20)
 - Phase 4  Backtesting engine ................... VERIFIED (2026-10-25)
 - Phase 5  Strategy laboratory .................. VERIFIED (2026-10-25)
-- Phase 6  Research validation .................. In progress
+- Phase 6  Research validation .................. In progress — ready for verification
 - Phase 7  Company research & screening ......... Not started
 - Phase 8  Interactive dashboard ................ Not started
 - Phase 9  Market context & AI news ............. Not started
@@ -359,8 +359,19 @@ FINDINGS (Step 2.3):
   PG 13,034.01 · XOM 3,865.36 · INTC 10,600.24 · T 5,861.44 · SPY 12,681.98), Appendix B (S4-S2 AAPL 2/4: 23 fills,
   22,849.41) and Appendix C (S1 KO 3/3: 10 fills, 8,688.15) exactly. Verdict: S1, S2, S3, S4-S1, S4-S2 all REJECTED.
 
+- Step 6.7 + Phase 6 close — DONE 2026-10-26 (prompt 18, docs + one report script):
+  reports/RESULTS_SUMMARY.md (plain English; every number copied from a generated report with its section);
+  research/FAILED_EXPERIMENTS.md (S1–S4 verdicts, S0 sanity trip + 5%→1% rule, split-as-dip, CommSec double FX,
+  aborted 227-dirty batch, one-cent withholding); research/FINAL_TEST_OPTIONS.md (options a/b, neutral — NO
+  decision, NO unlock); scripts/validation_headline.py → reports/experiments/validation_headline_2017-2020.md
+  (headline table + S0 USD/AUD from saved run records); README "Findings so far".
+  PHASE 6 CHECK (report only, not marked Verified): out-of-sample results reported ✓ (validation report §1–§2) ·
+  cost sensitivity documented ✓ (§4, 7 variants) · parameter sensitivity documented ✓ (§3 grids) · limitations
+  explicit ✓ (RESULTS_SUMMARY §5, DATA_SOURCES §8) · not presented as proof of future profitability ✓
+  ("simulated, historical" + not-financial-advice lines) → Phase 6: ready for verification.
+
 IN PROGRESS:
-- Review the validation report; chat Claude re-checks trade lists + S0 values; then prompt 18 (6.7 write-up + Phase 6 check)
+- none (Phase 6 waiting for verification)
 
 BLOCKED / OPEN QUESTIONS:
 - Stake fractional-share precision UNVERIFIED (D3 assumes 6 dp — check in Phase 3)
@@ -445,7 +456,12 @@ IMPORTANT DECISIONS:
      (only Goggy sets it) · D9 type hints required on every function in src/; no type-checker yet.
 
 NEXT ACTION:
-- Desktop Code session: "Read prompts/18_phase6_step6.7_failures_close.md and do exactly what it says."
+- Chat Claude verifies Phase 6; Goggy chooses a final-test option (research/FINAL_TEST_OPTIONS.md) — log it in
+  PREREGISTRATION §9 BEFORE any 2021+ data is downloaded.
+
+TESTS RUN (2026-10-26, Step 6.7 / Phase 6 close):
+- uv run pytest -q → 275 passed in 2.24s · uv run ruff check . → All checks passed! ·
+  uv run ruff format --check . → 109 files already formatted. No logic changed (docs + one report script).
 
 TESTS RUN (2026-10-25, Phase 6 data step):
 - uv run pytest → "269 passed in 2.23s" · ruff check → "All checks passed!" · ruff format --check → "99 files already formatted"
