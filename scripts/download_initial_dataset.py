@@ -1,6 +1,7 @@
 """Phase 2, Step 2.2: download the small initial dataset (AAPL + XOM, 2010-2016) from Tiingo.
 
-Run from the project folder:  uv run python scripts/download_initial_dataset.py
+Run from the project folder:  uv run python scripts/download_initial_dataset.py [START END]
+  default dates 2010-01-01 2016-12-31; warm-up for indicators (prompt 14): 2008-01-01 2009-12-31
 Needs TIINGO_API_KEY in .env. Uses 2 API calls. Refuses to overwrite existing files.
 """
 
@@ -48,6 +49,12 @@ def summarise(ticker: str, df: pd.DataFrame) -> None:
 
 
 def main() -> int:
+    global START, END
+    if len(sys.argv) == 3:
+        START, END = date.fromisoformat(sys.argv[1]), date.fromisoformat(sys.argv[2])
+    elif len(sys.argv) != 1:
+        print("usage: download_initial_dataset.py [START END]  (YYYY-MM-DD)", file=sys.stderr)
+        return 2
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
     load_dotenv(PROJECT_ROOT / ".env")
     api_key = os.environ.get("TIINGO_API_KEY", "")
