@@ -2,7 +2,7 @@
 Last updated: 2026-10-20
 
 CURRENT PHASE: Phase 6 — Research validation (In progress)
-CURRENT TASK: Phase 6 Steps 6.1–6.6 — validation runs 2017–2020 per PREREGISTRATION (prompt: prompts/17_phase6_validation_runs.md)
+CURRENT TASK: Phase 6 Step 6.7 — results summary, failed-experiments log, final-test options, Phase 6 check (prompt: prompts/18_phase6_step6.7_failures_close.md)
 
 PHASE STATES (Not started / In progress / Blocked / Verified):
 - Phase 0  Feasibility & research design ........ VERIFIED (2026-10-18)
@@ -353,6 +353,12 @@ FINDINGS (Step 2.3):
   entry (best later close −2.30% / −0.72%), so S1/S2/S4 never sold there (excess exactly 0).
   NOT YET DONE (usage limit): report sections not reviewed in detail; DATA/CHANGELOG notes; chat Claude re-check.
 
+- VALIDATION VERIFIED by chat Claude 2026-10-26: all 3,976 run records from one clean commit 786e699, all end 2020-12-31.
+  prereg-v1.1 tagged 21:36 before the CommSec fix (21:38, logged in §9) and the run script (21:39). Independent
+  re-implementation reproduced all 8 S0 finals to the cent (AAPL 34,304.60 · MSFT 26,943.60 · KO 10,492.79 ·
+  PG 13,034.01 · XOM 3,865.36 · INTC 10,600.24 · T 5,861.44 · SPY 12,681.98), Appendix B (S4-S2 AAPL 2/4: 23 fills,
+  22,849.41) and Appendix C (S1 KO 3/3: 10 fills, 8,688.15) exactly. Verdict: S1, S2, S3, S4-S1, S4-S2 all REJECTED.
+
 IN PROGRESS:
 - Review the validation report; chat Claude re-checks trade lists + S0 values; then prompt 18 (6.7 write-up + Phase 6 check)
 
@@ -439,9 +445,7 @@ IMPORTANT DECISIONS:
      (only Goggy sets it) · D9 type hints required on every function in src/; no type-checker yet.
 
 NEXT ACTION:
-- Desktop Code session: "Read prompts/17_phase6_validation_runs.md and do exactly what it says."
-- DECISION 2026-10-25 (Goggy): chat Claude's operational definitions of the §6 rules (R1–R6) approved; prompt 17 writes
-  them into PREREGISTRATION §9 and tags prereg-v1.1 BEFORE any validation run.
+- Desktop Code session: "Read prompts/18_phase6_step6.7_failures_close.md and do exactly what it says."
 
 TESTS RUN (2026-10-25, Phase 6 data step):
 - uv run pytest → "269 passed in 2.23s" · ruff check → "All checks passed!" · ruff format --check → "99 files already formatted"
