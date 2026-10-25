@@ -261,3 +261,14 @@ def test_s3_config_grid_and_warmup_checks():
         parse_config({**s4, "profit_target_x": "0.05", "rebuy_dip_y": "0.05"}).strategy
         == "s4_trend_s1"
     )
+
+
+def test_saved_config_yaml_reads_back_unchanged(tmp_path):
+    import yaml
+
+    from quant_research.backtesting.run import config_to_yaml
+
+    cfg = base_config(start=date(2014, 6, 2), end=date(2014, 6, 4), usd_per_aud_end=D("0.75"))
+    assert parse_config(yaml.safe_load(config_to_yaml(cfg))) == cfg
+    out = run_backtest(cfg, BuyTenOnFirstClose(), load_fn=fake_loader([]), runs_dir=tmp_path)
+    assert parse_config(yaml.safe_load((out.run_dir / "config.yaml").read_text())) == cfg

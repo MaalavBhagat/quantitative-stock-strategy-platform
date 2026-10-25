@@ -16,7 +16,7 @@ import random
 import statistics
 import sys
 from dataclasses import dataclass
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 from decimal import Decimal
 from pathlib import Path
 
@@ -148,9 +148,12 @@ def reproduce(recs: list[Rec]) -> list[tuple]:
     )
     rows = []
     for rec in picks:
-        config = parse_config(
-            yaml.safe_load((rec.path.parent / "config.yaml").read_text(encoding="utf-8"))
-        )
+        raw = yaml.safe_load((rec.path.parent / "config.yaml").read_text(encoding="utf-8"))
+        # records written before 2026-10-25 stored dates as text — convert ONLY the date fields back
+        for key in ("start", "end", "warmup_start"):
+            if isinstance(raw.get(key), str):
+                raw[key] = date.fromisoformat(raw[key])
+        config = parse_config(raw)
         new = run_backtest(config, make_strategy(config), fx_series=fx, runs_dir=out_dir)
         saved = rec.record["summary"]
         same = (

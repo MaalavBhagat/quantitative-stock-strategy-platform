@@ -165,6 +165,12 @@ def parse_config(raw: dict[str, Any]) -> RunConfig:
     return config
 
 
+def config_to_yaml(config: RunConfig) -> str:
+    """YAML that parse_config can read back unchanged: dates stay dates, Decimals become quoted strings."""
+    values = {k: (str(v) if isinstance(v, Decimal) else v) for k, v in asdict(config).items()}
+    return yaml.safe_dump(values, sort_keys=False)
+
+
 def load_config(path: Path) -> RunConfig:
     return parse_config(yaml.safe_load(path.read_text(encoding="utf-8")))
 
@@ -297,9 +303,7 @@ def run_backtest(
     (run_dir / "run.json").write_text(
         json.dumps(_jsonable(record), indent=2) + "\n", encoding="utf-8"
     )
-    (run_dir / "config.yaml").write_text(
-        yaml.safe_dump(_jsonable(asdict(config)), sort_keys=False), encoding="utf-8"
-    )
+    (run_dir / "config.yaml").write_text(config_to_yaml(config), encoding="utf-8")
     _write_csv(
         run_dir / "orders.csv",
         [
