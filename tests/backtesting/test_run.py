@@ -219,3 +219,45 @@ def test_xy_config_must_be_on_the_grid():
     # X/Y on a strategy that doesn't use them is an error
     with pytest.raises(ValueError, match="only for"):
         parse_config({**base, "strategy": "s0_buy_and_hold"})
+
+
+def test_s3_config_grid_and_warmup_checks():
+    base = {
+        "run_name": "s3",
+        "strategy": "s3_mean_reversion",
+        "ticker": "T",
+        "start": date(2010, 1, 4),
+        "end": date(2010, 2, 1),
+        "warmup_start": date(2008, 1, 1),
+        "broker": "stake",
+        "spread_level": "normal",
+        "share_mode": "fractional",
+        "initial_aud": "10000",
+        "fx_source": "fixed",
+        "usd_per_aud_start": "0.69",
+        "usd_per_aud_end": "0.69",
+        "mr_k": "2.0",
+        "mr_window": 20,
+    }
+    c = parse_config(base)
+    assert (c.mr_k, c.mr_window, c.warmup_start) == (D("2.0"), 20, date(2008, 1, 1))
+    with pytest.raises(ValueError, match="outside the grid"):
+        parse_config({**base, "mr_window": 30})
+    with pytest.raises(ValueError, match="outside the grid"):
+        parse_config({**base, "mr_k": "1.0"})
+    with pytest.raises(ValueError, match="needs mr_k"):
+        parse_config({k: v for k, v in base.items() if k != "mr_k"})
+    with pytest.raises(ValueError, match="before start"):
+        parse_config({**base, "warmup_start": date(2010, 1, 4)})
+    with pytest.raises(ValueError, match="only for s3"):
+        parse_config({**base, "strategy": "s0_buy_and_hold"})
+    s4 = {
+        **{k: v for k, v in base.items() if k not in ("mr_k", "mr_window")},
+        "strategy": "s4_trend_s1",
+    }
+    with pytest.raises(ValueError, match="needs profit_target_x"):
+        parse_config(s4)
+    assert (
+        parse_config({**s4, "profit_target_x": "0.05", "rebuy_dip_y": "0.05"}).strategy
+        == "s4_trend_s1"
+    )

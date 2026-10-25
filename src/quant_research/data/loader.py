@@ -142,3 +142,44 @@ def load_prices(
     )
     logger.info("Loaded %d rows of %s from %s", len(result), ticker.upper(), path.name)
     return result
+
+
+def load_prices_with_warmup(
+    ticker: str,
+    warmup_start: date,
+    start: date,
+    end: date,
+    include_adjusted: bool = False,
+    data_dir: Path = DEFAULT_DATA_DIR,
+) -> pd.DataFrame:
+    """Warm-up rows (warmup_start … last session before start) + main rows (start … end) as ONE table.
+
+    Warm-up rows are only for computing indicators (they are the past, not look-ahead); the engine
+    trades from `start`. Both slices are validated, then the joined table is validated again over
+    warmup_start … end, so a gap or overlap at the join is an ERROR (NYSE calendar).
+    Provenance: df.attrs["provenance"] = main file, df.attrs["warmup_provenance"] = warm-up file.
+    """
+    from quant_research.data.validation import nyse_sessions  # local: keeps the import graph simple
+
+    if warmup_start >= start:
+        raise ValueError(f"warmup_start {warmup_start} must be before start {start}")
+    before = [d for d in nyse_sessions(warmup_start, start) if d < start]
+    if not before:
+        raise DataLoadError(f"no NYSE sessions between {warmup_start} and {start}")
+    # load with adjusted columns so the joined table gets the FULL validation, then drop them if not wanted
+    warm = load_prices(ticker, warmup_start, before[-1], True, data_dir)
+    main = load_prices(ticker, start, end, True, data_dir)
+    full = pd.concat([warm, main], ignore_index=True)
+    report = validate_prices(full, ticker.upper(), warmup_start, end)
+    errors = [i for i in report.issues if i.severity == Severity.ERROR]
+    if errors:
+        shown = "; ".join(f"{i.date} {i.check}: {i.message}" for i in errors[:5])
+        raise DataLoadError(f"{ticker.upper()} warm-up join {warmup_start} → {end} failed: {shown}")
+    for issue in report.issues:
+        if issue.severity == Severity.WARNING:
+            logger.warning("%s %s %s: %s", issue.ticker, issue.date, issue.check, issue.message)
+    columns = BASE_COLUMNS + (ADJ_COLUMNS if include_adjusted else [])
+    joined = full[columns].copy()
+    joined.attrs["provenance"] = main.attrs["provenance"]
+    joined.attrs["warmup_provenance"] = warm.attrs["provenance"]
+    return joined

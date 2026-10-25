@@ -116,3 +116,59 @@ def test_two_covering_files_is_an_error(tmp_path):
     )
     with pytest.raises(DataLoadError, match="csv_path="):
         load_prices("TEST", START, END, data_dir=tmp_path)
+
+
+# ---------- warm-up + main join ----------
+def _records(days: list[date], price: float = 100.0) -> list[dict]:
+    return [
+        {
+            "date": f"{d.isoformat()}T00:00:00.000Z",
+            "open": price, "high": price + 1, "low": price - 1, "close": price, "volume": 1000,
+            "adjOpen": price, "adjHigh": price + 1, "adjLow": price - 1, "adjClose": price, "adjVolume": 1000,
+            "divCash": 0.0, "splitFactor": 1.0,
+        }
+        for d in days
+    ]  # fmt: skip
+
+
+def _save(data_dir: Path, days: list[date], start: date, end: date) -> None:
+    save_raw_prices(
+        parse_prices(_records(days), "TEST"), "TEST", start, end,
+        endpoint="x", out_dir=data_dir, repo_dir=data_dir,
+    )  # fmt: skip
+
+
+def test_warmup_and_main_join_into_one_table(tmp_path):
+    from quant_research.data.loader import load_prices_with_warmup
+
+    warm = [date(2014, 6, d) for d in (2, 3, 4, 5, 6)]  # Mon–Fri, real NYSE sessions
+    main = [date(2014, 6, d) for d in (9, 10, 11, 12, 13)]
+    _save(tmp_path, warm, date(2014, 6, 1), date(2014, 6, 6))
+    _save(tmp_path, main, date(2014, 6, 9), date(2014, 6, 13))
+    df = load_prices_with_warmup(
+        "TEST", date(2014, 6, 1), date(2014, 6, 9), date(2014, 6, 13), data_dir=tmp_path
+    )
+    assert df["date"].tolist() == warm + main
+    assert df.attrs["provenance"].file_name.startswith("TEST_2014-06-09")
+    assert df.attrs["warmup_provenance"].file_name.startswith("TEST_2014-06-01")
+
+
+def test_warmup_gap_at_the_join_is_an_error(tmp_path):
+    from quant_research.data.loader import load_prices_with_warmup
+
+    warm = [date(2014, 6, d) for d in (2, 3, 4, 5)]  # 6 June (a trading day) missing
+    _save(tmp_path, warm, date(2014, 6, 1), date(2014, 6, 6))
+    _save(tmp_path, [date(2014, 6, d) for d in (9, 10)], date(2014, 6, 9), date(2014, 6, 10))
+    with pytest.raises(DataLoadError, match="calendar"):
+        load_prices_with_warmup(
+            "TEST", date(2014, 6, 1), date(2014, 6, 9), date(2014, 6, 10), data_dir=tmp_path
+        )
+
+
+def test_warmup_must_be_before_start(tmp_path):
+    from quant_research.data.loader import load_prices_with_warmup
+
+    with pytest.raises(ValueError, match="before start"):
+        load_prices_with_warmup(
+            "TEST", date(2014, 6, 9), date(2014, 6, 9), date(2014, 6, 10), data_dir=tmp_path
+        )

@@ -23,6 +23,7 @@ from quant_research.backtesting.engine import PortfolioView
 from quant_research.execution.orders import OrderIntent
 from quant_research.portfolio.money import require_decimal, to_decimal_price
 from quant_research.ratios import nearest_simple_ratio
+from quant_research.strategies.indicators import split_adjusted_closes, strong_uptrend
 
 
 class _ProfitTargetBase:
@@ -52,6 +53,10 @@ class _ProfitTargetBase:
 
     def _rebuy(self, close: Decimal) -> bool:
         raise NotImplementedError
+
+    def _sell_allowed(self, history: pd.DataFrame) -> bool:
+        """S4 overrides this (no sell in a strong uptrend). S1/S2: always allowed."""
+        return True
 
     # ---------- main ----------
     def _absorb_new_fills(self, view: PortfolioView, close: Decimal, day: date) -> None:
@@ -83,7 +88,7 @@ class _ProfitTargetBase:
             self._pending = "entry"
             return [OrderIntent("buy", self.ticker, "max_affordable")]
         if self.state == "invested":
-            if close >= self.entry_price * (1 + self.x):  # type: ignore[operator]
+            if close >= self.entry_price * (1 + self.x) and self._sell_allowed(history):  # type: ignore[operator]
                 self._pending = "sell"
                 return [OrderIntent("sell", self.ticker, "all")]
             if portfolio_view.cash_usd >= self.reinvest_min_cash_usd:
@@ -121,3 +126,37 @@ class PullbackFromPeak(_ProfitTargetBase):
     def _rebuy(self, close: Decimal) -> bool:
         self.peak_close = max(self.peak_close, close)  # type: ignore[type-var]
         return close <= self.peak_close * (1 - self.y)
+
+
+class _TrendFilter:
+    """S4 mix-in (EXPERIMENT_PLAN §2, tests H3): NO sell signal while in a strong uptrend.
+
+    Strong uptrend on day T = P_T > SMA200_T AND SMA200_T > SMA200_(T−20), P = split-adjusted-as-of-T
+    closes. Rebuy rules unchanged. Windows are parameters (tests use short ones).
+    """
+
+    sma_window: int = 200
+    slope_lag: int = 20
+
+    def _sell_allowed(self, history: pd.DataFrame) -> bool:
+        return not strong_uptrend(split_adjusted_closes(history), self.sma_window, self.slope_lag)
+
+
+class TrendFilteredProfitTarget(_TrendFilter, FixedProfitTarget):
+    """S4-S1: S1 rules with the trend filter on sells."""
+
+    def __init__(
+        self, *args: object, sma_window: int = 200, slope_lag: int = 20, **kwargs: object
+    ) -> None:
+        super().__init__(*args, **kwargs)  # type: ignore[arg-type]
+        self.sma_window, self.slope_lag = sma_window, slope_lag
+
+
+class TrendFilteredPullback(_TrendFilter, PullbackFromPeak):
+    """S4-S2: S2 rules with the trend filter on sells."""
+
+    def __init__(
+        self, *args: object, sma_window: int = 200, slope_lag: int = 20, **kwargs: object
+    ) -> None:
+        super().__init__(*args, **kwargs)  # type: ignore[arg-type]
+        self.sma_window, self.slope_lag = sma_window, slope_lag

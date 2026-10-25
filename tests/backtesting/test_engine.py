@@ -245,3 +245,37 @@ def test_bugs_raise_errors():
         run_engine(
             pd.DataFrame({"date": [date(2014, 6, 2)]}), T, Scripted({}), WHOLE, D("10000.00")
         )
+
+
+def test_warmup_rows_are_seen_but_not_traded_or_measured():
+    from quant_research.strategies.buy_and_hold import BuyAndHold
+
+    warm = make_prices(opens=[50, 60, 70, 80, 90, 100, 100, 110])
+    main = warm.iloc[5:].reset_index(drop=True)  # same rows from index 5 on
+    seen = []
+
+    class Recorder(BuyAndHold):
+        def on_close(self, day, history, view):
+            seen.append(len(history))
+            return super().on_close(day, history, view)
+
+    with_warmup = run_engine(
+        warm, T, Recorder(T, D(100)), FRACTIONAL, D("10000.00"), trade_start=warm["date"][5]
+    )
+    # strategy first called on the trade-start day with 6 rows of history (5 warm-up + that day)
+    assert seen[0] == 6
+    plain = run_engine(main, T, BuyAndHold(T, D(100)), FRACTIONAL, D("10000.00"))
+    # nothing traded or measured before trade_start → identical equity and fills (S0 ignores history)
+    assert [e.day for e in with_warmup.equity] == [e.day for e in plain.equity]
+    assert [e.total_value_usd for e in with_warmup.equity] == [
+        e.total_value_usd for e in plain.equity
+    ]
+    assert [(f.day, f.quantity, f.fill_price_usd) for f in with_warmup.fills] == [
+        (f.day, f.quantity, f.fill_price_usd) for f in plain.fills
+    ]
+
+
+def test_trade_start_after_all_rows_is_an_error():
+    prices = make_prices(opens=[100, 100])
+    with pytest.raises(ValueError, match="trade_start"):
+        run_engine(prices, T, Scripted({}), WHOLE, D("10000.00"), trade_start=date(2030, 1, 1))

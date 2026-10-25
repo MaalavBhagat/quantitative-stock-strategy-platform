@@ -110,8 +110,13 @@ def run_engine(
     strategy: Strategy,
     settings: EngineSettings,
     initial_cash_usd: Decimal,
+    trade_start: date | None = None,
 ) -> EngineResult:
-    """Run one ticker through the timeline. `prices` = validated loader output (raw columns)."""
+    """Run one ticker through the timeline. `prices` = validated loader output (raw columns).
+
+    trade_start: rows before it are WARM-UP only — the strategy sees them in `history` (the past),
+    but nothing is traded, valued or measured before trade_start. None = trade from the first row.
+    """
     missing = [c for c in REQUIRED_COLUMNS if c not in prices.columns]
     if missing:
         raise ValueError(f"price table is missing columns {missing}")
@@ -125,8 +130,18 @@ def run_engine(
     result = EngineResult(ticker, ledger)
     queued: list[tuple[date, OrderIntent]] = []
     previous_close: Decimal | None = None
+    first = 0
+    if trade_start is not None:
+        later = table.index[table["date"] >= trade_start]
+        if len(later) == 0:
+            raise ValueError(f"no rows on or after trade_start {trade_start}")
+        first = int(later[0])
+        if first > 0:
+            previous_close = _decimal(
+                table.iloc[first - 1]["close_raw"], "warm-up close", table.iloc[first - 1]["date"]
+            )
 
-    for i in range(len(table)):
+    for i in range(first, len(table)):
         row = table.iloc[i]
         day = row["date"]
         # 1. OPEN — corporate actions: split → dividend

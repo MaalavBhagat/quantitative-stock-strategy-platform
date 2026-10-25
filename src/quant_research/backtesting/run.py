@@ -19,7 +19,7 @@ import yaml
 
 from quant_research.backtesting.engine import EngineResult, EngineSettings, Strategy, run_engine
 from quant_research.data.fx import FxSeries, load_usd_per_aud
-from quant_research.data.loader import load_prices
+from quant_research.data.loader import load_prices, load_prices_with_warmup
 from quant_research.data.storage import git_state
 from quant_research.execution.costs import aud_to_usd, fx_fee_settings, usd_to_aud
 from quant_research.portfolio.money import require_decimal
@@ -51,6 +51,9 @@ class RunConfig:
     usd_per_aud_end: Decimal | None = None  # only for fx_source: fixed
     min_order_usd: Decimal | None = Decimal(10)
     reinvest_min_cash_usd: Decimal = Decimal(100)  # Goggy 2026-10-21 — applies to every strategy
+    warmup_start: date | None = None  # indicator history only — trading + metrics start at `start`
+    mr_k: Decimal | None = None  # S3: z-score threshold k
+    mr_window: int | None = None  # S3: window w (days)
     profit_target_x: Decimal | None = None  # S1/S2: sell when close ≥ E × (1 + X)
     rebuy_dip_y: Decimal | None = None  # S1/S2: rebuy when close ≤ S (S1) or P (S2) × (1 − Y)
     grid_override: bool = (
@@ -67,9 +70,12 @@ DECIMAL_FIELDS = {
     "reinvest_min_cash_usd",
     "profit_target_x",
     "rebuy_dip_y",
+    "mr_k",
 }
 XY_GRID = (Decimal("0.02"), Decimal("0.03"), Decimal("0.04"), Decimal("0.05"))  # EXPERIMENT_PLAN §3
-XY_STRATEGIES = ("s1_profit_target", "s2_pullback")
+XY_STRATEGIES = ("s1_profit_target", "s2_pullback", "s4_trend_s1", "s4_trend_s2")
+MR_K_GRID = (Decimal("1.5"), Decimal("2.0"), Decimal("2.5"))  # EXPERIMENT_PLAN §3 (S3)
+MR_WINDOW_GRID = (20, 50)  # EXPERIMENT_PLAN §3 (S3)
 
 
 def parse_config(raw: dict[str, Any]) -> RunConfig:
@@ -86,6 +92,7 @@ def parse_config(raw: dict[str, Any]) -> RunConfig:
             "usd_per_aud_end",
             "profit_target_x",
             "rebuy_dip_y",
+            "mr_k",
         ):
             continue
         if isinstance(values[key], float):
@@ -93,7 +100,9 @@ def parse_config(raw: dict[str, Any]) -> RunConfig:
                 f"config {key} is a float ({values[key]!r}) — write it in quotes, e.g. '0.69'"
             )
         values[key] = require_decimal(values[key], key)
-    for key in ("start", "end"):
+    for key in ("start", "end", "warmup_start"):
+        if key == "warmup_start" and values.get(key) is None:
+            continue
         if key in values and not isinstance(values[key], date):
             raise TypeError(f"config {key} must be a date like 2010-01-04, got {values[key]!r}")
     for flag in ("final_test_unlocked", "grid_override"):
@@ -132,6 +141,27 @@ def parse_config(raw: dict[str, Any]) -> RunConfig:
             )
     elif config.profit_target_x is not None or config.rebuy_dip_y is not None:
         raise ValueError(f"profit_target_x / rebuy_dip_y are only for {XY_STRATEGIES}")
+    if config.strategy == "s3_mean_reversion":
+        if config.mr_k is None or config.mr_window is None:
+            raise ValueError("s3_mean_reversion needs mr_k and mr_window")
+        if (
+            isinstance(config.mr_window, bool)
+            or not isinstance(config.mr_window, int)
+            or config.mr_window < 2
+        ):
+            raise ValueError(
+                f"mr_window must be a whole number of days ≥ 2, got {config.mr_window!r}"
+            )
+        on_grid = config.mr_k in MR_K_GRID and config.mr_window in MR_WINDOW_GRID
+        if not on_grid and not config.grid_override:
+            raise ValueError(
+                f"mr_k {config.mr_k} / mr_window {config.mr_window} outside the grid "
+                f"k {[str(k) for k in MR_K_GRID]} × w {list(MR_WINDOW_GRID)} (EXPERIMENT_PLAN §3)"
+            )
+    elif config.mr_k is not None or config.mr_window is not None:
+        raise ValueError("mr_k / mr_window are only for s3_mean_reversion")
+    if config.warmup_start is not None and config.warmup_start >= config.start:
+        raise ValueError(f"warmup_start {config.warmup_start} must be before start {config.start}")
     return config
 
 
@@ -185,6 +215,7 @@ def run_backtest(
     strategy: Strategy,
     load_fn: Callable[..., pd.DataFrame] = load_prices,
     runs_dir: Path = DEFAULT_RUNS_DIR,
+    warmup_load_fn: Callable[..., pd.DataFrame] = load_prices_with_warmup,
     repo_dir: Path = PROJECT_ROOT,
     fx_series: FxSeries | None = None,
 ) -> RunOutcome:
@@ -195,10 +226,15 @@ def run_backtest(
     """
     check_final_test_lock(config)  # before loading anything
     started = datetime.now(UTC)
-    prices = load_fn(config.ticker, config.start, config.end)
+    if config.warmup_start is not None:
+        prices = warmup_load_fn(config.ticker, config.warmup_start, config.start, config.end)
+    else:
+        prices = load_fn(config.ticker, config.start, config.end)
     provenance = prices.attrs.get("provenance")
+    warmup_provenance = prices.attrs.get("warmup_provenance")
 
-    first_trade_day = prices["date"].iloc[1] if len(prices) > 1 else prices["date"].iloc[0]
+    trading = prices[prices["date"] >= config.start]["date"].tolist()
+    first_trade_day = trading[1] if len(trading) > 1 else trading[0]
     last_day = prices["date"].iloc[-1]
     if config.fx_source == "rba":
         fx_series = fx_series if fx_series is not None else load_usd_per_aud()
@@ -212,7 +248,9 @@ def run_backtest(
     settings = EngineSettings(
         config.broker, config.spread_level, config.share_mode, config.min_order_usd
     )
-    result = run_engine(prices, config.ticker, strategy, settings, fx_in.amount_out)
+    result = run_engine(
+        prices, config.ticker, strategy, settings, fx_in.amount_out, trade_start=config.start
+    )
     rate_out, min_out = fx_fee_settings(config.broker, "out")
     fx_out = usd_to_aud(result.liquidation_value_usd, usd_per_aud_end, rate_out, min_out)
     finished = datetime.now(UTC)
@@ -250,6 +288,7 @@ def run_backtest(
         "finished_utc": finished.isoformat(timespec="seconds"),
         "config": asdict(config),
         "data_provenance": asdict(provenance) if provenance is not None else None,
+        "warmup_provenance": asdict(warmup_provenance) if warmup_provenance is not None else None,
         **git_state(repo_dir),
         "fx_files": list(fx_series.source_files) if fx_series is not None else None,
         "fx_note": "RBA daily AUD/USD (FXRUSD), latest rate dated <= day; source: Reserve Bank of Australia",
