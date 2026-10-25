@@ -263,7 +263,6 @@ IN PROGRESS:
 
 BLOCKED / OPEN QUESTIONS:
 - Stake fractional-share precision UNVERIFIED (D3 assumes 6 dp — check in Phase 3)
-- Sanity-check limit: relative shortfall ≤ 5% vs the adjusted-price return is an [ASSUMPTION] — chat Claude to confirm.
 - RBA files after 2017 (2018-2022.xls, 2023-current) not downloaded — needed only for validation / final test periods.
 - XOM 2014-07-28 Tiingo/Yahoo close differ 1.085% — unexplained (third source?)
 - XOM pre-ex-date closes (2010-02-05, 2010-05-10): Tiingo vs Yahoo differ by exactly the dividend — which is right?
@@ -315,6 +314,9 @@ IMPORTANT DECISIONS:
 - 2026-10-17: H1 v2 + H2–H7 approved. H1 v2 is the main hypothesis. H2–H6 tested only after H1 baseline; H7 exploratory.
 - 2026-10-21: Dividend reinvestment only when cash ≥ US$100 (reinvest_min_cash_usd), every strategy (Goggy, option b).
 - 2026-10-21: S0 sanity gap (7.06 / 5.14 pts) accepted by Goggy after investigation; check uses a relative limit (5%).
+- 2026-10-25: Sanity rule changed, approved by Goggy (chat Claude: 5% too loose): (1) S0 < adjusted-price return;
+  (2) no-withholding what-if within 1.0% relative of the adjusted return. Re-run: AAPL −0.39%, XOM −0.52% — pass;
+  S0 numbers identical (308.13% / 53.63%), only the check text changed.
 - 2026-10-21: S0 "buy at the first open" = first possible open after the first close (EXPERIMENT_PLAN §10).
 - 2026-10-20: Dividend withholding = 15% of the gross rounded DOWN to cents, then rounded UP (Goggy, golden scenario).
 - 2026-10-20: Coding conventions D1–D9 approved by Goggy (full text: PROJECT_GUIDE.md §9):
