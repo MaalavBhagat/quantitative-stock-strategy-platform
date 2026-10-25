@@ -124,25 +124,21 @@ def build_report(
             "(any other change would be a WARNING above)."
         ),
         "",
-        (
-            "| Ticker | Gap growth inside table | from splits | from dividends | Gap after table end "
-            "| Dividends-only estimate after end | Implied |"
-        ),
-        "|---|---|---|---|---|---|---|",
+        "| Ticker | Gap growth inside table | from splits | from dividends |",
+        "|---|---|---|---|",
     ]
     for r in reports:
         s = r.stats
         out.append(
             f"| {r.ticker} | ×{s['gap_factor_in_table']:.4f} | ×{s['gap_from_splits_in_table']:.4f} "
-            f"| ×{s['gap_from_dividends_in_table']:.4f} | ×{s['gap_after_table_end']:.4f} "
-            f"| ×{s.get('expected_dividends_only_after_end', float('nan')):.4f} "
-            f"| {s.get('implied_later_split', '—')} |"
+            f"| ×{s['gap_from_dividends_in_table']:.4f} |"
         )
     out += [
         "",
         (
-            "The after-end estimate assumes dividends continue at the in-table yearly rate until the "
-            "download date — a rough estimate, not a fact."
+            "Not reported (Goggy 2026-10-25, D8): the adjustment estimate AFTER the table end and the later-split "
+            "ratio implied by Yahoo's basis — both summarise corporate actions after 2016, which reach into the "
+            "locked final-test period (2021+). Only the splits and dividends INSIDE the table are shown."
         ),
         "",
         "## 4. Cross-check with Yahoo Finance (yfinance, `auto_adjust=False`)",
@@ -156,11 +152,7 @@ def build_report(
             c["dividends"],
             c["splits"],
         )
-        segs = "; ".join(
-            f"{s['from']}→{s['to']}: Yahoo/Tiingo = {s['explained_as']} "
-            f"(off by {s['rel_diff']:.1e})"
-            for s in b["segments"]
-        )
+        worst_fit = max(seg["rel_diff"] for seg in b["segments"])
         worst = ", ".join(f"{d} {v:+.3%}" for d, v in cl["worst"][:5])
         out += [
             f"**{ticker}**",
@@ -169,8 +161,9 @@ def build_report(
                 f"only in Tiingo: {len(days['only_tiingo'])}, only in Yahoo: {len(days['only_yahoo'])}."
             ),
             (
-                f"- Basis: Yahoo close split-adjusted = {b['yahoo_close_is_split_adjusted']}; "
-                f"later split implied by Yahoo's basis: {b['later_split_ratio_implied']}. {segs}."
+                f"- Basis: Yahoo close split-adjusted = {b['yahoo_close_is_split_adjusted']}; explained by whole "
+                f"split ratios in every stretch between splits (worst fit {worst_fit:.1e}). Per-stretch factors and "
+                "the later-split ratio are not shown (D8)."
             ),
             (
                 f"- Closes (Yahoo converted to raw basis): max |diff| {pct(cl['max_abs_pct'])}, "
@@ -243,8 +236,8 @@ def main() -> int:
         df = load_raw_csv(RAW_DIR / f"{stem}.csv")
         meta = json.loads((RAW_DIR / f"{stem}.meta.json").read_text())
         meta["raw_date_example"] = meta.get("raw_date_example")
-        downloaded = datetime.fromisoformat(meta["downloaded_at_utc"]).date()
-        report = validate_prices(df, ticker, START, END, downloaded=downloaded)
+        # downloaded=None: no "after the table end" estimate (D8, Goggy 2026-10-25)
+        report = validate_prices(df, ticker, START, END, downloaded=None)
         reports.append(report)
         metas[ticker] = meta
         checks[ticker] = crosscheck(df, load_or_fetch_yahoo(ticker, START, END, YAHOO_CACHE))
