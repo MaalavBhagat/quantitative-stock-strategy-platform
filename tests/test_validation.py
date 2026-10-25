@@ -11,6 +11,7 @@ from quant_research.data.validation import (
     check_big_moves,
     check_calendar,
     check_dividends,
+    check_flat_bars,
     check_missing_values,
     check_ohlc,
     check_order_and_duplicates,
@@ -257,3 +258,36 @@ def test_validate_prices_reports_errors():
     df.loc[1, "open_raw"] = -1.0
     report = validate_prices(df, "T", DATES[0], DATES[-1], sessions=DATES)
     assert report.has_errors
+
+
+# 10. flat bars (Phase 6)
+def test_no_flat_bar_pass():
+    assert check_flat_bars(make_df(), "T") == []
+
+
+def test_flat_bar_with_heavy_volume_is_warning():
+    df = make_df()
+    # day 3: O = H = L = C = 10, volume 300 vs median 100 → 3× > 2× → WARNING
+    df.loc[2, ["open_raw", "high_raw", "low_raw", "close_raw", "volume_raw"]] = [
+        10.0,
+        10.0,
+        10.0,
+        10.0,
+        300,
+    ]
+    issues = check_flat_bars(df, "T")
+    assert [(i.date, i.severity) for i in issues] == [(DATES[2], Severity.WARNING)]
+    assert "3.0× the median" in issues[0].message
+
+
+def test_flat_bar_on_normal_volume_is_not_flagged():
+    df = make_df()
+    # flat bar but volume 150 = 1.5× median → not flagged (quiet flat days can be real)
+    df.loc[2, ["open_raw", "high_raw", "low_raw", "close_raw", "volume_raw"]] = [
+        10.0,
+        10.0,
+        10.0,
+        10.0,
+        150,
+    ]
+    assert check_flat_bars(df, "T") == []

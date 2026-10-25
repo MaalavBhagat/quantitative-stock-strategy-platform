@@ -27,7 +27,7 @@
 | XOM | development | 1762 | 1762 | 0 | 0 | 2 | none | 28 |
 | XOM | validation | 1007 | 1007 | 0 | 0 | 2 | none | 16 |
 | INTC | warm-up | 505 | 505 | 0 | 0 | 2 | none | 8 |
-| INTC | development | 1762 | 1762 | 0 | 0 | 2 | none | 28 |
+| INTC | development | 1762 | 1762 | 0 | 1 | 2 | none | 28 |
 | INTC | validation | 1007 | 1007 | 0 | 0 | 2 | none | 16 |
 | T | warm-up | 505 | 505 | 0 | 0 | 2 | none | 8 |
 | T | development | 1762 | 1762 | 0 | 0 | 2 | none | 28 |
@@ -36,7 +36,8 @@
 | SPY | development | 1762 | 1762 | 0 | 0 | 2 | none | 28 |
 | SPY | validation | 1007 | 1007 | 0 | 0 | 2 | none | 16 |
 
-**Warnings per file:** none.
+**Warnings per file:** 
+- INTC development: 2014-06-13 flat_bar: open = high = low = close = 27.96 with volume 3.5× the median — possibly a stale bar
 
 ## 2. Joins: warm-up → development → validation (NYSE calendar, 2008-01-01 → 2020-12-31)
 
@@ -47,11 +48,12 @@
 | KO | 3274 | 3274 | 2009-12-31 → 2010-01-04; 2016-12-30 → 2017-01-03 | 0 | 0 |
 | PG | 3274 | 3274 | 2009-12-31 → 2010-01-04; 2016-12-30 → 2017-01-03 | 0 | 0 |
 | XOM | 3274 | 3274 | 2009-12-31 → 2010-01-04; 2016-12-30 → 2017-01-03 | 0 | 0 |
-| INTC | 3274 | 3274 | 2009-12-31 → 2010-01-04; 2016-12-30 → 2017-01-03 | 0 | 0 |
+| INTC | 3274 | 3274 | 2009-12-31 → 2010-01-04; 2016-12-30 → 2017-01-03 | 0 | 1 |
 | T | 3274 | 3274 | 2009-12-31 → 2010-01-04; 2016-12-30 → 2017-01-03 | 0 | 0 |
 | SPY | 3274 | 3274 | 2009-12-31 → 2010-01-04; 2016-12-30 → 2017-01-03 | 0 | 0 |
 
-**Join warnings:** none.
+**Join warnings:** 
+- INTC 2014-06-13 flat_bar: open = high = low = close = 27.96 with volume 3.6× the median — possibly a stale bar
 
 ## 3. Yahoo cross-check (yfinance, auto_adjust=False, one request per ticker 2008-01-01 → 2020-12-31)
 

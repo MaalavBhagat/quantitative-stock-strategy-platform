@@ -226,6 +226,36 @@ def check_dividends(df: pd.DataFrame, ticker: str) -> list[Issue]:
     return issues
 
 
+FLAT_BAR_VOLUME_MULTIPLE = (
+    2.0  # flat bar + volume above this × median → suspicious (Phase 6, prompt 17)
+)
+
+
+def check_flat_bars(df: pd.DataFrame, ticker: str) -> list[Issue]:
+    """open = high = low = close with volume > 2 × the median → WARNING (stale / repeated bar, e.g. INTC 2014-06-13).
+
+    A flat bar on a normal or quiet day can be real, so only heavy-volume flat bars are flagged. Never fixed.
+    """
+    median_volume = float(df["volume_raw"].median())
+    flat = (
+        (df["open_raw"] == df["high_raw"])
+        & (df["high_raw"] == df["low_raw"])
+        & (df["low_raw"] == df["close_raw"])
+        & (df["volume_raw"] > FLAT_BAR_VOLUME_MULTIPLE * median_volume)
+    )
+    return [
+        Issue(
+            ticker,
+            df.at[idx, "date"],
+            "flat_bar",
+            Severity.WARNING,
+            f"open = high = low = close = {df.at[idx, 'close_raw']} with volume "
+            f"{df.at[idx, 'volume_raw'] / median_volume:.1f}× the median — possibly a stale bar",
+        )
+        for idx in df.index[flat]
+    ]
+
+
 def check_big_moves(df: pd.DataFrame, ticker: str) -> list[Issue]:
     """|raw close change| > 25%: INFO if a split is on that date, else WARNING."""
     issues = []
@@ -361,6 +391,7 @@ def validate_prices(
     report.issues += check_splits(df, ticker)
     report.issues += check_dividends(df, ticker)
     report.issues += check_big_moves(df, ticker)
+    report.issues += check_flat_bars(df, ticker)
     ratio_issues, ratio_stats = check_adjustment_ratio(df, ticker, downloaded)
     report.issues += ratio_issues
     report.stats.update(ratio_stats)
