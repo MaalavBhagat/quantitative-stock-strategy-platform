@@ -352,6 +352,8 @@ IMPORTANT DECISIONS:
 - 2026-10-17: H1 v2 + H2–H7 approved. H1 v2 is the main hypothesis. H2–H6 tested only after H1 baseline; H7 exploratory.
 - 2026-10-21: Dividend reinvestment only when cash ≥ US$100 (reinvest_min_cash_usd), every strategy (Goggy, option b).
 - 2026-10-21: S0 sanity gap (7.06 / 5.14 pts) accepted by Goggy after investigation; check uses a relative limit (5%).
+- 2026-10-25: Step 5.5 — NO hybrid (S5) strategy (Goggy): S4 already combines trend filter + profit target; more
+  variants on the same data raise the fluke risk. S0–S4 frozen for validation.
 - 2026-10-25: S1/S2 remembered prices (E, S, P) are divided by the snapped split ratio on split days (Goggy).
 - 2026-10-25: Sanity rule changed, approved by Goggy (chat Claude: 5% too loose): (1) S0 < adjusted-price return;
   (2) no-withholding what-if within 1.0% relative of the adjusted return. Re-run: AAPL −0.39%, XOM −0.52% — pass;

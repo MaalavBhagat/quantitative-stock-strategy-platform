@@ -64,7 +64,9 @@ using the "assume the worse order" rule.)
 on a split day they are divided by the snapped split ratio before that day's fills are read, so a
 split never looks like a dip or blocks a profit target.
 
-**S5 — Hybrid** — NOT designed yet. Only built after S1–S4 are evaluated (roadmap Step 5.5).
+**S5 — Hybrid** — NOT BUILT (decision by Goggy, 2026-10-25, roadmap Step 5.5). Reason: S4 already
+combines a trend filter with the profit-target rules, and every extra variant tried on the same 2010–2016 data
+raises the chance of a lucky fluke. S0–S4 are frozen for validation (research/PREREGISTRATION.md).
 
 ## 3. Parameter grid (kept small on purpose)
 | Strategy | Parameters | Combos |
@@ -147,3 +149,5 @@ Same structure applies to H2–H6 (H2 uses Sharpe / drawdown instead of final va
   prices, 2008–2009 warm-up for indicators only).
 - 2026-10-25: S4 run on ALL 16 X/Y combinations for both S4-S1 and S4-S2 — broader than §3's "≤ 8", so
   that no "best region" is chosen from development results (avoids cherry-picking). Development period only.
+- 2026-10-25: S5 hybrid NOT built (Goggy's decision, Step 5.5) — S4 already combines trend filter + profit
+  target; more variants on the same data raise the fluke risk. S0–S4 frozen for validation.
