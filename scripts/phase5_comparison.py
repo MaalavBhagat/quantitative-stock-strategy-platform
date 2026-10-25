@@ -51,7 +51,7 @@ SAME = [  # (what, how to read it from a record)
     ("reinvest rule (US$)", lambda r: r["config"]["reinvest_min_cash_usd"]),
     ("min order (US$)", lambda r: r["config"]["min_order_usd"]),
     ("final test locked", lambda r: r["config"]["final_test_unlocked"]),
-    ("clean code (not dirty)", lambda r: r["git_dirty"]),
+    ("uncommitted code changes (git_dirty)", lambda r: r["git_dirty"]),
 ]  # fmt: skip
 STRATEGY_ORDER = ["S1", "S2", "S3", "S4-S1", "S4-S2"]
 SEED = 20261025
