@@ -89,3 +89,24 @@ times, orders, fills, equity). Reports contain summary numbers only (licence). F
 - 2026-10-25: Regime rule (H5, Goggy's decision): each calendar year is labelled per stock from that stock's S0
   (buy-and-hold, MAIN settings) total return for that year: ≥ +10% = UP, ≤ −10% = DOWN, otherwise SIDEWAYS.
   Partial first/last years use the days available. Decided before any 2017–2020 data exists. (Added to §6 item 4.)
+- 2026-10-25: Operational definitions for §5 (Goggy approved chat Claude's definitions 2026-10-25; added BEFORE any
+  validation run; tagged `prereg-v1.1`):
+  "Operational definitions for §5 (validation period 2017-01-03 → 2020-12-31, MAIN settings unless stated):
+   - excess(setting, stock) = strategy total return − S0 total return, USD, percentage points.
+   - R1 'beats S0 on a stock' = the MEDIAN excess across that strategy's grid settings is > 0 on that stock.
+     Pass if true on ≥ 6 of 8 stocks.
+   - R2 'settings' = a setting passes if its MEAN excess across the 8 stocks is > 0. Pass if ≥ 60% of settings pass
+     (S1, S2, S4-S1, S4-S2: ≥ 10 of 16; S3: ≥ 4 of 6).
+   - R3 drawdown: per stock, MEDIAN across settings of (strategy max drawdown − S0 max drawdown), in pp, must be ≥ −5.
+     Pass if true on ≥ 6 of 8 stocks.
+   - R4 costs: re-evaluate R1 and R2 at the combined stress setting (wide spread AND CommSec). If R1+R2 pass at MAIN
+     but fail under stress → label 'low-cost only' (not a pass). Also report tight / wide / IBKR / CommSec / whole
+     shares one at a time (sensitivity, not judged).
+   - R5 best-3 removed: per run, final value minus the realised P&L (after fees) of its 3 most profitable round trips
+     (fewer if it has fewer); recompute R1 + R2. Pass if both still pass.
+   - R6 evidence: per stock, MEDIAN round trips across settings ≥ 10. If fewer than 6 of 8 stocks meet it → the verdict
+     can be at most INCONCLUSIVE (too few trades), never SUPPORTED.
+   - Verdict per strategy: SUPPORTED = R1–R6 all pass. REJECTED = R1 count ≤ 3 of 8 (loses on 5+ stocks).
+     INCONCLUSIVE = anything else.
+   - S0 itself is the benchmark (no verdict). Regime rule as logged above. Any bug found during runs → STOP, report,
+     fix, log here, re-run ALL runs; never re-run only the ones that changed."
