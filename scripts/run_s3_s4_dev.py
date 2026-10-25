@@ -9,6 +9,7 @@ Run:  uv run python scripts/run_s3_s4_dev.py
 SIMULATED, HISTORICAL, DEVELOPMENT PERIOD — exploration only, not evidence (EXPERIMENT_PLAN §4).
 """
 
+import itertools
 import json
 import logging
 import re
@@ -163,6 +164,42 @@ def pts(x: float) -> str:
     return f"{x * 100:+.1f}"
 
 
+def dip_dependence(winners: list[Run]) -> list[str]:
+    """For the largest win: how much it rests on a few cheap rebuys (split-adjusted to the last day's units)."""
+    if not winners:
+        return []
+    top = max(winners, key=lambda r: r.perf.total_return_usd)
+    fills = top.out.result.fills
+    splits = [(e.date, e.ratio) for e in top.out.result.portfolio.entries if e.type == "SPLIT"]
+
+    def in_last_units(day, price):
+        for split_day, ratio in splits:
+            if day < split_day:
+                price = price / ratio
+        return price
+
+    cycles = [
+        (
+            f.day,
+            in_last_units(f.day, f.fill_price_usd),
+            g.day,
+            in_last_units(g.day, g.fill_price_usd),
+        )
+        for f, g in itertools.pairwise(fills)
+        if f.side == "sell" and g.side == "buy"
+    ]
+    cheaper = sum(1 for _, sold, _, bought in cycles if bought < sold)
+    best = sorted(cycles, key=lambda c: c[3] / c[1])[:3]
+    return [
+        f"- The largest S3/S4 result ({top.name}) rests on {len(cycles)} sell → rebuy cycles, {cheaper} of them",
+        "  rebought cheaper (split-adjusted). The three cheapest rebuys: "
+        + "; ".join(f"sold {a} → rebought {c} {(d / b - 1):+.1%}" for a, b, c, d in best)
+        + ".",
+        "  A few large dips (e.g. a crash-day open) can carry the whole result — Phase 6's \"best 3 trades",
+        '  removed" check is needed before reading anything into it.',
+    ]
+
+
 def build_report(runs: list[Run], repro: list[Run], checks: list) -> str:
     s0 = {r.ticker: r for r in runs if r.label == "S0"}
     every = [*runs, *repro]
@@ -290,6 +327,7 @@ def build_report(runs: list[Run], repro: list[Run], checks: list) -> str:
             if winners
             else "no S3/S4 run beat S0."
         ),
+        *dip_dependence(winners),
         '- Roadmap 5.7: a setting is never preferred because it traded more. "Best 3 trades removed" and cost /',
         "  spread sensitivity are Phase 6. H1 is judged only on the final test period (EXPERIMENT_PLAN §6).",
         "- S4 was run on all 16 X/Y combinations (broader than EXPERIMENT_PLAN §3's ≤ 8) to avoid choosing a",
