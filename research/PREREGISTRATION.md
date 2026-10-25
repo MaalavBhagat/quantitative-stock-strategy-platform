@@ -68,8 +68,9 @@ S3, S4-S1, S4-S2.
 1. Parameter sensitivity: X×Y and k×w heatmaps of excess return per stock — is any result a single lucky cell?
 2. Cost sensitivity: every result at tight / normal / wide spread and LOW / MAIN / HIGH broker costs.
 3. Best 3 trades removed: each run's result without its 3 most profitable round trips.
-4. Regime split: results by year type — up / down / sideways years (classified from S0's calendar-year return,
-   rule to be fixed in §9 BEFORE the validation run).
+4. Regime split: results by year type — up / down / sideways years. Rule (fixed 2026-10-25, see §9): each
+   calendar year is labelled per stock from that stock's S0 (buy-and-hold, MAIN settings) total return for that
+   year: ≥ +10% = UP, ≤ −10% = DOWN, otherwise SIDEWAYS. Partial first/last years use the days available.
 5. Consistency: across the 8 stocks and across the 4 validation years.
 6. Dependence on a few trades: share of the total gain coming from the top 1 / top 3 round trips.
 
@@ -85,3 +86,6 @@ times, orders, fills, equity). Reports contain summary numbers only (licence). F
 
 ## 9. Change log
 - 2026-10-25: v1 created and tagged `prereg-v1` — before any 2017–2020 data was downloaded or run.
+- 2026-10-25: Regime rule (H5, Goggy's decision): each calendar year is labelled per stock from that stock's S0
+  (buy-and-hold, MAIN settings) total return for that year: ≥ +10% = UP, ≤ −10% = DOWN, otherwise SIDEWAYS.
+  Partial first/last years use the days available. Decided before any 2017–2020 data exists. (Added to §6 item 4.)

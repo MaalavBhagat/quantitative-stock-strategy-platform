@@ -1,8 +1,8 @@
 # PROJECT_STATUS.md
 Last updated: 2026-10-20
 
-CURRENT PHASE: Phase 5 — Strategy laboratory (ready for verification)
-CURRENT TASK: Phase 5 verification by chat Claude
+CURRENT PHASE: Phase 6 — Research validation (In progress)
+CURRENT TASK: Phase 6 data — 6 new stocks + 2017–2020 validation data, validation only (prompt: prompts/16_phase6_data_validation_period.md)
 
 PHASE STATES (Not started / In progress / Blocked / Verified):
 - Phase 0  Feasibility & research design ........ VERIFIED (2026-10-18)
@@ -10,8 +10,8 @@ PHASE STATES (Not started / In progress / Blocked / Verified):
 - Phase 2  Historical market data ............... VERIFIED (2026-10-20)
 - Phase 3  Portfolio accounting engine .......... VERIFIED (2026-10-20)
 - Phase 4  Backtesting engine ................... VERIFIED (2026-10-25)
-- Phase 5  Strategy laboratory .................. ready for verification (2026-10-25)
-- Phase 6  Research validation .................. Not started
+- Phase 5  Strategy laboratory .................. VERIFIED (2026-10-25)
+- Phase 6  Research validation .................. In progress
 - Phase 7  Company research & screening ......... Not started
 - Phase 8  Interactive dashboard ................ Not started
 - Phase 9  Market context & AI news ............. Not started
@@ -318,8 +318,13 @@ FINDINGS (Step 2.3):
   all strategies compared against buy-and-hold ✓ (every run has excess vs S0; consistency proof shows the same S0).
   → Phase 5: ready for verification
 
+- PHASE 5 VERIFIED (2026-10-25) — Verified by chat Claude: tag prereg-v1 on e8152d8 (2026-10-25 20:56 +1100),
+  PREREGISTRATION.md unchanged since the tag, no 2017–2020 price files on disk; consistency proof over 144 runs +
+  5/5 reproductions accepted.
+- 2026-10-25: Pre-registration change (§9, before any validation data): regime rule for H5 (Goggy's decision).
+
 IN PROGRESS:
-- Phase 5 verification by chat Claude
+- Phase 6 data step (prompt 16)
 
 BLOCKED / OPEN QUESTIONS:
 - Stake fractional-share precision UNVERIFIED (D3 assumes 6 dp — check in Phase 3)
@@ -395,14 +400,9 @@ IMPORTANT DECISIONS:
      (only Goggy sets it) · D9 type hints required on every function in src/; no type-checker yet.
 
 NEXT ACTION:
-- chat Claude verifies Phase 5, then Phase 6 prompt 16: data for the other 6 stocks + validation-period data
-
-CHAT CLAUDE CHECK OF S3/S4 (2026-10-25): main at 3598355. Independent re-implementation (own code, raw + warm-up CSVs,
-split-adjusted-as-of-T, sample std, SMA200 slope over 20 days): Appendix A S3 AAPL k2 w20 → 37 fills, same trades,
-final US$12,715.06; Appendix B S4-S1 AAPL 5/5 → 2 fills, final US$13,902.70. All 76 grid cells reproduced (exact, or
-≤0.4 pt in S4-S2 AAPL from S0-baseline rounding). → Steps 5.3, 5.4 VERIFIED.
-Reading: S4-S2 AAPL beats S0 in 14/16 (up to +217 pts) but rests on a few big dips (2015-08-24 crash) and is 1 stock,
-dev period, after 70 settings tried → hypothesis only. Phase 6 + pre-registration decide.
+- Desktop Code session: "Read prompts/16_phase6_data_validation_period.md and do exactly what it says."
+- DECISION 2026-10-25 (Goggy): regime rule = per stock, per calendar year, S0 return ≥ +10% UP, ≤ −10% DOWN, else SIDEWAYS.
+  Prompt 16 Step 0 writes it into PREREGISTRATION §9 before any validation data is downloaded.
 
 TESTS RUN (2026-10-25, Steps 5.5–5.7):
 - uv run pytest → "267 passed in 3.40s" (+ config.yaml round-trip test)
