@@ -13,10 +13,12 @@ from quant_research.metrics.performance import (
     annual_volatility,
     cagr,
     calendar_year_returns,
+    longest_cash_spell,
     max_drawdown,
     pct_days_fully_in_cash,
     round_trips,
     sharpe,
+    stranded,
     summarise,
     total_return,
     worst_calendar_year,
@@ -131,3 +133,28 @@ def test_summarise_matches_ledger_and_aud_conversion():
     assert s.total_return_aud == pytest.approx(-0.05, abs=1e-15)
     assert s.pct_days_fully_in_cash == pytest.approx(1 / 5)  # day 1 only (bought at day 2 open)
     assert s.round_trips == 0
+
+
+def test_longest_cash_spell():
+    # market values: 0 0 | 5 | 0 0 0 | 7 → longest run of zeros = 3
+    assert longest_cash_spell([0, 0, 5, 0, 0, 0, 7]) == 3
+    assert longest_cash_spell([1, 2]) == 0
+
+
+@dataclass
+class DayFill:
+    side: str
+    position_after: Decimal
+    day: date
+
+
+def test_stranded_only_when_the_last_fill_is_a_full_sale():
+    days = [date(2014, 1, d) for d in (2, 3, 6, 7, 8)]
+    sold = [DayFill("buy", D(10), days[0]), DayFill("sell", D(0), days[2])]
+    # sold on day index 2 and never rebought → stranded for days[2..4] = 3 trading days
+    assert stranded(sold, days) == (True, 3)
+    rebought = [*sold, DayFill("buy", D(9), days[3])]
+    assert stranded(rebought, days) == (False, 0)
+    partial = [DayFill("buy", D(10), days[0]), DayFill("sell", D(4), days[2])]
+    assert stranded(partial, days) == (False, 0)
+    assert stranded([], days) == (False, 0)

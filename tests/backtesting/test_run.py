@@ -183,3 +183,39 @@ def test_rba_fx_uses_first_trade_day_and_last_day_rates(tmp_path):
     assert (s["usd_per_aud_start"], s["usd_per_aud_start_for_day"]) == (D("0.69"), date(2014, 6, 3))
     assert (s["usd_per_aud_end"], s["usd_per_aud_end_for_day"]) == (D("0.75"), date(2014, 6, 4))
     assert (s["start_cash_usd"], s["end_aud_after_liquidation"]) == (D("6862.05"), D("9222.32"))
+
+
+def test_xy_config_must_be_on_the_grid():
+    base = {
+        "run_name": "s1",
+        "strategy": "s1_profit_target",
+        "ticker": "T",
+        "start": date(2010, 1, 4),
+        "end": date(2010, 2, 1),
+        "broker": "stake",
+        "spread_level": "normal",
+        "share_mode": "fractional",
+        "initial_aud": "10000",
+        "fx_source": "fixed",
+        "usd_per_aud_start": "0.69",
+        "usd_per_aud_end": "0.69",
+        "profit_target_x": "0.03",
+        "rebuy_dip_y": "0.05",
+    }
+    c = parse_config(base)
+    assert (c.profit_target_x, c.rebuy_dip_y, c.grid_override) == (D("0.03"), D("0.05"), False)
+    with pytest.raises(ValueError, match="outside the grid"):
+        parse_config({**base, "profit_target_x": "0.0317"})
+    with pytest.raises(ValueError, match="needs rebuy_dip_y"):
+        parse_config({k: v for k, v in base.items() if k != "rebuy_dip_y"})
+    with pytest.raises(TypeError, match="quotes"):
+        parse_config({**base, "rebuy_dip_y": 0.05})
+    with pytest.raises(ValueError, match="between 0 and 1"):
+        parse_config({**base, "profit_target_x": "3", "grid_override": True})
+    # grid_override allows an exploratory value (logged as a warning)
+    assert parse_config(
+        {**base, "profit_target_x": "0.0317", "grid_override": True}
+    ).profit_target_x == D("0.0317")
+    # X/Y on a strategy that doesn't use them is an error
+    with pytest.raises(ValueError, match="only for"):
+        parse_config({**base, "strategy": "s0_buy_and_hold"})

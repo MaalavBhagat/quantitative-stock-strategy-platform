@@ -51,6 +51,11 @@ class RunConfig:
     usd_per_aud_end: Decimal | None = None  # only for fx_source: fixed
     min_order_usd: Decimal | None = Decimal(10)
     reinvest_min_cash_usd: Decimal = Decimal(100)  # Goggy 2026-10-21 — applies to every strategy
+    profit_target_x: Decimal | None = None  # S1/S2: sell when close ≥ E × (1 + X)
+    rebuy_dip_y: Decimal | None = None  # S1/S2: rebuy when close ≤ S (S1) or P (S2) × (1 − Y)
+    grid_override: bool = (
+        False  # True = X/Y outside the EXPERIMENT_PLAN §3 grid (logged as exploratory)
+    )
     final_test_unlocked: bool = False
 
 
@@ -60,7 +65,11 @@ DECIMAL_FIELDS = {
     "usd_per_aud_end",
     "min_order_usd",
     "reinvest_min_cash_usd",
+    "profit_target_x",
+    "rebuy_dip_y",
 }
+XY_GRID = (Decimal("0.02"), Decimal("0.03"), Decimal("0.04"), Decimal("0.05"))  # EXPERIMENT_PLAN §3
+XY_STRATEGIES = ("s1_profit_target", "s2_pullback")
 
 
 def parse_config(raw: dict[str, Any]) -> RunConfig:
@@ -71,7 +80,13 @@ def parse_config(raw: dict[str, Any]) -> RunConfig:
         raise ValueError(f"unknown config keys: {sorted(unknown)}")
     values = dict(raw)
     for key in DECIMAL_FIELDS & set(values):
-        if values[key] is None and key in ("min_order_usd", "usd_per_aud_start", "usd_per_aud_end"):
+        if values[key] is None and key in (
+            "min_order_usd",
+            "usd_per_aud_start",
+            "usd_per_aud_end",
+            "profit_target_x",
+            "rebuy_dip_y",
+        ):
             continue
         if isinstance(values[key], float):
             raise TypeError(
@@ -81,8 +96,9 @@ def parse_config(raw: dict[str, Any]) -> RunConfig:
     for key in ("start", "end"):
         if key in values and not isinstance(values[key], date):
             raise TypeError(f"config {key} must be a date like 2010-01-04, got {values[key]!r}")
-    if "final_test_unlocked" in values and not isinstance(values["final_test_unlocked"], bool):
-        raise TypeError("final_test_unlocked must be true or false")
+    for flag in ("final_test_unlocked", "grid_override"):
+        if flag in values and not isinstance(values[flag], bool):
+            raise TypeError(f"{flag} must be true or false")
     try:
         config = RunConfig(**values)
     except TypeError as exc:
@@ -95,6 +111,27 @@ def parse_config(raw: dict[str, Any]) -> RunConfig:
         config.usd_per_aud_start is None or config.usd_per_aud_end is None
     ):
         raise ValueError("fx_source 'fixed' needs usd_per_aud_start and usd_per_aud_end")
+    if config.strategy in XY_STRATEGIES:
+        for name in ("profit_target_x", "rebuy_dip_y"):
+            value = getattr(config, name)
+            if value is None:
+                raise ValueError(f"{config.strategy} needs {name}")
+            if not 0 < value < 1:
+                raise ValueError(
+                    f"{name} must be a decimal between 0 and 1 (0.03 = 3%), got {value}"
+                )
+            if value not in XY_GRID and not config.grid_override:
+                raise ValueError(
+                    f"{name} {value} is outside the grid {[str(g) for g in XY_GRID]} (EXPERIMENT_PLAN §3) — "
+                    "set grid_override: true only for a logged exploratory run"
+                )
+        if config.grid_override:
+            logger.warning(
+                "%s: grid_override — EXPLORATORY run outside the EXPERIMENT_PLAN grid",
+                config.run_name,
+            )
+    elif config.profit_target_x is not None or config.rebuy_dip_y is not None:
+        raise ValueError(f"profit_target_x / rebuy_dip_y are only for {XY_STRATEGIES}")
     return config
 
 

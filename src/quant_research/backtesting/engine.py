@@ -31,12 +31,26 @@ REQUIRED_COLUMNS = ["date", "open_raw", "close_raw", "div_cash_usd", "split_fact
 
 
 @dataclass(frozen=True)
+class PastFill:
+    """One fill that has ALREADY happened (read-only) — strategies may use their own fill prices."""
+
+    day: date
+    side: str
+    fill_price_usd: Decimal
+    quantity: Decimal
+
+
+@dataclass(frozen=True)
 class PortfolioView:
-    """Read-only snapshot for strategies — they cannot change the ledger through it."""
+    """Read-only snapshot for strategies — they cannot change the ledger through it.
+
+    `fills` = this run's fills up to and including today's open (never anything later).
+    """
 
     cash_usd: Decimal
     quantity: Decimal
     average_cost_usd: Decimal
+    fills: tuple[PastFill, ...] = ()
 
 
 class Strategy(Protocol):
@@ -159,7 +173,8 @@ def run_engine(
         # 4. CLOSE — strategy sees data up to T only (a physical copy ending at T)
         history = table.iloc[: i + 1].copy()
         pos = ledger.position(ticker)
-        view = PortfolioView(ledger.cash_usd, pos.quantity, pos.average_cost_usd)
+        past = tuple(PastFill(f.day, f.side, f.fill_price_usd, f.quantity) for f in result.fills)
+        view = PortfolioView(ledger.cash_usd, pos.quantity, pos.average_cost_usd, past)
         intents = strategy.on_close(day, history, view)
         for intent in intents or []:
             if not isinstance(intent, OrderIntent):

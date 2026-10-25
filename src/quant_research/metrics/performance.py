@@ -100,6 +100,28 @@ def round_trips(fills: Sequence[object]) -> int:
     return sum(1 for f in fills if f.side == "sell" and f.position_after == 0)  # type: ignore[attr-defined]
 
 
+def longest_cash_spell(market_values: Sequence[float]) -> int:
+    """Most consecutive trading days fully in cash (market value 0)."""
+    best = run = 0
+    for mv in market_values:
+        run = run + 1 if mv == 0 else 0
+        best = max(best, run)
+    return best
+
+
+def stranded(fills: Sequence[object], days: Sequence[date]) -> tuple[bool, int]:
+    """Sold everything and never bought back before the end → (True, trading days from the sale to the end)."""
+    if not fills:
+        return False, 0
+    last = fills[-1]
+    if last.side != "sell" or last.position_after != 0:  # type: ignore[attr-defined]
+        return False, 0
+    return True, sum(1 for d in days if d >= last.day)  # type: ignore[attr-defined]
+
+
+# TODO (Phase 6, EXPERIMENT_PLAN §5 "Reliability"): result with the best 3 trades removed — not computed yet.
+
+
 @dataclass(frozen=True)
 class PerformanceSummary:
     first_day: date
@@ -124,6 +146,9 @@ class PerformanceSummary:
     dividends_net_usd: float
     pct_days_fully_in_cash: float
     round_trips: int
+    longest_cash_spell_days: int = 0
+    stranded: bool = False
+    stranded_days: int = 0
 
 
 def summarise(
@@ -169,4 +194,7 @@ def summarise(
         dividends_net_usd=float(p.dividends_net_usd),
         pct_days_fully_in_cash=pct_days_fully_in_cash([float(e.market_value_usd) for e in eq]),
         round_trips=round_trips(result.fills),  # type: ignore[attr-defined]
+        longest_cash_spell_days=longest_cash_spell([float(e.market_value_usd) for e in eq]),
+        stranded=stranded(result.fills, days)[0],  # type: ignore[attr-defined]
+        stranded_days=stranded(result.fills, days)[1],  # type: ignore[attr-defined]
     )
