@@ -53,6 +53,10 @@ using the "assume the worse order" rule.)
 - Same as S1 or S2, but **no selling** while close > 200-day average AND the 200-day average is
   higher than it was 20 days ago (= strong uptrend). Rebuy rules unchanged.
 
+**Splits (all strategies with remembered prices, Goggy 2026-10-25):** E, S and P are raw prices per share;
+on a split day they are divided by the snapped split ratio before that day's fills are read, so a
+split never looks like a dip or blocks a profit target.
+
 **S5 — Hybrid** — NOT designed yet. Only built after S1–S4 are evaluated (roadmap Step 5.5).
 
 ## 3. Parameter grid (kept small on purpose)
@@ -129,3 +133,6 @@ Same structure applies to H2–H6 (H2 uses Sharpe / drawdown instead of final va
 - 2026-10-21: S0 wording "buy at the first open" → "first possible open after the first close" (day-2 open),
   because every decision is made at a close and filled at the next open (§1). Before any S1–S4 result.
 - 2026-10-21: Dividend reinvestment only when cash ≥ US$100, for every strategy (Goggy's decision, option b).
+- 2026-10-25: S1/S2 split handling made explicit (the plan didn't mention splits): remembered prices E, S, P
+  are divided by the snapped split ratio on the split day. Found by the AAPL S1 trade-list check: the 7:1
+  split on 2014-06-09 had triggered a fake "dip" rebuy. Development-period runs only; re-run after the fix.

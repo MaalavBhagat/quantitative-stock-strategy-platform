@@ -9,6 +9,9 @@ Both, decided at each close, filled at the NEXT open (engine rule):
     S2: P = highest CLOSE from the sale-fill day onwards; close ≤ P × (1 − Y) → buy; new E = fill.
 - Never rebought → stays in cash to the end ("stranded", honest missed upside).
 If an order is not filled (rejected / expired), nothing changes and the rule is checked again.
+Splits (Goggy 2026-10-25, EXPERIMENT_PLAN §10): E, S and P are raw prices per share at the time. On a
+split day they are divided by the snapped split ratio (7.000007 → 7) BEFORE that day's fills are read,
+so every comparison stays in post-split units (otherwise a 7:1 split looks like an 86% "dip").
 """
 
 from datetime import date
@@ -19,6 +22,7 @@ import pandas as pd
 from quant_research.backtesting.engine import PortfolioView
 from quant_research.execution.orders import OrderIntent
 from quant_research.portfolio.money import require_decimal, to_decimal_price
+from quant_research.ratios import nearest_simple_ratio
 
 
 class _ProfitTargetBase:
@@ -36,6 +40,13 @@ class _ProfitTargetBase:
         self._fills_seen = 0
 
     # ---------- hooks ----------
+    def _apply_split(self, ratio: Decimal) -> None:
+        """Keep remembered levels in post-split units (shares × ratio → price per share ÷ ratio)."""
+        if self.entry_price is not None:
+            self.entry_price = self.entry_price / ratio
+        if self.sale_price is not None:
+            self.sale_price = self.sale_price / ratio
+
     def _on_sale(self, day: date, close: Decimal) -> None:
         """Called at the close of the day the sale filled."""
 
@@ -61,6 +72,12 @@ class _ProfitTargetBase:
         self, day: date, history: pd.DataFrame, portfolio_view: PortfolioView
     ) -> list[OrderIntent]:
         close = to_decimal_price(float(history["close_raw"].iloc[-1]))
+        split = float(history["split_factor"].iloc[-1])
+        if (
+            abs(split - 1.0) > 1e-12
+        ):  # split at today's open — before today's fills (which are post-split)
+            snapped = nearest_simple_ratio(split)
+            self._apply_split(Decimal(snapped.numerator) / Decimal(snapped.denominator))
         self._absorb_new_fills(portfolio_view, close, day)
         if self.state == "start":
             self._pending = "entry"
@@ -92,6 +109,11 @@ class PullbackFromPeak(_ProfitTargetBase):
     def __init__(self, *args: object, **kwargs: object) -> None:
         super().__init__(*args, **kwargs)  # type: ignore[arg-type]
         self.peak_close: Decimal | None = None  # P
+
+    def _apply_split(self, ratio: Decimal) -> None:
+        super()._apply_split(ratio)
+        if self.peak_close is not None:
+            self.peak_close = self.peak_close / ratio
 
     def _on_sale(self, day: date, close: Decimal) -> None:
         self.peak_close = close  # the sale-fill day's close starts the running high

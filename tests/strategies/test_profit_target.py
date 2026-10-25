@@ -125,6 +125,36 @@ def test_thresholds_use_close_not_intraday_high():
     assert [f.side for f in r.fills] == ["buy"]
 
 
+def test_split_while_in_cash_is_not_a_dip():
+    #        day0 day1 day2 day3 day4(split 2:1) day5
+    opens = [100, 100, 103, 107, 54, 54]
+    closes = [100, 100, 106, 108, 54, 54]
+    prices = make_prices(opens=opens, closes=closes, splits={4: 2.0})
+    # sale on day3 at S = 106.9465 → rebuy level 101.599 (S1) / P = 108 → 102.6 (S2)
+    # day4 2:1 split: S → 53.47325 → level 50.799… ; P → 54 → level 51.3 ; close 54 is above both → NO rebuy
+    # (without the split adjustment, 54 ≤ 101.599 would trigger a fake "dip" buy-back)
+    for make in (s1, s2):
+        r = run_engine(prices, T, make(), WHOLE, CASH)
+        assert [f.side for f in r.fills] == ["buy", "sell"], make
+
+
+def test_split_while_invested_adjusts_entry_price():
+    #        day0 day1 day2(split 2:1) day3  day4
+    opens = [100, 100, 50, 50, 53]
+    closes = [100, 100, 50, 52.6, 53]
+    prices = make_prices(opens=opens, closes=closes, splits={2: 2.0})
+    days = prices["date"]
+    # day1: E = 100.05, 99 shares ; day2 split: 198 shares, E → 50.025 → sell level 50.025 × 1.05 = 52.52625
+    # day3 close 52.6 ≥ 52.52625 → sell order (without the adjustment the level would stay 105.05 → never)
+    # day4 open 53 → sell 198 shares at 53 × 0.9995 = 52.9735
+    r = run_engine(prices, T, s1(), WHOLE, CASH)
+    assert [(f.day, f.side, f.quantity) for f in r.fills] == [
+        (days[1], "buy", D(99)),
+        (days[4], "sell", D(198)),
+    ]
+    assert r.fills[1].fill_price_usd == D("52.9735")
+
+
 @pytest.mark.parametrize("make", [s1, s2])
 @pytest.mark.parametrize("cut", [2, 4, 6])
 def test_s1_s2_pass_the_lookahead_check(make, cut):
