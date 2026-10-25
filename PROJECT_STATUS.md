@@ -2,7 +2,7 @@
 Last updated: 2026-10-20
 
 CURRENT PHASE: Phase 6 — Research validation (In progress)
-CURRENT TASK: Phase 6 data — 6 new stocks + 2017–2020 validation data, validation only (prompt: prompts/16_phase6_data_validation_period.md)
+CURRENT TASK: Phase 6 Steps 6.1–6.6 — validation runs 2017–2020 per PREREGISTRATION (prompt: prompts/17_phase6_validation_runs.md)
 
 PHASE STATES (Not started / In progress / Blocked / Verified):
 - Phase 0  Feasibility & research design ........ VERIFIED (2026-10-18)
@@ -340,12 +340,20 @@ FINDINGS (Step 2.3):
   Stake tradeability: all 8 VERIFIED on Stake AU Wall St pages (incl. SPY). Lock: tests pass, manual 2021 run REFUSED
   before loading; 1,773 date columns/files scanned — nothing ≥ 2021-01-01; downloader now refuses END ≥ 2021-01-01.
 
+- Phase 6 data step verified by chat Claude 2026-10-25: 24 files + 8 joins 0 ERROR/0 WARNING; NYSE sessions match;
+  RBA trimmed to 2020-12-31, no ≥2021 data on disk; Stake tradeability 8/8 verified; prereg diff since tag = regime
+  rule only.
+
 IN PROGRESS:
-- chat Claude checks the Phase 6 data report
+- Phase 6 Steps 6.1–6.6 — validation runs (prompt 17)
 
 BLOCKED / OPEN QUESTIONS:
 - Stake fractional-share precision UNVERIFIED (D3 assumes 6 dp — check in Phase 3)
-- RBA files after 2017 (2018-2022.xls, 2023-current) not downloaded — needed only for validation / final test periods.
+- RBA 2018–2020: done (trimmed from 2018-2022.xls). 2021+ rates NOT downloaded — needed only for the final test (D8).
+- (1) INTC 2014-06-13 bad Tiingo bar (flat O=H=L=C, prior close repeated) — DEVELOPMENT period only, so it does not
+  touch the validation judgement; left unchanged, documented (DATA_SOURCES §8).
+- (2) BEFORE any final-test unlock: check 2021+ corporate actions the ledger doesn't support (e.g. AT&T's 2022
+  WarnerMedia spin-off is public knowledge) — decide how to handle T in the final test before looking at any results.
 - XOM 2014-07-28 Tiingo/Yahoo close differ 1.085% — unexplained (third source?)
 - XOM pre-ex-date closes (2010-02-05, 2010-05-10): Tiingo vs Yahoo differ by exactly the dividend — which is right?
 - Delisted stocks: can Tiingo price history be downloaded for tickers with endDate in the past? (survivorship; untested)
@@ -422,9 +430,9 @@ IMPORTANT DECISIONS:
      (only Goggy sets it) · D9 type hints required on every function in src/; no type-checker yet.
 
 NEXT ACTION:
-- chat Claude checks the data report, then prompt 17: validation runs per PREREGISTRATION
-- DECISION 2026-10-25 (Goggy): regime rule = per stock, per calendar year, S0 return ≥ +10% UP, ≤ −10% DOWN, else SIDEWAYS.
-  DONE: written into PREREGISTRATION §6 + §9 (commit 9dfe4df) before any validation data was downloaded.
+- Desktop Code session: "Read prompts/17_phase6_validation_runs.md and do exactly what it says."
+- DECISION 2026-10-25 (Goggy): chat Claude's operational definitions of the §6 rules (R1–R6) approved; prompt 17 writes
+  them into PREREGISTRATION §9 and tags prereg-v1.1 BEFORE any validation run.
 
 TESTS RUN (2026-10-25, Phase 6 data step):
 - uv run pytest → "269 passed in 2.23s" · ruff check → "All checks passed!" · ruff format --check → "99 files already formatted"
