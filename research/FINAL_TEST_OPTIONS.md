@@ -56,5 +56,10 @@ run"). Keep 2021+ as an unseen test for a future, different idea that gets its o
 - If (b): that 2021+ stays locked, and that any future use requires a new pre-registration (its own tag) first.
 - In both cases: a new git tag on the commit with the §9 entry, before any download.
 
+## Decision
+DECISION 2026-10-26 (Goggy): final test 2021+ stays LOCKED until after Phase 9; then it is run ONCE for S1–S4 and any Phase 9 model together, under a new pre-registration tag. Until then nothing dated ≥ 2021-01-01 is downloaded, stored or summarised.
+(Neither (a) nor (b) as written: the run is deferred, not cancelled.)
+
 ## Change log
 - 2026-10-26: file created (prompt 18, Step 6.7). Options only — no decision, no unlock.
+- 2026-10-26: Goggy's decision recorded (final test deferred to after Phase 9).

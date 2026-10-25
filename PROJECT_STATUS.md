@@ -1,8 +1,8 @@
 # PROJECT_STATUS.md
 Last updated: 2026-10-26
 
-CURRENT PHASE: Phase 6 — Research validation (In progress)
-CURRENT TASK: Phase 6 Step 6.7 — results summary, failed-experiments log, final-test options, Phase 6 check (prompt: prompts/18_phase6_step6.7_failures_close.md)
+CURRENT PHASE: Phase 7 — Company research & screening (In progress)
+CURRENT TASK: Phase 7 Steps 7.1–7.2 — SEC EDGAR fundamentals + trading indicators (prompt: prompts/19_phase7_steps7.1-7.2_fundamentals.md)
 
 PHASE STATES (Not started / In progress / Blocked / Verified):
 - Phase 0  Feasibility & research design ........ VERIFIED (2026-10-18)
@@ -11,8 +11,8 @@ PHASE STATES (Not started / In progress / Blocked / Verified):
 - Phase 3  Portfolio accounting engine .......... VERIFIED (2026-10-20)
 - Phase 4  Backtesting engine ................... VERIFIED (2026-10-25)
 - Phase 5  Strategy laboratory .................. VERIFIED (2026-10-25)
-- Phase 6  Research validation .................. In progress — ready for verification
-- Phase 7  Company research & screening ......... Not started
+- Phase 6  Research validation .................. VERIFIED (2026-10-26)
+- Phase 7  Company research & screening ......... In progress
 - Phase 8  Interactive dashboard ................ Not started
 - Phase 9  Market context & AI news ............. Not started
 - Phase 10 Integration, security, reliability ... Not started
@@ -415,6 +415,7 @@ KNOWN BUGS:
 - None known
 
 IMPORTANT DECISIONS:
+- DECISION 2026-10-26 (Goggy): final test 2021+ stays LOCKED until after Phase 9; then it is run ONCE for S1–S4 and any Phase 9 model together, under a new pre-registration tag. Until then nothing dated ≥ 2021-01-01 is downloaded, stored or summarised.
 - 2026-10-17: Work in small, single tasks. Every task ends by updating this file.
 - 2026-10-17: Facts (fees, data prices, provider limits) must have a source link
   or be labelled "UNVERIFIED / ASSUMPTION".
@@ -456,8 +457,13 @@ IMPORTANT DECISIONS:
      (only Goggy sets it) · D9 type hints required on every function in src/; no type-checker yet.
 
 NEXT ACTION:
-- Chat Claude verifies Phase 6; Goggy chooses a final-test option (research/FINAL_TEST_OPTIONS.md) — log it in
-  PREREGISTRATION §9 BEFORE any 2021+ data is downloaded.
+- DECISION 2026-10-26 (Goggy): final test 2021+ stays LOCKED until after Phase 9; then it is run ONCE for S1–S4 and any Phase 9 model together, under a new pre-registration tag. Until then nothing dated ≥ 2021-01-01 is downloaded, stored or summarised.
+- Before prompt 19: add SEC_USER_AGENT="<your name> <your email>" to .env (SEC asks for a contact).
+- Desktop Code session: "Read prompts/19_phase7_steps7.1-7.2_fundamentals.md and do exactly what it says."
+
+PHASE 6 VERIFIED by chat Claude 2026-10-26: main at abd0d8d. Re-computed from the 640 MAIN run records: median excess
+S1 −43.9 · S2 −12.1 · S3 −19.4 · S4-S1 −32.2 · S4-S2 −2.3; stranded 96 · 47 · 38 · 93 · 7 — identical to
+RESULTS_SUMMARY / validation_headline. All 5 roadmap criteria met.
 
 TESTS RUN (2026-10-26, Step 6.7 / Phase 6 close):
 - uv run pytest -q → 275 passed in 2.24s · uv run ruff check . → All checks passed! ·

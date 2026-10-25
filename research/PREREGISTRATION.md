@@ -115,3 +115,4 @@ times, orders, fills, equity). Reports contain summary numbers only (licence). F
   the FX was counted twice on the first buy and on the final conversion. Stake and IBKR unchanged (they convert once at
   deposit / withdrawal). No earlier result used CommSec, so nothing already reported changes. Affects the CommSec and
   stress (wide + CommSec) variants in §4 / R4.
+- 2026-10-26: DECISION 2026-10-26 (Goggy): final test 2021+ stays LOCKED until after Phase 9; then it is run ONCE for S1–S4 and any Phase 9 model together, under a new pre-registration tag. Until then nothing dated ≥ 2021-01-01 is downloaded, stored or summarised. Rules for that run (stock list incl. AT&T's 2022 spin-off, dates, data) will be written and tagged BEFORE any 2021+ data is downloaded.
