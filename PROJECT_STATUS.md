@@ -1,8 +1,8 @@
 # PROJECT_STATUS.md
 Last updated: 2026-10-20
 
-CURRENT PHASE: Phase 5 — Strategy laboratory (In progress)
-CURRENT TASK: Steps 5.5 + 5.7 — no-hybrid decision, comparison, PRE-REGISTRATION, Phase 5 check (prompt: prompts/15_phase5_steps5.5-5.7_close.md)
+CURRENT PHASE: Phase 5 — Strategy laboratory (ready for verification)
+CURRENT TASK: Phase 5 verification by chat Claude
 
 PHASE STATES (Not started / In progress / Blocked / Verified):
 - Phase 0  Feasibility & research design ........ VERIFIED (2026-10-18)
@@ -10,7 +10,7 @@ PHASE STATES (Not started / In progress / Blocked / Verified):
 - Phase 2  Historical market data ............... VERIFIED (2026-10-20)
 - Phase 3  Portfolio accounting engine .......... VERIFIED (2026-10-20)
 - Phase 4  Backtesting engine ................... VERIFIED (2026-10-25)
-- Phase 5  Strategy laboratory .................. In progress
+- Phase 5  Strategy laboratory .................. ready for verification (2026-10-25)
 - Phase 6  Research validation .................. Not started
 - Phase 7  Company research & screening ......... Not started
 - Phase 8  Interactive dashboard ................ Not started
@@ -296,8 +296,30 @@ FINDINGS (Step 2.3):
   Mutation checks: close_adj instead of split-adjusted → 1 test fails; z window ending at T+1 (engine passes one
   extra row) → 9 look-ahead checks fail (S3, S4-S1, S4-S2); "SMA rising" dropped → 2 tests fail; all restored.
 
+- Steps 5.5 + 5.7 + pre-registration — DONE 2026-10-25 (prompt 15, plan approved; branch phase5-close, merged):
+  5.5: NO hybrid (Goggy) — EXPERIMENT_PLAN §2 + §10. 5.7: scripts/phase5_comparison.py →
+  reports/experiments/phase5_comparison_dev_2010-2016.md, computed from the SAVED run records (66 at 987c81c + 78 at
+  8f3cf46). CONSISTENCY PROOF: capital, period, price files + download times, broker, spread, share mode, FX source +
+  files + rates, start cash, reinvest rule, min order, D8 flag, clean code and the S0 benchmark identical in every run
+  (per ticker); only difference by design = S3/S4's warm-up file (66/66 proof). Roll-up: settings tried 70 per stock;
+  beat S0: AAPL 14/70 (all S4-S2), XOM 24/70; plain-words multiple-testing note; no winner, no ranking.
+  PRE-REGISTRATION: research/PREREGISTRATION.md v1, git tag prereg-v1 (on commit e8152d8) — written before any
+  2017–2020 price data exists: S0–S4 all settings, 8 stocks, validation 2017–2020, MAIN + sensitivity, EXPERIMENT_PLAN
+  §6 copied word for word (diff-checked), S3 rule-2 = at least 4 of 6 (Goggy), robustness checks 6.3–6.6, S4-S2 AAPL
+  no special treatment. (The RBA 2014-2017.xls file contains 2017 FX rates; no strategy has run on them.)
+  Found + fixed: saved config.yaml stored dates as text → not reloadable; writer fixed (round-trip test), old records
+  read with date fields converted.
+- PHASE 5 CHECK (2026-10-25, by Claude Code) — NOT marked Verified:
+  each strategy has explicit rules ✓ (EXPERIMENT_PLAN §2 incl. exact S3/S4 choices + split rule; code docstrings) ·
+  strategies pass independent tests ✓ (hand-worked unit tests + look-ahead spy checks; chat Claude's independent
+    re-implementations: S1/S2 64 cells (63 exact, 1 rounding) + Appendix A trades; S3/S4 76 cells + both trade lists) ·
+  results can be reproduced ✓ (5 random saved configs re-run → 5/5 identical final USD + AUD; warm-up proof 66/66) ·
+  no winner selected by trade count ✓ (no winner selected at all; reports state roadmap 5.7) ·
+  all strategies compared against buy-and-hold ✓ (every run has excess vs S0; consistency proof shows the same S0).
+  → Phase 5: ready for verification
+
 IN PROGRESS:
-- Chat Claude: re-compute the S3 AAPL k2.0 w20 and S4-S1 AAPL X5% Y5% trade lists (report Appendices A, B)
+- Phase 5 verification by chat Claude
 
 BLOCKED / OPEN QUESTIONS:
 - Stake fractional-share precision UNVERIFIED (D3 assumes 6 dp — check in Phase 3)
@@ -352,6 +374,7 @@ IMPORTANT DECISIONS:
 - 2026-10-17: H1 v2 + H2–H7 approved. H1 v2 is the main hypothesis. H2–H6 tested only after H1 baseline; H7 exploratory.
 - 2026-10-21: Dividend reinvestment only when cash ≥ US$100 (reinvest_min_cash_usd), every strategy (Goggy, option b).
 - 2026-10-21: S0 sanity gap (7.06 / 5.14 pts) accepted by Goggy after investigation; check uses a relative limit (5%).
+- 2026-10-25: PRE-REGISTRATION v1 frozen (research/PREREGISTRATION.md, tag prereg-v1); S3 rule-2 = ≥ 4 of 6 (Goggy).
 - 2026-10-25: Step 5.5 — NO hybrid (S5) strategy (Goggy): S4 already combines trend filter + profit target; more
   variants on the same data raise the fluke risk. S0–S4 frozen for validation.
 - 2026-10-25: S1/S2 remembered prices (E, S, P) are divided by the snapped split ratio on split days (Goggy).
@@ -372,8 +395,7 @@ IMPORTANT DECISIONS:
      (only Goggy sets it) · D9 type hints required on every function in src/; no type-checker yet.
 
 NEXT ACTION:
-- Desktop Code session: "Read prompts/15_phase5_steps5.5-5.7_close.md and do exactly what it says."
-- DECISION 2026-10-25 (Goggy): no new hybrid strategy (Step 5.5); S1–S4 frozen for validation.
+- chat Claude verifies Phase 5, then Phase 6 prompt 16: data for the other 6 stocks + validation-period data
 
 CHAT CLAUDE CHECK OF S3/S4 (2026-10-25): main at 3598355. Independent re-implementation (own code, raw + warm-up CSVs,
 split-adjusted-as-of-T, sample std, SMA200 slope over 20 days): Appendix A S3 AAPL k2 w20 → 37 fills, same trades,
@@ -381,6 +403,11 @@ final US$12,715.06; Appendix B S4-S1 AAPL 5/5 → 2 fills, final US$13,902.70. A
 ≤0.4 pt in S4-S2 AAPL from S0-baseline rounding). → Steps 5.3, 5.4 VERIFIED.
 Reading: S4-S2 AAPL beats S0 in 14/16 (up to +217 pts) but rests on a few big dips (2015-08-24 crash) and is 1 stock,
 dev period, after 70 settings tried → hypothesis only. Phase 6 + pre-registration decide.
+
+TESTS RUN (2026-10-25, Steps 5.5–5.7):
+- uv run pytest → "267 passed in 3.40s" (+ config.yaml round-trip test)
+- uv run ruff check . → "All checks passed!" · uv run ruff format --check . → "96 files already formatted"
+- scripts/phase5_comparison.py → consistency proof passed, reproducibility 5/5 identical
 
 TESTS RUN (2026-10-25, Steps 5.3–5.4):
 - uv run pytest → "266 passed in 2.13s" (+ indicators 7, s3_s4 12, loader warm-up 3, engine 2, run 1)

@@ -105,3 +105,10 @@
 - S3 `MeanReversion`; S4 `TrendFilteredProfitTarget` / `TrendFilteredPullback`; config `mr_k` / `mr_window` grid.
 - `scripts/run_s3_s4_dev.py` → `reports/experiments/s3_s4_dev_2010-2016.md` (78 runs + warm-up proof, dip caveat).
 - EXPERIMENT_PLAN §2 exact S3/S4 choices; §10 S4 on all 16 X/Y.
+
+## 2026-10-25 — Phase 5 close: Steps 5.5 + 5.7, pre-registration (version stays 0.1.0)
+- Step 5.5: no hybrid strategy (Goggy's decision) — EXPERIMENT_PLAN §2 + §10.
+- `scripts/phase5_comparison.py` → `reports/experiments/phase5_comparison_dev_2010-2016.md` (consistency proof,
+  roll-up, multiple-testing note, reproducibility 5/5) — computed from saved run records.
+- `research/PREREGISTRATION.md` v1 + git tag `prereg-v1` — Phase 6 tests and judgement fixed before any 2017–2020 data.
+- Fix: saved `config.yaml` now reads back unchanged (dates kept as dates); round-trip test.

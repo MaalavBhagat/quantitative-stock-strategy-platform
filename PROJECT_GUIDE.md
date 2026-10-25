@@ -35,7 +35,7 @@ anything system-wide.
 | `CLAUDE.md`, `PROJECT_BRIEF.md`, `PROJECT_STATUS.md`, `PROJECT_GUIDE.md` | rules, summary, progress, this guide |
 | `Quantitative Stock Strategy Research Platform.txt` | master roadmap (source of truth for phases) |
 | `README.md`, `CHANGELOG.md` | setup instructions; list of changes per task |
-| `research/` | Phase 0 design docs + `calc_feasibility.py` (a one-off calculator, not platform code) |
+| `research/` | Phase 0 design docs + `calc_feasibility.py` (a one-off calculator) + `PREREGISTRATION.md` (Phase 6 tests, frozen at tag `prereg-v1`) |
 | `prompts/` | the task prompts Goggy gives to Claude Code |
 | `src/quant_research/` | the Python package: `__init__.py` (version) + `data/` (Phase 2, see below) |
 | `tests/` | one test file per module + `fixtures/` (small made-up data files) |
