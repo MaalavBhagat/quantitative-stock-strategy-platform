@@ -344,8 +344,17 @@ FINDINGS (Step 2.3):
   RBA trimmed to 2020-12-31, no ≥2021 data on disk; Stake tradeability 8/8 verified; prereg diff since tag = regime
   rule only.
 
+- Steps 6.1–6.6 validation runs — DONE 2026-10-25 (prompt 17): CommSec double-FX bug fixed + logged in §9 BEFORE any
+  run; 3,976 runs (8 stocks × 71 settings × 7 variants) from clean commit 786e699, 0 failed, 359 s. A first batch was
+  set aside (data/runs/validation_ABORTED_20261025_227-dirty-records — a file I created mid-run marked 227 records
+  dirty); ALL runs were restarted. Report: reports/experiments/validation_2017-2020.md (pre-registered rules unchanged).
+  VERDICTS (SIMULATED, HISTORICAL, validation 2017–2020): S1 REJECTED · S2 REJECTED · S3 REJECTED · S4-S1 REJECTED ·
+  S4-S2 REJECTED (R1 stocks: 0, 0, 3, 1, 1 of 8). Checked, not a bug: XOM and T never closed ≥ 2% above the Jan-2017
+  entry (best later close −2.30% / −0.72%), so S1/S2/S4 never sold there (excess exactly 0).
+  NOT YET DONE (usage limit): report sections not reviewed in detail; DATA/CHANGELOG notes; chat Claude re-check.
+
 IN PROGRESS:
-- Phase 6 Steps 6.1–6.6 — validation runs (prompt 17)
+- Review the validation report; chat Claude re-checks trade lists + S0 values; then prompt 18 (6.7 write-up + Phase 6 check)
 
 BLOCKED / OPEN QUESTIONS:
 - Stake fractional-share precision UNVERIFIED (D3 assumes 6 dp — check in Phase 3)

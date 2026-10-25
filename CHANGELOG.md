@@ -126,3 +126,8 @@
 - `scripts/validate_initial_dataset.py` no longer reports the after-table-end adjustment estimate or the Yahoo
   later-split ratio / per-stretch factors (D8 consistency, Goggy). `reports/data_validation/2010-2016_AAPL_XOM.md`
   regenerated; all other numbers identical.
+
+## 2026-10-25 — Phase 6 validation runs (prompt 17)
+- CommSec start/end FX fee removed (per-trade FX covers it; logged in PREREGISTRATION §9 before any run).
+- Flat-bar validation check; fills.csv gains realised P&L + position_after; prereg-v1.1 (R1–R6 definitions).
+- scripts/run_validation.py (3,976 runs) + scripts/report_validation.py → reports/experiments/validation_2017-2020.md.
