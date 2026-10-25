@@ -2,7 +2,7 @@
 Last updated: 2026-10-20
 
 CURRENT PHASE: Phase 5 — Strategy laboratory (In progress)
-CURRENT TASK: chat Claude verifies the S1 trade list; then prompt 14 (S3 mean reversion + S4 trend filter)
+CURRENT TASK: Steps 5.3–5.4 — S3 mean reversion + S4 trend filter, dev period (prompt: prompts/14_phase5_steps5.3-5.4_s3_s4.md)
 
 PHASE STATES (Not started / In progress / Blocked / Verified):
 - Phase 0  Feasibility & research design ........ VERIFIED (2026-10-18)
@@ -351,12 +351,13 @@ IMPORTANT DECISIONS:
      (only Goggy sets it) · D9 type hints required on every function in src/; no type-checker yet.
 
 NEXT ACTION:
-- chat Claude verifies the S1 trade list, then prompt 14: S3 mean reversion + S4 trend filter
+- Desktop Code session: "Read prompts/14_phase5_steps5.3-5.4_s3_s4.md and do exactly what it says." (plan first)
 
-CHAT CLAUDE CHECK OF STEPS 4.1–4.3 (2026-10-21): main at 7d971ff, clean tree. Read engine.py loop: split → dividend →
-fills at open_raw → valuation at close_raw → strategy gets table.iloc[:i+1].copy(); leftover orders EXPIRED.
-run.py checks the D8 lock before loading data. Report's mutation finding (spy check missed same-day fills → rule added)
-accepted. → Steps 4.1–4.3 VERIFIED.
+CHAT CLAUDE CHECK OF S1/S2 (2026-10-25): main at 41821b0. Re-implemented S1 + S2 independently (own code, raw CSVs,
+split rule ÷ ratio) → Appendix A trades identical (2010-01-05 buy 42.289013 @214.7073; 2010-03-12 sell @227.256315,
+cash 9,607.44). All 64 grid cells reproduced: 63 exact, 1 differs by 0.1 pt (rounding of S0 baseline). → Steps 5.1, 5.2,
+5.6 VERIFIED. Interpretation: S1 is stranded in 16/16 runs on both stocks (sold, never rebought). S1 XOM's 4 "wins"
+came while 73–88% of days were in cash during XOM's 2014–16 fall → regime effect, not evidence of skill.
 
 TESTS RUN (2026-10-25, Steps 5.1–5.2):
 - uv run pytest → "241 passed in 2.22s" (+ profit_target 14, metrics +2, run +1)
