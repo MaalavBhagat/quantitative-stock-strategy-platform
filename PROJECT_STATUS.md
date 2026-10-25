@@ -396,6 +396,11 @@ IMPORTANT DECISIONS:
 - 2026-10-17: H1 v2 + H2–H7 approved. H1 v2 is the main hypothesis. H2–H6 tested only after H1 baseline; H7 exploratory.
 - 2026-10-21: Dividend reinvestment only when cash ≥ US$100 (reinvest_min_cash_usd), every strategy (Goggy, option b).
 - 2026-10-21: S0 sanity gap (7.06 / 5.14 pts) accepted by Goggy after investigation; check uses a relative limit (5%).
+- 2026-10-25: Phase 2 report reports/data_validation/2010-2016_AAPL_XOM.md regenerated WITHOUT the after-the-end
+  estimates and the Yahoo later-split ratio / per-stretch factors (Goggy, consistency with the D8 decision of the same
+  day). All other numbers identical (diff-checked); INFO counts AAPL 5→4, XOM 3→2. Left as historical log entries (not
+  edited): PROJECT_STATUS Step 2.3 findings (×4.35 gap — measured to the 2026 download date, so it includes post-2020
+  dividends), DATA_SOURCES §2/§8 notes on AAPL's later 4:1 split (2020-08-31 = validation period, now seen in-table).
 - 2026-10-25: PRE-REGISTRATION v1 frozen (research/PREREGISTRATION.md, tag prereg-v1); S3 rule-2 = ≥ 4 of 6 (Goggy).
 - 2026-10-25: Step 5.5 — NO hybrid (S5) strategy (Goggy): S4 already combines trend filter + profit target; more
   variants on the same data raise the fluke risk. S0–S4 frozen for validation.

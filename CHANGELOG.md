@@ -121,3 +121,8 @@
 - `scripts/validate_phase6_data.py` → `reports/data_validation/phase6_all_stocks_2008-2020.md` (all 0 ERROR;
   flat-bar scan; same-share-basis special-dividend check).
 - PREREGISTRATION §6 + §9: regime rule (before any validation data). DATA_SOURCES §8–§10, INITIAL_UNIVERSE (Stake).
+
+## 2026-10-25 — Phase 2 report: after-the-end estimates removed (version stays 0.1.0)
+- `scripts/validate_initial_dataset.py` no longer reports the after-table-end adjustment estimate or the Yahoo
+  later-split ratio / per-stretch factors (D8 consistency, Goggy). `reports/data_validation/2010-2016_AAPL_XOM.md`
+  regenerated; all other numbers identical.
