@@ -1,0 +1,8 @@
+# Dashboard runs LOCALLY ONLY (Tiingo + RBA data are personal-use licences — never deploy or share).
+[server]
+address = "localhost"
+headless = true
+
+[browser]
+gatherUsageStats = false
+serverAddress = "localhost"

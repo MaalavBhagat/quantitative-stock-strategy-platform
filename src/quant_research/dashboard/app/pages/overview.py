@@ -1,0 +1,40 @@
+"""Step 8.1 — Overview: the chosen run's key results, the pre-registered verdicts, links to the write-ups."""
+
+import streamlit as st
+
+from quant_research.dashboard import data as dd
+from quant_research.dashboard.app import ui
+
+period, run, s0 = ui.pick_run()
+st.title("Overview")
+ui.banner(period)
+st.subheader(f"{run.ticker} · {run.label} · {run.setting}")
+
+st.markdown("### Pre-registered verdicts (validation 2017–2020, MAIN settings)")
+st.error(
+    "All five strategies were **REJECTED** against buy-and-hold under rules fixed in advance.",
+    icon="❌",
+)
+st.markdown(dd.verdict_table())
+
+st.markdown("### Key results of this run")
+results = dd.key_results(run, s0)
+cols = st.columns(3)
+for i, (name, value) in enumerate(results.items()):
+    cols[i % 3].metric(name, value)
+if s0 is not None and run.label != "S0":
+    st.caption(
+        f"Excess = this run's total return − S0 (buy-and-hold) total return on {run.ticker}, same period."
+    )
+ui.assumptions(run)
+
+st.markdown("### Write-ups (saved files)")
+for title, path in [
+    ("Results summary", dd.REPORTS_DIR / "RESULTS_SUMMARY.md"),
+    (
+        "Failed experiments and our own mistakes",
+        dd.PROJECT_ROOT / "research" / "FAILED_EXPERIMENTS.md",
+    ),
+]:
+    with st.expander(f"{title} — {path.relative_to(dd.PROJECT_ROOT)}"):
+        st.markdown(path.read_text(encoding="utf-8"))

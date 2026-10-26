@@ -31,6 +31,10 @@ target-version = "py313"
 crosscheck = [
     "yfinance>=1.7.0",
 ]
+dashboard = [
+    "altair>=6.3.0",
+    "streamlit>=1.66.1",
+]
 dev = [
     "pytest>=9.1.1",
     "ruff>=0.17.1",

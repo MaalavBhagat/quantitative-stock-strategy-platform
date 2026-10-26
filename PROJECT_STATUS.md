@@ -410,10 +410,26 @@ FINDINGS (Step 2.3):
   run records (S4-S1 INTC +63.4, S3 T +25.2, S3 XOM +16.9, S3 INTC +3.6, S4-S2 MSFT +1.9) — identical. All 4 roadmap
   criteria met.
 
+- Phase 8 Steps 8.1, 8.2, 8.4, 8.5 — DONE 2026-10-26 (prompt 21): Streamlit dashboard that VIEWS saved results.
+  uv group `dashboard` (streamlit 1.66.1, altair 6.3.0 — altair is already a streamlit dependency). Pages: Overview
+  (key results, pre-registered verdict table copied from the validation report, write-ups), Company research
+  (screening scores / why lines / MISSING-CONFLICT reasons / trading profile), Performance (equity vs S0 USD/AUD,
+  drawdown, cash vs invested, cumulative fees + spread; dividends: run total only — per day "not available"),
+  Trade explorer (fills, orders incl. EXPIRED with reasons, one trade's effect on cash and position).
+  src/quant_research/dashboard/data.py: read-only shaping; numbers via metrics/ (new metrics.drawdown_series, tested
+  = max_drawdown) and screening/; D8 guard (LockedPeriodError). .streamlit/config.toml: localhost, no usage stats.
+  Consistency test S4-S2 AAPL 2%/4%: final US$22,849.41 and 23 fills = validation report Appendix B; S0 AAPL max DD
+  −38.46% = report §2. Smoke check (scripts/smoke_dashboard.py, Streamlit AppTest): 4 pages, 0 errors, banner on each.
+  Real server: health endpoint "ok" (HTTP 200) on localhost:8501.
+  NOT DONE: the 4 screenshots — no Chrome on this Mac and the in-app browser refused localhost (see open questions).
+
 IN PROGRESS:
-- Phase 8 Steps 8.1, 8.2, 8.4, 8.5 (prompt 21)
+- Phase 8 screenshots for chat Claude (blocked: see open questions)
 
 BLOCKED / OPEN QUESTIONS:
+- Phase 8 screenshots: no Chrome installed (only Safari) and the Claude app's browser pane refused localhost.
+  Options: Goggy takes 4 screenshots in Safari (Cmd+Shift+4) into data/screenshots/, or approve installing a
+  headless browser (Playwright Chromium) for automatic screenshots.
 - (resolved 2026-10-26, see the Steps 7.1–7.2 check) T FY2016 NI, PG FY2014 / XOM FY2019 revenue CONFLICT, INTC liabilities.
 - Stake fractional-share precision UNVERIFIED (D3 assumes 6 dp — check in Phase 3)
 - RBA 2018–2020: done (trimmed from 2018-2022.xls). 2021+ rates NOT downloaded — needed only for the final test (D8).
@@ -498,7 +514,12 @@ IMPORTANT DECISIONS:
      (only Goggy sets it) · D9 type hints required on every function in src/; no type-checker yet.
 
 NEXT ACTION:
-- Desktop Code session: "Read prompts/21_phase8_steps8.1-8.5_dashboard_views.md and do exactly what it says."
+- Chat Claude reviews screenshots, then prompt 22.
+
+TESTS RUN (2026-10-26, Steps 8.1, 8.2, 8.4, 8.5):
+- uv run pytest -q → 329 passed in 2.38s · uv run ruff check . → All checks passed! ·
+  uv run ruff format --check . → 139 files already formatted ·
+  uv run --group dashboard python scripts/smoke_dashboard.py → 4 pages, 0 errors, smoke check: PASS.
 
 TESTS RUN (2026-10-26, Steps 7.3–7.5):
 - uv run pytest -q → 320 passed in 2.51s · uv run ruff check . → All checks passed! ·

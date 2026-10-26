@@ -158,3 +158,13 @@ def test_stranded_only_when_the_last_fill_is_a_full_sale():
     partial = [DayFill("buy", D(10), days[0]), DayFill("sell", D(4), days[2])]
     assert stranded(partial, days) == (False, 0)
     assert stranded([], days) == (False, 0)
+
+
+def test_drawdown_series_matches_max_drawdown():
+    from quant_research.metrics.performance import drawdown_series
+
+    values = [100.0, 120.0, 90.0, 130.0, 117.0]
+    # peaks 100, 120, 120, 130, 130 → 0, 0, −0.25, 0, −0.10
+    assert drawdown_series(values) == pytest.approx([0.0, 0.0, -0.25, 0.0, -0.10])
+    days = [date(2020, 1, d) for d in range(1, 6)]
+    assert min(drawdown_series(values)) == pytest.approx(max_drawdown(days, values).max_drawdown)

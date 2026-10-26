@@ -50,6 +50,15 @@ def max_drawdown(days: Sequence[date], values: Sequence[float]) -> Drawdown:
     return Drawdown(worst, worst_peak, worst_trough)
 
 
+def drawdown_series(values: Sequence[float]) -> list[float]:
+    """Each day's value ÷ the highest value so far − 1 (0 at a new peak). min() of it = max_drawdown()."""
+    out, peak = [], values[0]
+    for v in values:
+        peak = max(peak, v)
+        out.append(v / peak - 1)
+    return out
+
+
 def _stdev(xs: Sequence[float]) -> float:
     if len(xs) < 2:
         return float("nan")

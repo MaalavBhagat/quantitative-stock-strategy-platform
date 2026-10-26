@@ -42,3 +42,17 @@ Rules for using it: `DATA_SOURCES.md` §7 (conventions) and §8 (limitations).
 - Validate it + write the report (Yahoo cross-check needs the optional group): `uv run --group crosscheck python scripts/validate_initial_dataset.py`
 - Yahoo cross-check only: `uv run --group crosscheck python scripts/crosscheck_yfinance.py`
 - Code style check: `uv run ruff format --check .`
+
+## How to open the dashboard
+
+```bash
+uv run --group dashboard streamlit run src/quant_research/dashboard/app/main.py
+```
+
+Then open http://localhost:8501 in your browser. The dashboard only **views saved results** (run records,
+reports, screening) — it runs no new experiments and downloads nothing.
+
+**Local only — never deploy or share it.** It shows Tiingo price data and RBA exchange rates, which are licensed
+for personal use only (DATA_SOURCES.md). `.streamlit/config.toml` binds it to `localhost` and turns off
+Streamlit's usage statistics.
+

@@ -157,3 +157,11 @@
 - `scripts/build_screening.py` → `reports/screening/screening_2010-2020.md` (scores 2009–2020, selection bias,
   company comparison, correlations with caveat, Q4.11).
 - `research/IDEAS_FOR_LATER.md` (untested hypotheses); DATA_SOURCES §8 selection-bias rows; PROJECT_GUIDE.
+
+## 2026-10-26 — Phase 8, Steps 8.1, 8.2, 8.4, 8.5: dashboard views (prompt 21) (version stays 0.1.0)
+- uv group `dashboard`: streamlit, altair (core package unchanged).
+- `dashboard.data`: read-only run records, key results via metrics/, equity / drawdown / costs / fills / orders
+  tables, trade effect, verdict table from the saved report, screening rows + trading profile, D8 guard, banner.
+- `dashboard/app`: Overview, Company research, Performance, Trade explorer. `.streamlit/config.toml` (localhost,
+  no usage statistics). `metrics.drawdown_series`. `scripts/smoke_dashboard.py`. README "How to open the dashboard".
+
