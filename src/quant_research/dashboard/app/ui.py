@@ -67,3 +67,42 @@ def assumptions(r: dd.RunRecord) -> None:
     with st.expander("Assumptions of this run (from the saved run record)", expanded=True):
         a = dd.assumptions(r)
         st.table(pd.DataFrame({"value": list(a.values())}, index=list(a)))
+
+
+def report_and_exports(r: dd.RunRecord, s0: dd.RunRecord | None, exploratory: bool) -> None:
+    """Report button + download buttons. Every file is also saved to data/exports/<run id>/ (git-ignored)."""
+    from quant_research.dashboard import export as ex
+
+    st.markdown("### Research report and exports")
+    st.caption(
+        "Personal use; do not redistribute — Tiingo data: internal use only; RBA rates: personal, non-commercial, "
+        "with attribution. Files are also saved in data/exports/<run id>/ (never committed)."
+    )
+    if st.button("Generate report + export files", key=f"export_{r.record['run_id']}"):
+        paths = ex.write_exports(r, s0, exploratory)
+        st.session_state[f"exported_{r.record['run_id']}"] = {k: str(v) for k, v in paths.items()}
+    saved = st.session_state.get(f"exported_{r.record['run_id']}")
+    if not saved:
+        return
+    from pathlib import Path
+
+    st.success(f"Saved to {Path(saved['report.md']).parent.relative_to(dd.PROJECT_ROOT)}")
+    cols = st.columns(3)
+    for i, (name, mime) in enumerate(
+        [
+            ("trades.csv", "text/csv"),
+            ("equity.csv", "text/csv"),
+            ("config.yaml", "text/yaml"),
+            ("report.md", "text/markdown"),
+            ("chart.png", "image/png"),
+            ("LICENCE.txt", "text/plain"),
+        ]
+    ):
+        cols[i % 3].download_button(
+            f"Download {name}",
+            Path(saved[name]).read_bytes(),
+            file_name=f"{r.record['run_id']}_{name}",
+            mime=mime,
+        )
+    with st.expander("Report preview", expanded=True):
+        st.markdown(Path(saved["report.md"]).read_text(encoding="utf-8"))

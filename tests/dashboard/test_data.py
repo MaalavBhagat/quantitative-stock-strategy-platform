@@ -31,7 +31,8 @@ def make_run(tmp_path: Path, name: str = "r1", end: str = "2020-12-31", equity_r
         "summary": {
             "initial_aud": "10000", "start_cash_usd": "100", "last_close_value_usd": "110",
             "end_aud_after_liquidation": "150", "usd_per_aud_start": "0.7", "usd_per_aud_start_for_day": "2020-01-02",
-            "total_fees_usd": "6.00", "dividends_net_usd": "0",
+            "total_fees_usd": "6.00", "dividends_net_usd": "0", "fx_in_fee_usd": "0.55", "fx_out_fee_usd": "0.60",
+            "orders": {"FILLED": 2, "REJECTED": 0, "EXPIRED": 1},
         },
         "data_provenance": {"file_name": "AAA.csv", "source": "Tiingo", "downloaded_at_utc": "2026-10-25"},
         "git_commit": "abc", "git_dirty": False, "fx_files": ["x.csv"],

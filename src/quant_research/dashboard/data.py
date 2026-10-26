@@ -12,11 +12,18 @@ from dataclasses import dataclass, field
 from datetime import date
 from decimal import Decimal
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Any
 
 import pandas as pd
 
-from quant_research.metrics.performance import cagr, drawdown_series, max_drawdown, sharpe
+from quant_research.metrics.performance import (
+    cagr,
+    drawdown_series,
+    max_drawdown,
+    round_trips,
+    sharpe,
+)
 from quant_research.portfolio.money import to_display
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
@@ -117,6 +124,18 @@ class RunRecord:
         return [float(e["total_value_usd"]) for e in self.equity]
 
     @property
+    def fill_objects(self) -> list[SimpleNamespace]:
+        """Fills as objects with .day / .side / .position_after — the shape metrics/ functions read."""
+        return [
+            SimpleNamespace(
+                day=date.fromisoformat(f["day"]),
+                side=f["side"],
+                position_after=Decimal(f["position_after"]),
+            )
+            for f in self.fills
+        ]
+
+    @property
     def total_return(self) -> float:
         return (
             float(self.summary["last_close_value_usd"]) / float(self.summary["start_cash_usd"]) - 1
@@ -186,7 +205,7 @@ def key_results(run: RunRecord, s0: RunRecord | None) -> dict[str, str]:
         "Excess vs S0 (pp, USD)": NOT_AVAILABLE
         if s0 is None
         else f"{(run.total_return - s0.total_return) * 100:+.1f}",
-        "Round trips (sells)": str(sum(f["side"] == "sell" for f in run.fills)),
+        "Round trips (sells)": str(round_trips(run.fill_objects)),
         "Fees total (USD)": f"US${float(s['total_fees_usd']):,.2f}",
         "Dividends net (USD, run total)": f"US${float(s['dividends_net_usd']):,.2f}",
     }
@@ -387,3 +406,13 @@ def trading_profile(ticker: str) -> pd.DataFrame:
             "dividend yield (TTM)": [show(r.dividend_yield_ttm, "{:.2%}") for r in rows],
         }
     )
+
+
+def verdict_for(label: str) -> str | None:
+    """The saved verdict table reduced to its header + this strategy's row (None for S0 — the benchmark)."""
+    if label == "S0":
+        return None
+    lines = verdict_table().splitlines()
+    table = [ln for ln in lines if ln.startswith("|")]
+    row = [ln for ln in table[2:] if ln.split("|")[1].strip() == label]
+    return "\n".join([table[0], table[1], *row]) if row else None

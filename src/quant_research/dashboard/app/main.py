@@ -15,6 +15,8 @@ nav = st.navigation(
         st.Page(HERE / "company.py", title="Company research"),
         st.Page(HERE / "performance.py", title="Performance"),
         st.Page(HERE / "trades.py", title="Trade explorer"),
+        st.Page(HERE / "report.py", title="Report & export"),
+        st.Page(HERE / "lab.py", title="Strategy lab"),
     ]
 )
 nav.run()

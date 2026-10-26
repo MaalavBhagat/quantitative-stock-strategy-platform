@@ -9,6 +9,7 @@ from pathlib import Path
 
 from streamlit.testing.v1 import AppTest
 
+NOTICES = ("REJECTED", "EXPLORATORY — NOT PRE-REGISTERED")  # the app's own red notices, not errors
 PAGES = (
     Path(__file__).resolve().parents[1] / "src" / "quant_research" / "dashboard" / "app" / "views"
 )
@@ -16,10 +17,10 @@ PAGES = (
 
 def main() -> int:
     bad = 0
-    for name in ["overview", "company", "performance", "trades"]:
+    for name in ["overview", "company", "performance", "trades", "report", "lab"]:
         at = AppTest.from_file(str(PAGES / f"{name}.py"), default_timeout=120).run()
         errors = [e.value for e in at.exception] + [
-            e.value for e in at.error if "REJECTED" not in e.value
+            e.value for e in at.error if not any(n in e.value for n in NOTICES)
         ]
         banners = [w.value for w in at.warning if "SIMULATED, HISTORICAL" in w.value]
         print(
