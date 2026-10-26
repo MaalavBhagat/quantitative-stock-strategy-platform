@@ -45,4 +45,4 @@ for title, path in [
     ),
 ]:
     with st.expander(f"{title} — {path.relative_to(dd.PROJECT_ROOT)}"):
-        st.markdown(path.read_text(encoding="utf-8"))
+        st.markdown(path.read_text(encoding="utf-8").replace("$", "\\$"))  # "$" is not maths

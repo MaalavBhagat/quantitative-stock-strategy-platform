@@ -105,4 +105,5 @@ def report_and_exports(r: dd.RunRecord, s0: dd.RunRecord | None, exploratory: bo
             mime=mime,
         )
     with st.expander("Report preview", expanded=True):
-        st.markdown(Path(saved["report.md"]).read_text(encoding="utf-8"))
+        # escape "$" so Streamlit never reads two dollar amounts on one line as a maths formula
+        st.markdown(Path(saved["report.md"]).read_text(encoding="utf-8").replace("$", "\\$"))

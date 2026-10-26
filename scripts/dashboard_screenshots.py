@@ -3,7 +3,8 @@
 Needs the dashboard running on localhost:8501 (README "How to open the dashboard") and the project-local browser:
   PLAYWRIGHT_BROWSERS_PATH=.playwright-browsers uv run --group screenshots python scripts/dashboard_screenshots.py
 Pages showing a run use S4-S2 · AAPL · X 2% / Y 4% (validation) — the run checked against the validation report.
-Reads only; never changes anything in the app.
+It also presses "Generate report + export files" (→ data/exports/) and starts ONE exploratory lab run
+(→ data/runs/lab/, labelled EXPLORATORY — NOT PRE-REGISTERED).
 """
 
 import os
@@ -58,6 +59,29 @@ def main() -> int:
             page.screenshot(path=str(path))
             heading = page.locator("h1").first.inner_text()
             print(f"saved {path.relative_to(PROJECT_ROOT)} — page heading: {heading}")
+        # 5: report + exports for the same saved run
+        page.get_by_role("link", name="Report & export", exact=True).click(force=True)
+        settle(page)
+        page.get_by_role("button", name="Generate report + export files").click(force=True)
+        settle(page)
+        page.screenshot(path=str(OUT / "5_report.png"))
+        print(
+            f"saved data/screenshots/5_report.png — page heading: {page.locator('h1').first.inner_text()}"
+        )
+        # 6: one exploratory lab run (S4-S2 · AAPL · validation · main · X 2% / Y 4%) through run.py
+        page.get_by_role("link", name="Strategy lab", exact=True).click(force=True)
+        settle(page)
+        page.get_by_text("validation", exact=True).click(force=True)
+        settle(page)
+        choose(page, "Strategy", "S4-S2")
+        page.get_by_role(
+            "button", name="Run (through run.py) — plus S0 with the same settings"
+        ).click(force=True)
+        settle(page)
+        page.screenshot(path=str(OUT / "6_lab.png"))
+        print(
+            f"saved data/screenshots/6_lab.png — page heading: {page.locator('h1').first.inner_text()}"
+        )
         browser.close()
     return 0
 
