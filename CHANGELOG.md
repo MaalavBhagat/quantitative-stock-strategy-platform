@@ -166,3 +166,6 @@
   no usage statistics). `metrics.drawdown_series`. `scripts/smoke_dashboard.py`. README "How to open the dashboard".
 - Fixes after a browser check: sidebar choice kept across pages; `app/pages` → `app/views`; Deploy button hidden;
   verdict table without its heading (test added).
+- Screenshots: uv group `screenshots` (playwright), project-local Chromium (git-ignored), `scripts/dashboard_screenshots.py`;
+  Overview shows long values as text (were cut off in tiles).
+

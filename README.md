@@ -56,3 +56,16 @@ reports, screening) — it runs no new experiments and downloads nothing.
 for personal use only (DATA_SOURCES.md). `.streamlit/config.toml` binds it to `localhost` and turns off
 Streamlit's usage statistics.
 
+Screenshots of the four pages (saved to `data/screenshots/`, git-ignored because they show licensed prices), with
+the dashboard running:
+
+```bash
+uv run --group screenshots python scripts/dashboard_screenshots.py
+```
+
+The first time, download the project-only browser (≈ 580 MB, into the git-ignored `.playwright-browsers/`):
+
+```bash
+PLAYWRIGHT_BROWSERS_PATH=.playwright-browsers uv run --group screenshots playwright install chromium
+```
+

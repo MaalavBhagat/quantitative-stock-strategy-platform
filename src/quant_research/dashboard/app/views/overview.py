@@ -19,8 +19,16 @@ st.markdown(dd.verdict_table())
 
 st.markdown("### Key results of this run")
 results = dd.key_results(run, s0)
+LONG = (
+    "Starting capital",
+    "Test period",
+    "Max drawdown",
+)  # too long for a number tile — shown as text
+for name in LONG:
+    st.markdown(f"**{name}:** {results[name]}")
+short = {k: v for k, v in results.items() if k not in LONG}
 cols = st.columns(3)
-for i, (name, value) in enumerate(results.items()):
+for i, (name, value) in enumerate(short.items()):
     cols[i % 3].metric(name, value)
 if s0 is not None and run.label != "S0":
     st.caption(

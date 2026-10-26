@@ -13,3 +13,6 @@ __pycache__/
 
 # macOS
 .DS_Store
+
+# Playwright browser for dashboard screenshots (downloaded per project, never commit)
+/.playwright-browsers/

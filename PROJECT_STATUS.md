@@ -421,19 +421,20 @@ FINDINGS (Step 2.3):
   Consistency test S4-S2 AAPL 2%/4%: final US$22,849.41 and 23 fills = validation report Appendix B; S0 AAPL max DD
   −38.46% = report §2. Smoke check (scripts/smoke_dashboard.py, Streamlit AppTest): 4 pages, 0 errors, banner on each.
   Real server: health endpoint "ok" (HTTP 200) on localhost:8501.
-  NOT DONE: the 4 screenshots — no Chrome on this Mac and the in-app browser refused localhost (see open questions).
+  Screenshots (Goggy approved Playwright Chromium, project only, 2026-10-26): uv group `screenshots` (playwright
+  1.64.1), browser in git-ignored .playwright-browsers/ (581 MB); scripts/dashboard_screenshots.py → 4 PNGs in
+  data/screenshots/ (git-ignored), each on S4-S2 · AAPL · X 2% / Y 4% (validation). Checked by eye: final
+  US$22,849.41, start US$7,200.18, 23 fills / 23 FILLED orders. Long Overview values moved out of the number tiles
+  (they were cut off with "…").
   Browser check afterwards (in-app browser attached to the running server — the preview launcher may not read the
   Desktop folder, so the server is started from the shell): fixed 3 things — sidebar choice now survives page changes,
   page folder renamed pages/ → views/ (Streamlit auto-listed raw file names), "Deploy" button hidden
   (client.toolbarMode = minimal); verdict table shown without the report's heading line (+ test).
 
 IN PROGRESS:
-- Phase 8 screenshots for chat Claude (blocked: see open questions)
+- none (Steps 8.1, 8.2, 8.4, 8.5 waiting for chat Claude's screenshot review)
 
 BLOCKED / OPEN QUESTIONS:
-- Phase 8 screenshots: no Chrome installed (only Safari) and the Claude app's browser pane refused localhost.
-  Options: Goggy takes 4 screenshots in Safari (Cmd+Shift+4) into data/screenshots/, or approve installing a
-  headless browser (Playwright Chromium) for automatic screenshots.
 - (resolved 2026-10-26, see the Steps 7.1–7.2 check) T FY2016 NI, PG FY2014 / XOM FY2019 revenue CONFLICT, INTC liabilities.
 - Stake fractional-share precision UNVERIFIED (D3 assumes 6 dp — check in Phase 3)
 - RBA 2018–2020: done (trimmed from 2018-2022.xls). 2021+ rates NOT downloaded — needed only for the final test (D8).
