@@ -154,3 +154,10 @@ def test_consistency_s4s2_aapl_with_appendix_b():
     s0 = dd.load_run(idx[("S0", "AAPL", "—")], "validation")
     assert dd.key_results(s0, None)["Max drawdown"].startswith("-38.46%")
     assert "max DD -38.46%" in text
+
+
+@pytest.mark.skipif(not REPORT.exists(), reason="validation report missing")
+def test_verdict_table_is_copied_from_the_report():
+    t = dd.verdict_table()
+    assert not t.startswith("## ") and t.count("**REJECTED**") == 5
+    assert t in REPORT.read_text(encoding="utf-8")

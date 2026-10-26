@@ -30,17 +30,29 @@ def banner(period: str) -> None:
     st.warning(dd.banner(period), icon="⚠️")
 
 
+def _kept(widget, label: str, options: list, name: str):
+    """A sidebar widget whose choice survives page changes (Streamlit clears widget state when a page changes,
+    so the choice is copied to a plain session key and used as the starting index next time)."""
+    store = f"keep_{name}"
+    saved = st.session_state.get(store)
+    choice = widget(
+        label, options, index=options.index(saved) if saved in options else 0, key=f"w_{name}"
+    )
+    st.session_state[store] = choice
+    return choice
+
+
 def pick_run() -> tuple[str, dd.RunRecord, dd.RunRecord | None]:
     """Sidebar: period → stock → strategy → setting. Returns (period, run, S0 of the same stock and period)."""
     st.sidebar.header("Saved run")
-    period = st.sidebar.radio("Period", ["validation", "development"], key="period")
+    period = _kept(st.sidebar.radio, "Period", ["validation", "development"], "period")
     idx = index(period)
     tickers = sorted({t for _, t, _ in idx})
-    ticker = st.sidebar.selectbox("Stock", tickers, key=f"ticker_{period}")
+    ticker = _kept(st.sidebar.selectbox, "Stock", tickers, "ticker")
     labels = [lbl for lbl in ORDER if any(k[0] == lbl and k[1] == ticker for k in idx)]
-    label = st.sidebar.selectbox("Strategy", labels, key=f"label_{period}")
+    label = _kept(st.sidebar.selectbox, "Strategy", labels, "label")
     settings = sorted(s for lbl, t, s in idx if lbl == label and t == ticker)
-    setting = st.sidebar.selectbox("Setting", settings, key=f"setting_{period}_{label}")
+    setting = _kept(st.sidebar.selectbox, "Setting", settings, "setting")
     chosen = run(idx[(label, ticker, setting)], period)
     s0_key = ("S0", ticker, "—")
     s0 = run(idx[s0_key], period) if s0_key in idx else None

@@ -288,7 +288,7 @@ def verdict_table(report: Path = REPORTS_DIR / "experiments" / "validation_2017-
     text = report.read_text(encoding="utf-8")
     start = text.index("## 1. Verdicts")
     end = text.index("\n## 2.", start)
-    return text[start:end].strip()
+    return text[start:end].split("\n", 1)[1].strip()  # without the report's own heading line
 
 
 # ---------- company research (Step 8.2) — existing screening functions only ----------

@@ -10,7 +10,7 @@ from pathlib import Path
 from streamlit.testing.v1 import AppTest
 
 PAGES = (
-    Path(__file__).resolve().parents[1] / "src" / "quant_research" / "dashboard" / "app" / "pages"
+    Path(__file__).resolve().parents[1] / "src" / "quant_research" / "dashboard" / "app" / "views"
 )
 
 

@@ -60,7 +60,7 @@ anything system-wide.
 | `research/` | 6 | Experiment runner: grids, periods, walk-forward, saving run records | run anything on dates ≥ 2021-01-01 unless `final_test_unlocked: true` (D8) |
 | `screening/` — **created** (`fundamentals`, `trading`, `score`) | 7 | Company indicators (SEC XBRL, point-in-time: usable only on days AFTER the filing date; restatements from their own filing date) and trading indicators; later screens + suitability profiles | feed results back into backtests silently; use a fact on or before its filing date; fill a MISSING value |
 | `reporting/` | 6+ | Tables and charts built from saved results only | type or edit any number by hand |
-| `dashboard/` — **created** (`data` + `app/`: `main`, `ui`, `pages/overview`, `company`, `performance`, `trades`) | 8 | Streamlit app (uv group `dashboard`) to VIEW saved results; numbers only from run records, saved reports, metrics/ and screening/; D8 guard; localhost only | run new experiments, hold logic of its own, estimate a missing number, show dates ≥ 2021-01-01, be deployed |
+| `dashboard/` — **created** (`data` + `app/`: `main`, `ui`, `views/overview`, `company`, `performance`, `trades`) | 8 | Streamlit app (uv group `dashboard`) to VIEW saved results; numbers only from run records, saved reports, metrics/ and screening/; D8 guard; localhost only | run new experiments, hold logic of its own, estimate a missing number, show dates ≥ 2021-01-01, be deployed |
 | `news/` | 9 | News / AI context (only if the baseline is solid) | influence past backtests with information from later dates |
 
 Planned test folders (roadmap): `tests/unit/`, `tests/accounting/`, `tests/backtesting/`,

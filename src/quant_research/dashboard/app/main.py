@@ -7,7 +7,7 @@ from pathlib import Path
 
 import streamlit as st
 
-HERE = Path(__file__).parent / "pages"
+HERE = Path(__file__).parent / "views"
 st.set_page_config(page_title="Strategy research (simulated)", layout="wide")
 nav = st.navigation(
     [

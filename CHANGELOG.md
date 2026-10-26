@@ -164,4 +164,5 @@
   tables, trade effect, verdict table from the saved report, screening rows + trading profile, D8 guard, banner.
 - `dashboard/app`: Overview, Company research, Performance, Trade explorer. `.streamlit/config.toml` (localhost,
   no usage statistics). `metrics.drawdown_series`. `scripts/smoke_dashboard.py`. README "How to open the dashboard".
-
+- Fixes after a browser check: sidebar choice kept across pages; `app/pages` → `app/views`; Deploy button hidden;
+  verdict table without its heading (test added).

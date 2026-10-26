@@ -6,3 +6,6 @@ headless = true
 [browser]
 gatherUsageStats = false
 serverAddress = "localhost"
+
+[client]
+toolbarMode = "minimal"  # hides the "Deploy" button — this app must never be deployed

@@ -422,6 +422,10 @@ FINDINGS (Step 2.3):
   −38.46% = report §2. Smoke check (scripts/smoke_dashboard.py, Streamlit AppTest): 4 pages, 0 errors, banner on each.
   Real server: health endpoint "ok" (HTTP 200) on localhost:8501.
   NOT DONE: the 4 screenshots — no Chrome on this Mac and the in-app browser refused localhost (see open questions).
+  Browser check afterwards (in-app browser attached to the running server — the preview launcher may not read the
+  Desktop folder, so the server is started from the shell): fixed 3 things — sidebar choice now survives page changes,
+  page folder renamed pages/ → views/ (Streamlit auto-listed raw file names), "Deploy" button hidden
+  (client.toolbarMode = minimal); verdict table shown without the report's heading line (+ test).
 
 IN PROGRESS:
 - Phase 8 screenshots for chat Claude (blocked: see open questions)
