@@ -24,7 +24,11 @@ st.markdown(f"### Total value ({currency}, at each close)")
 st.altair_chart(
     alt.Chart(both)
     .mark_line()
-    .encode(x="day:T", y=alt.Y(f"{col}:Q", title=currency), color="series:N"),
+    .encode(
+        x=alt.X("day:T", title="Date"),
+        y=alt.Y(f"{col}:Q", title=currency),
+        color=alt.Color("series:N", title="Series"),
+    ),
     width="stretch",
 )
 if currency == "AUD":
@@ -32,33 +36,59 @@ if currency == "AUD":
         "AUD = USD value ÷ RBA rate of that day (latest rate dated ≤ day) — same rule as the run."
     )
 
-st.markdown("### Drawdown (value ÷ highest value so far − 1)")
+strategy_name = f"{run.label} {run.setting}"
+st.markdown(f"### Drawdown of {strategy_name} (value ÷ highest value so far − 1)")
+dds = [eq.assign(series=strategy_name)[["day", "drawdown", "series"]]]
+if s0 is not None and run.label != "S0":
+    dds.append(dd.equity_table(s0).assign(series="S0 buy-and-hold")[["day", "drawdown", "series"]])
 st.altair_chart(
-    alt.Chart(eq)
-    .mark_area(opacity=0.5)
-    .encode(x="day:T", y=alt.Y("drawdown:Q", axis=alt.Axis(format="%"))),
+    alt.Chart(pd.concat(dds))
+    .mark_line()
+    .encode(
+        x=alt.X("day:T", title="Date"),
+        y=alt.Y("drawdown:Q", title="Drawdown", axis=alt.Axis(format="%")),
+        color=alt.Color("series:N", title="Series"),
+    ),
     width="stretch",
 )
 
 st.markdown("### Cash vs invested (USD)")
-held = eq.melt("day", ["cash_usd", "invested_usd"], var_name="part", value_name="usd")
+held = eq.rename(columns={"cash_usd": "Cash", "invested_usd": "Invested"}).melt(
+    "day", ["Cash", "Invested"], var_name="part", value_name="usd"
+)
 st.altair_chart(
-    alt.Chart(held).mark_area().encode(x="day:T", y="usd:Q", color="part:N"),
+    alt.Chart(held)
+    .mark_area()
+    .encode(
+        x=alt.X("day:T", title="Date"),
+        y=alt.Y("usd:Q", title="USD"),
+        color=alt.Color("part:N", title=""),
+    ),
     width="stretch",
 )
 
-st.markdown("### Costs and dividends (USD)")
+st.markdown("### Costs (USD, cumulative)")
 costs = dd.costs_table(run)
 if costs.empty:
     st.markdown("No trades — no fees or spread cost.")
 else:
-    cum = costs.melt(
-        "day", ["cumulative_fees_usd", "cumulative_spread_usd"], var_name="cost", value_name="usd"
+    named = costs.rename(
+        columns={
+            "cumulative_fees_usd": "Fees (cumulative)",
+            "cumulative_spread_usd": "Spread cost (cumulative)",
+        }
+    )
+    cum = named.melt(
+        "day", ["Fees (cumulative)", "Spread cost (cumulative)"], var_name="cost", value_name="usd"
     )
     st.altair_chart(
         alt.Chart(cum)
         .mark_line(interpolate="step-after")
-        .encode(x="day:T", y="usd:Q", color="cost:N"),
+        .encode(
+            x=alt.X("day:T", title="Date"),
+            y=alt.Y("usd:Q", title="USD"),
+            color=alt.Color("cost:N", title=""),
+        ),
         width="stretch",
     )
 c1, c2, c3 = st.columns(3)
@@ -69,6 +99,7 @@ c2.metric(
 )
 c3.metric("Dividends net (run record)", f"US${float(run.summary['dividends_net_usd']):,.2f}")
 st.caption(
-    f"Dividends over time: {dd.NOT_AVAILABLE} — the run record saves only the total, so no daily line is drawn."
+    f"Dividends over time: {dd.NOT_AVAILABLE} — the run record saves only the total (shown above), so the "
+    "chart shows costs only."
 )
 ui.assumptions(run)

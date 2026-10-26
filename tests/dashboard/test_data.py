@@ -95,7 +95,6 @@ def test_not_available_behaviour(tmp_path):
     run = dd.load_run(make_run(tmp_path), "validation")
     assert dd.key_results(run, None)["Excess vs S0 (pp, USD)"] == dd.NOT_AVAILABLE
     assert dd.show(None) == "not available" and dd.show(0.5, "{:.0%}") == "50%"
-    assert dd.fills_table(run)["realised P&L (USD)"].iloc[0] == dd.NOT_AVAILABLE  # buys have no P&L
     effect = dd.trade_effect(
         run, 0
     )  # first fill: no earlier close before 2020-01-02 … there is one (01-02)
@@ -161,3 +160,18 @@ def test_verdict_table_is_copied_from_the_report():
     t = dd.verdict_table()
     assert not t.startswith("## ") and t.count("**REJECTED**") == 5
     assert t in REPORT.read_text(encoding="utf-8")
+
+
+def test_display_formatting_cents_shares_and_dash(tmp_path):
+    rows = [
+        "2020-01-03,buy,1.2345678,100,100.05,0.005,3.00,0.00,3.00,0,,1.234567",
+        "2020-01-07,sell,1.234567,113,112.94,0.015,3.00,0.00,3.00,0,9.885,0.000000",
+    ]
+    t = dd.fills_table(dd.load_run(make_run(tmp_path, fills_rows=rows), "validation"))
+    # ROUND_HALF_EVEN to cents: 0.005 → 0.00, 0.015 → 0.02, 9.885 → 9.88
+    assert list(t["spread cost (USD)"]) == ["0.00", "0.02"]
+    assert t["realised P&L (USD)"].iloc[1] == "9.88"
+    assert t["realised P&L (USD)"].iloc[0] == "—"  # a buy: not applicable (not "not available")
+    assert t["shares"].iloc[0] == "1.234568" and t["position after"].iloc[1] == "0.000000"
+    assert t["fill (USD)"].iloc[0] == "100.05"  # prices exactly as stored
+    assert list(t["fee (USD)"]) == ["3.00", "3.00"]

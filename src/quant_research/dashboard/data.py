@@ -10,12 +10,14 @@ import json
 from collections.abc import Iterable
 from dataclasses import dataclass, field
 from datetime import date
+from decimal import Decimal
 from pathlib import Path
 from typing import Any
 
 import pandas as pd
 
 from quant_research.metrics.performance import cagr, drawdown_series, max_drawdown, sharpe
+from quant_research.portfolio.money import to_display
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 RUNS_DIR = PROJECT_ROOT / "data" / "runs"
@@ -239,7 +241,20 @@ def costs_table(run: RunRecord) -> pd.DataFrame:
     return df
 
 
+NOT_APPLICABLE = "—"  # e.g. realised P&L on a buy (nothing was sold) — different from missing data
+
+
+def cents(text: str) -> str:
+    """Money for DISPLAY: cents, ROUND_HALF_EVEN (portfolio.money.to_display, PROJECT_GUIDE §4)."""
+    return f"{to_display(Decimal(text)):,.2f}"
+
+
+def shares6(text: str) -> str:
+    return f"{Decimal(text):.6f}"
+
+
 def fills_table(run: RunRecord) -> pd.DataFrame:
+    """Fills for display: money in cents, shares 6 dp, prices exactly as stored; P&L on buys = "—"."""
     cols = {
         "day": "date",
         "side": "side",
@@ -252,7 +267,13 @@ def fills_table(run: RunRecord) -> pd.DataFrame:
         "position_after": "position after",
     }
     df = pd.DataFrame(run.fills, columns=list(cols)).rename(columns=cols)
-    df["realised P&L (USD)"] = df["realised P&L (USD)"].replace("", NOT_AVAILABLE)
+    for c in ("fee (USD)", "spread cost (USD)"):
+        df[c] = df[c].map(cents)
+    df["realised P&L (USD)"] = df["realised P&L (USD)"].map(
+        lambda v: cents(v) if v else NOT_APPLICABLE
+    )
+    for c in ("shares", "position after"):
+        df[c] = df[c].map(shares6)
     return df
 
 
