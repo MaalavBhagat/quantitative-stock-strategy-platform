@@ -69,3 +69,13 @@ The first time, download the project-only browser (≈ 580 MB, into the git-igno
 PLAYWRIGHT_BROWSERS_PATH=.playwright-browsers uv run --group screenshots playwright install chromium
 ```
 
+### Strategy lab, reports and exports
+
+- **Strategy lab** page: choose stock, strategy, settings, period (development or validation only) and cost variant;
+  it runs through the same validated engine (`run.py`) together with buy-and-hold on the same settings. Lab runs are
+  saved under `data/runs/lab/` and labelled **EXPLORATORY — NOT PRE-REGISTERED** — a good lab result is not evidence.
+- **Report & export** page (and the bottom of the lab page): a Markdown research report plus trade log CSV, equity CSV,
+  config YAML and a chart PNG, saved to `data/exports/<run id>/`. Every file carries the licence note:
+  **personal use; do not redistribute** (Tiingo: internal use only; RBA: personal, non-commercial, with attribution).
+- An exported `config.yaml` fed back into `run.py` gives the identical result (tested).
+

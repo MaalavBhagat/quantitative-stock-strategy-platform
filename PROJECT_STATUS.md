@@ -2,7 +2,7 @@
 Last updated: 2026-10-26
 
 CURRENT PHASE: Phase 8 — Interactive dashboard (In progress)
-CURRENT TASK: Phase 8 Steps 8.3, 8.6, 8.7 — strategy lab, reports, export + polish (prompt: prompts/22_phase8_steps8.3-8.7_lab_reports_export.md)
+CURRENT TASK: Phase 8 ready for verification (Steps 8.1–8.7 done)
 
 PHASE STATES (Not started / In progress / Blocked / Verified):
 - Phase 0  Feasibility & research design ........ VERIFIED (2026-10-18)
@@ -13,7 +13,7 @@ PHASE STATES (Not started / In progress / Blocked / Verified):
 - Phase 5  Strategy laboratory .................. VERIFIED (2026-10-25)
 - Phase 6  Research validation .................. VERIFIED (2026-10-26)
 - Phase 7  Company research & screening ......... VERIFIED (2026-10-26)
-- Phase 8  Interactive dashboard ................ In progress
+- Phase 8  Interactive dashboard ................ In progress — ready for verification
 - Phase 9  Market context & AI news ............. Not started
 - Phase 10 Integration, security, reliability ... Not started
 - Phase 11 CV & GitHub portfolio ................ Not started
@@ -435,8 +435,30 @@ FINDINGS (Step 2.3):
   10 round trips, fees 69.00 (23 × 3), CAGR 33.55% consistent with 217.34% over 4 years; Trade explorer 23 fills /
   23 orders, trade #1 = Appendix B; banner, verdicts and assumptions visible on every page.
 
+- Phase 8 Steps 8.3, 8.6, 8.7 + polish + Phase 8 check — DONE 2026-10-26 (prompt 22):
+  Polish (commit 22e90ed): money in cents (portfolio.money.to_display), shares 6 dp, prices as stored; "—" for P&L on
+  buys; plain chart labels; "Costs" chart (dividends are saved only as a run total — no per-day line, no new maths);
+  full-width drawdown chart with S0 as a second line.
+  Strategy lab (dashboard/lab.py + views/lab.py): any X/Y/k/w, development or validation only, 7 cost variants (same
+  as scripts/run_validation.py — tested); runs ONLY via backtesting.run.run_backtest together with S0 on the same
+  settings; saved under data/runs/lab/ with lab.json "EXPLORATORY — NOT PRE-REGISTERED"; off-grid settings use run.py's
+  grid_override; dirty tree → warning + recorded dirty (D6). Engine lock tested through the lab (2021 refused before
+  any data loads). Demo lab run S4-S2 AAPL validation main 2%/4% → US$22,849.41 (identical to the pre-registered run;
+  paired S0 US$34,304.60 = Appendix A), recorded clean.
+  Reports (reporting/run_report.py) + exports (dashboard/export.py): report.md, trades.csv, orders.csv, equity.csv,
+  config.yaml, chart.png (vl-convert-python), LICENCE.txt → data/exports/<run id>/ (git-ignored), licence header on
+  every text file. Round trip: exported config.yaml → run.py → US$22,849.41, same AUD, fees, 23 fills (test).
+  Fixed during the step: two "US$" on one Markdown line rendered as a maths formula → report line split, "$" escaped
+  in previews. Screenshots: 6 PNGs in data/screenshots/ (git-ignored).
+  PHASE 8 CHECK (report only, not marked Verified): dashboard uses the validated engine ✓ (lab runs only via
+  run_backtest; views read run records) · results consistent with independent calculations ✓ (Appendix B consistency
+  test: 22,849.41 / 23 fills; S0 max DD −38.46% = report; lab rerun identical; chat Claude's screenshot checks) ·
+  important assumptions visible ✓ (assumptions box on every results page, banner on every page) · failed experiments
+  not hidden ✓ (REJECTED verdict table on Overview + lab, FAILED_EXPERIMENTS linked) · results exportable and
+  reproducible ✓ (6 export files + licence; config round-trip test) → Phase 8: ready for verification.
+
 IN PROGRESS:
-- Phase 8 Steps 8.3, 8.6, 8.7 + polish + Phase 8 check (prompt 22)
+- none (Phase 8 waiting for verification)
 
 BLOCKED / OPEN QUESTIONS:
 - (resolved 2026-10-26, see the Steps 7.1–7.2 check) T FY2016 NI, PG FY2014 / XOM FY2019 revenue CONFLICT, INTC liabilities.
@@ -523,8 +545,12 @@ IMPORTANT DECISIONS:
      (only Goggy sets it) · D9 type hints required on every function in src/; no type-checker yet.
 
 NEXT ACTION:
-- Desktop Code session: "Read prompts/22_phase8_steps8.3-8.7_lab_reports_export.md and do exactly what it says."
-- Note: .playwright-browsers/ (~581 MB, git-ignored) can be deleted after Phase 11 screenshots (Mac disk ~23 GB free).
+- Chat Claude verifies Phase 8, then Phase 9 plan.
+
+TESTS RUN (2026-10-26, Steps 8.3, 8.6, 8.7):
+- uv run pytest -q → 341 passed in 4.90s · uv run --group dashboard pytest -q tests/dashboard → 20 passed ·
+  uv run ruff check . → All checks passed! · uv run ruff format --check . → 149 files already formatted ·
+  uv run --group dashboard python scripts/smoke_dashboard.py → 6 pages, 0 errors, smoke check: PASS.
 
 TESTS RUN (2026-10-26, Steps 8.1, 8.2, 8.4, 8.5):
 - uv run pytest -q → 329 passed in 2.38s · uv run ruff check . → All checks passed! ·

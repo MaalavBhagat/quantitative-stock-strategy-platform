@@ -169,3 +169,10 @@
 - Screenshots: uv group `screenshots` (playwright), project-local Chromium (git-ignored), `scripts/dashboard_screenshots.py`;
   Overview shows long values as text (were cut off in tiles).
 
+## 2026-10-26 — Phase 8, Steps 8.3, 8.6, 8.7 + Phase 8 check (prompt 22) (version stays 0.1.0)
+- Polish: cents display, "—" for buy P&L, plain chart labels, "Costs" chart, drawdown with S0.
+- `dashboard.lab` + Strategy lab page: runs via backtesting.run only, EXPLORATORY marker, data/runs/lab/, paired S0.
+- `reporting.run_report` + `dashboard.export` + Report & export page: report, CSVs, config YAML, chart PNG
+  (vl-convert-python in the `dashboard` group), licence headers, data/exports/. Config round-trip test.
+- Screenshot script covers lab + report; smoke check covers 6 pages. README, PROJECT_GUIDE (dashboard, reporting).
+
