@@ -2,7 +2,7 @@
 Last updated: 2026-10-26
 
 CURRENT PHASE: Phase 7 — Company research & screening (In progress)
-CURRENT TASK: Phase 7 Steps 7.1–7.2 — SEC EDGAR fundamentals + trading indicators (prompt: prompts/19_phase7_steps7.1-7.2_fundamentals.md)
+CURRENT TASK: Phase 7 Steps 7.1–7.2 done — waiting for chat Claude's check; next prompt 20 (Steps 7.3–7.5)
 
 PHASE STATES (Not started / In progress / Blocked / Verified):
 - Phase 0  Feasibility & research design ........ VERIFIED (2026-10-18)
@@ -370,10 +370,25 @@ FINDINGS (Step 2.3):
   explicit ✓ (RESULTS_SUMMARY §5, DATA_SOURCES §8) · not presented as proof of future profitability ✓
   ("simulated, historical" + not-financial-advice lines) → Phase 6: ready for verification.
 
+- Phase 7 Steps 7.1 + 7.2 — DONE 2026-10-26 (prompt 19; data + calculations only, no ranking):
+  SEC EDGAR companyfacts for 7 companies (SPY = fund, excluded from 7.1), facts filed > 2020-12-31 dropped before
+  saving (DATA_SOURCES §11). CIKs: AAPL 320193 · MSFT 789019 · KO 21344 · PG 80424 · XOM 34088 (override: SEC's
+  list today maps XOM to ExxonMobil Holdings Corp 2115436 — nothing before 2021) · INTC 50863 · T 732717.
+  Point-in-time rule (filed strictly before T; restatements from their own filing date) + 8 indicators in
+  src/quant_research/screening/fundamentals.py; trading indicators in screening/trading.py.
+  Report: reports/screening/indicators_2010-2020.md — coverage F 385 · fallback 174 · MISSING 21 · CONFLICT 4.
+  Bug found + fixed during the step: fiscal-year detection picked stray facts dated after the filing (INTC, PG, T)
+  → rule now "latest year end before the filing (≤ 180 days), ≥ 5 facts". Revenue tags that disagree > 0.5%
+  → CONFLICT (PG FY2014 `Revenues` 29.4bn vs `SalesRevenueNet` 83.1bn; XOM FY2019).
+
 IN PROGRESS:
-- none (Phase 6 waiting for verification)
+- none (Steps 7.1–7.2 waiting for chat Claude's check)
 
 BLOCKED / OPEN QUESTIONS:
+- T FY2016 net income / EPS absent from the original 10-K in SEC companyfacts (only 2018+ filings) → MISSING. Check
+  the filing? XOM FY2010 revenue untagged until 2012. PG FY2014 / XOM FY2019 revenue CONFLICT — which tag is right?
+- INTC liabilities derived as LiabilitiesAndStockholdersEquity − StockholdersEquity (ASSUMPTION: no non-controlling
+  interest, since none is tagged) — confirm against the 10-K.
 - Stake fractional-share precision UNVERIFIED (D3 assumes 6 dp — check in Phase 3)
 - RBA 2018–2020: done (trimmed from 2018-2022.xls). 2021+ rates NOT downloaded — needed only for the final test (D8).
 - (1) INTC 2014-06-13 bad Tiingo bar (flat O=H=L=C, prior close repeated) — DEVELOPMENT period only, so it does not
@@ -457,9 +472,12 @@ IMPORTANT DECISIONS:
      (only Goggy sets it) · D9 type hints required on every function in src/; no type-checker yet.
 
 NEXT ACTION:
-- DECISION 2026-10-26 (Goggy): final test 2021+ stays LOCKED until after Phase 9; then it is run ONCE for S1–S4 and any Phase 9 model together, under a new pre-registration tag. Until then nothing dated ≥ 2021-01-01 is downloaded, stored or summarised.
-- Before prompt 19: add SEC_USER_AGENT="<your name> <your email>" to .env (SEC asks for a contact).
-- Desktop Code session: "Read prompts/19_phase7_steps7.1-7.2_fundamentals.md and do exactly what it says."
+- Chat Claude checks a few indicators against the filings (report Appendix A: AAPL FY2019, KO FY2019), then prompt 20.
+
+TESTS RUN (2026-10-26, Steps 7.1–7.2):
+- uv run pytest -q → 310 passed in 2.28s · uv run ruff check . → All checks passed! ·
+  uv run ruff format --check . → 120 files already formatted. Mutation checks: "filed <= T" usable → 2 tests fail;
+  returns without split ratio → 3 tests fail (both restored).
 
 PHASE 6 VERIFIED by chat Claude 2026-10-26: main at abd0d8d. Re-computed from the 640 MAIN run records: median excess
 S1 −43.9 · S2 −12.1 · S3 −19.4 · S4-S1 −32.2 · S4-S2 −2.3; stranded 96 · 47 · 38 · 93 · 7 — identical to

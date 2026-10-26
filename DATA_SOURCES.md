@@ -114,3 +114,19 @@ These rules are what the code does now (`src/quant_research/data/`); Phase 3+ co
 | RBA AUD/USD | 2010-2013.xls, 2014-2017.xls, 2018-2020_from_2018-2022.csv | see §9 |
 | Nothing dated ≥ 2021-01-01 | — | scan of every data file on disk, 2026-10-25: 0 found (D8) |
 Report: reports/data_validation/phase6_all_stocks_2008-2020.md.
+
+## 11. Company financials — SEC EDGAR XBRL (Phase 7, Step 7.1; downloaded 2026-10-26, prompt 19)
+(Prompt 19 calls this "new §10"; §10 was already the Phase 6 inventory, so it is §11.)
+| Item | Fact | Source |
+|---|---|---|
+| API | `companyfacts`: https://data.sec.gov/api/xbrl/companyfacts/CIK##########.json (10-digit CIK); free, **no API key** | [SEC EDGAR APIs](https://www.sec.gov/search-filings/edgar-application-programming-interfaces) |
+| Fair access | max **10 requests/second**; declare a User-Agent with name + contact email. We use ≥ 1 s between requests; User-Agent = `SEC_USER_AGENT` in .env (never printed, logged or saved) | [Accessing EDGAR data](https://www.sec.gov/os/accessing-edgar-data) |
+| Reuse / licence | "Information presented on sec.gov is considered public information and may be copied or further distributed"; SEC asks to be cited as the source. Stored under data/raw/sec/ (git-ignored) like all downloaded data | [sec.gov/privacy](https://www.sec.gov/privacy) |
+| Ticker → CIK | https://www.sec.gov/files/company_tickers.json — SEC: "do not guarantee accuracy or scope". A **current** snapshot (10,425 rows); only our 8 rows kept (data/raw/sec/cik_map.json) | [EDGAR search assistance](https://www.sec.gov/search-filings/edgar-search-assistance/accessing-edgar-data) |
+| Field names (checked in the real JSON) | top: `cik`, `entityName`, `facts` → taxonomy (`us-gaap`, `dei`, …) → tag → `label`, `description`, `units` → unit (`USD`, `USD/shares`, `shares`, `pure`) → list of facts with `accn`, `end`, `filed`, `form`, `fp`, `fy`, `val`, plus `start` (duration facts only) and sometimes `frame`. `fy`/`fp` describe the FILING, not the period — we use `start`/`end` | downloaded files |
+| D8 trim | facts filed after 2020-12-31 dropped in memory BEFORE saving; counts in each .meta.json. Dropped: AAPL 6,890 · MSFT 11,466 · KO 12,968 · PG 8,288 · XOM 6,901 · INTC 9,613 · T 12,465. Latest filed kept ≤ 2020-11-05 | data/raw/sec/*.meta.json |
+| XOM entity | SEC's list today maps XOM to ExxonMobil Holdings Corp (CIK 2115436, 0 facts before 2021). 2010–2020 filer = EXXON MOBIL CORP (formerly EXXON CORP), **CIK 34088** (checked on SEC's submissions API) → explicit override in scripts/download_sec_companyfacts.py. Wrong-entity file set aside (data/raw/sec/set_aside_wrong_entity/), not deleted | SEC submissions API |
+| SPY | a fund (SPDR S&P 500 ETF Trust, CIK 884394) — no company financials; excluded from 7.1, kept in 7.2 | — |
+| Not available (D8) | FY2020 10-Ks filed in 2021 (KO, XOM, INTC, T) | — |
+| Known gaps | T FY2016: no net income / EPS fact from the original 10-K (filed 2017-02-17) in companyfacts — only from 2018+ filings → MISSING. XOM FY2010 revenue first tagged in the 2012 10-K → MISSING. PG FY2014 and XOM FY2019: revenue tags disagree → CONFLICT (not picked). INTC never tags total liabilities or non-controlling interest → derived fallback (ASSUMPTION: no NCI) | reports/screening/indicators_2010-2020.md §4 |
+| Spreads | NOT in free daily data (Tiingo or SEC) → only the ASSUMED spread levels are used | EXPERIMENT_PLAN |

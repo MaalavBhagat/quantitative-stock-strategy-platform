@@ -45,20 +45,20 @@ anything system-wide.
 | `data/runs/` (git-ignored) | one folder per run: run.json (config, data provenance, git commit + dirty, times, summary), orders/fills/equity CSVs |
 | `pyproject.toml`, `uv.lock`, `.python-version` | project settings, exact package versions, Python 3.13 |
 | `.gitignore`, `.env.example` | what Git must never save; template for API keys |
-| `data/` (git-ignored) | downloaded market data — never committed (licence): `raw/tiingo/`, `cache/yfinance/`, `reference/tiingo/` |
+| `data/` (git-ignored) | downloaded market data — never committed (licence): `raw/tiingo/`, `raw/rba/`, `raw/sec/`, `cache/yfinance/`, `reference/tiingo/` |
 
 **Modules** — inside `src/quant_research/`. `data/` (Phase 2), `portfolio/` + `execution/` (Phase 3), `backtesting/`, `strategies/` and `metrics/` (Phase 4) exist; the rest are
 *not created yet* and get created only when a phase needs them (no empty modules).
 | Module | Phase | Its job | It must NOT |
 |---|---|---|---|
-| `data/` — **created** (`tiingo`, `storage`, `validation`, `crosscheck`, `loader`) | 2 | Download, validate, cache and load prices, dividends, splits (all years, incl. 2021+, for quality checks only — D8). Conventions: DATA_SOURCES §7 | trade, compute signals, chart or summarise 2021+ prices, or silently fill/fix bad data |
+| `data/` — **created** (`tiingo`, `storage`, `validation`, `crosscheck`, `loader`, `fx`, `sec`) | 2 | Download, validate, cache and load prices, dividends, splits (all years, incl. 2021+, for quality checks only — D8). Conventions: DATA_SOURCES §7 | trade, compute signals, chart or summarise 2021+ prices, or silently fill/fix bad data |
 | `portfolio/` — **created** (`money`, `ledger`) | 3 | The ledger: cash, shares, costs, dividends, valuation (the only place cash changes) | decide when to trade or read future prices |
 | `execution/` — **created** (`costs`, `orders`, `fills`) | 3–4 | Turn an order into a fill: next-open price, gaps, costs, rounding | decide *whether* to trade; use the signal day's close as the fill price |
 | `backtesting/` — **created** (`engine`, `run`, `lookahead`, `synthetic`) | 4 | Run the day-by-day timeline: data → signal → order → fill → ledger. Strategy interface: `on_close(day, history, portfolio_view) -> list[OrderIntent]` (no price field) | contain strategy rules or fee numbers; run on dates ≥ 2021-01-01 while locked (D8) |
 | `strategies/` — **created** (`buy_and_hold` = S0, `profit_target` = S1, S2, S4, `mean_reversion` = S3, `indicators`, `registry`) | 4–5 | Read past data, return order intents (reinvest only when cash ≥ `reinvest_min_cash_usd`) | touch cash or shares directly; see any data after day T |
 | `metrics/` — **created** (`performance`) | 4, 6 | Returns, CAGR, drawdown + dates, volatility, Sharpe, worst year, costs, dividends, time in cash, round trips (floats OK) | change results or re-run trades |
 | `research/` | 6 | Experiment runner: grids, periods, walk-forward, saving run records | run anything on dates ≥ 2021-01-01 unless `final_test_unlocked: true` (D8) |
-| `screening/` | 7 | Company screens and suitability profiles | feed results back into backtests silently |
+| `screening/` — **created** (`fundamentals`, `trading`) | 7 | Company indicators (SEC XBRL, point-in-time: usable only on days AFTER the filing date; restatements from their own filing date) and trading indicators; later screens + suitability profiles | feed results back into backtests silently; use a fact on or before its filing date; fill a MISSING value |
 | `reporting/` | 6+ | Tables and charts built from saved results only | type or edit any number by hand |
 | `dashboard/` | 8 | Streamlit app to view saved results | run new experiments or hold logic of its own |
 | `news/` | 9 | News / AI context (only if the baseline is solid) | influence past backtests with information from later dates |

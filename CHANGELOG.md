@@ -139,3 +139,13 @@
 - `research/FAILED_EXPERIMENTS.md` (failures and our own mistakes, dated, with evidence) and
   `research/FINAL_TEST_OPTIONS.md` (options only; 2021+ stays locked).
 - README "Findings so far"; PROJECT_STATUS: Phase 6 ready for verification.
+
+## 2026-10-26 — Phase 7, Steps 7.1 + 7.2: company + trading indicators (prompt 19) (version stays 0.1.0)
+- `data.sec`: SEC EDGAR companyfacts download (User-Agent from .env, ≥ 1 s between requests, retries), ticker → CIK,
+  trim of facts filed after 2020-12-31 BEFORE saving (D8), counts in .meta.json.
+- `scripts/download_sec_companyfacts.py` (7 companies; XOM uses the 2010–2020 filer CIK 34088 — logged override).
+- `screening.fundamentals`: point-in-time values (filed strictly before T; restatements from their own date;
+  same-day conflicts never picked), tag priority + fallbacks, revenue-tag agreement check, 8 indicators.
+- `screening.trading`: yearly dollar volume, volatility, daily range, drawdown, trailing dividend yield.
+- `scripts/build_indicators.py` → `reports/screening/indicators_2010-2020.md`. DATA_SOURCES §11; PROJECT_GUIDE.
+- `.env.example`: SEC_USER_AGENT (empty).
