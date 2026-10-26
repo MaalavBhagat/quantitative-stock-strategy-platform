@@ -2,7 +2,7 @@
 Last updated: 2026-10-26
 
 CURRENT PHASE: Phase 8 — Interactive dashboard (In progress)
-CURRENT TASK: Phase 8 Steps 8.1, 8.2, 8.4, 8.5 — Streamlit dashboard views (prompt: prompts/21_phase8_steps8.1-8.5_dashboard_views.md)
+CURRENT TASK: Phase 8 Steps 8.3, 8.6, 8.7 — strategy lab, reports, export + polish (prompt: prompts/22_phase8_steps8.3-8.7_lab_reports_export.md)
 
 PHASE STATES (Not started / In progress / Blocked / Verified):
 - Phase 0  Feasibility & research design ........ VERIFIED (2026-10-18)
@@ -431,8 +431,12 @@ FINDINGS (Step 2.3):
   page folder renamed pages/ → views/ (Streamlit auto-listed raw file names), "Deploy" button hidden
   (client.toolbarMode = minimal); verdict table shown without the report's heading line (+ test).
 
+- Steps 8.1, 8.2, 8.4, 8.5 checked by chat Claude 2026-10-26 from the 4 screenshots: Overview final US$22,849.41,
+  10 round trips, fees 69.00 (23 × 3), CAGR 33.55% consistent with 217.34% over 4 years; Trade explorer 23 fills /
+  23 orders, trade #1 = Appendix B; banner, verdicts and assumptions visible on every page.
+
 IN PROGRESS:
-- none (Steps 8.1, 8.2, 8.4, 8.5 waiting for chat Claude's screenshot review)
+- Phase 8 Steps 8.3, 8.6, 8.7 + polish + Phase 8 check (prompt 22)
 
 BLOCKED / OPEN QUESTIONS:
 - (resolved 2026-10-26, see the Steps 7.1–7.2 check) T FY2016 NI, PG FY2014 / XOM FY2019 revenue CONFLICT, INTC liabilities.
@@ -519,7 +523,8 @@ IMPORTANT DECISIONS:
      (only Goggy sets it) · D9 type hints required on every function in src/; no type-checker yet.
 
 NEXT ACTION:
-- Chat Claude reviews screenshots, then prompt 22.
+- Desktop Code session: "Read prompts/22_phase8_steps8.3-8.7_lab_reports_export.md and do exactly what it says."
+- Note: .playwright-browsers/ (~581 MB, git-ignored) can be deleted after Phase 11 screenshots (Mac disk ~23 GB free).
 
 TESTS RUN (2026-10-26, Steps 8.1, 8.2, 8.4, 8.5):
 - uv run pytest -q → 329 passed in 2.38s · uv run ruff check . → All checks passed! ·
