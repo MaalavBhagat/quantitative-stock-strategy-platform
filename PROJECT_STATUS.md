@@ -2,7 +2,7 @@
 Last updated: 2026-10-26
 
 CURRENT PHASE: Phase 7 — Company research & screening (In progress)
-CURRENT TASK: Phase 7 Steps 7.1–7.2 done — waiting for chat Claude's check; next prompt 20 (Steps 7.3–7.5)
+CURRENT TASK: Phase 7 Steps 7.3–7.5 — screening method, selection bias, company comparison (prompt: prompts/20_phase7_steps7.3-7.5_screening.md)
 
 PHASE STATES (Not started / In progress / Blocked / Verified):
 - Phase 0  Feasibility & research design ........ VERIFIED (2026-10-18)
@@ -381,14 +381,19 @@ FINDINGS (Step 2.3):
   → rule now "latest year end before the filing (≤ 180 days), ≥ 5 facts". Revenue tags that disagree > 0.5%
   → CONFLICT (PG FY2014 `Revenues` 29.4bn vs `SalesRevenueNet` 83.1bn; XOM FY2019).
 
+- Steps 7.1–7.2 checked by chat Claude 2026-10-26 against the filings: AAPL FY2019 — all 10 sampled values match Apple's
+  FY19 consolidated statements (net sales 260,174; NI 55,256; EPS 11.89 / FY18 11.91; assets 338,516; liabilities 248,028;
+  current assets 162,819; current liabilities 105,718; OCF 69,391; capex 10,495). KO FY2019 balance sheet matches the 10-K
+  (R4: assets 86,381; total equity incl. NCI 21,098; current assets 20,411; current liabilities 26,973); NI 8,920 matches.
+  Open-question rulings (chat Claude, 2026-10-26): CONFLICT values (PG FY2014, XOM FY2019 revenue) are NOT used in any
+  score — treated as unavailable; T FY2016 NI stays MISSING (later-filed data can't be used for that year); INTC
+  liabilities fallback kept as a labelled ASSUMPTION (no material non-controlling interest before 2022).
+
 IN PROGRESS:
-- none (Steps 7.1–7.2 waiting for chat Claude's check)
+- Phase 7 Steps 7.3–7.5 (prompt 20)
 
 BLOCKED / OPEN QUESTIONS:
-- T FY2016 net income / EPS absent from the original 10-K in SEC companyfacts (only 2018+ filings) → MISSING. Check
-  the filing? XOM FY2010 revenue untagged until 2012. PG FY2014 / XOM FY2019 revenue CONFLICT — which tag is right?
-- INTC liabilities derived as LiabilitiesAndStockholdersEquity − StockholdersEquity (ASSUMPTION: no non-controlling
-  interest, since none is tagged) — confirm against the 10-K.
+- (resolved 2026-10-26, see the Steps 7.1–7.2 check) T FY2016 NI, PG FY2014 / XOM FY2019 revenue CONFLICT, INTC liabilities.
 - Stake fractional-share precision UNVERIFIED (D3 assumes 6 dp — check in Phase 3)
 - RBA 2018–2020: done (trimmed from 2018-2022.xls). 2021+ rates NOT downloaded — needed only for the final test (D8).
 - (1) INTC 2014-06-13 bad Tiingo bar (flat O=H=L=C, prior close repeated) — DEVELOPMENT period only, so it does not
@@ -472,7 +477,7 @@ IMPORTANT DECISIONS:
      (only Goggy sets it) · D9 type hints required on every function in src/; no type-checker yet.
 
 NEXT ACTION:
-- Chat Claude checks a few indicators against the filings (report Appendix A: AAPL FY2019, KO FY2019), then prompt 20.
+- Desktop Code session: "Read prompts/20_phase7_steps7.3-7.5_screening.md and do exactly what it says."
 
 TESTS RUN (2026-10-26, Steps 7.1–7.2):
 - uv run pytest -q → 310 passed in 2.28s · uv run ruff check . → All checks passed! ·
