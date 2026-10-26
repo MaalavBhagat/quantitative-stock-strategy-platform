@@ -1,8 +1,8 @@
 # PROJECT_STATUS.md
 Last updated: 2026-10-26
 
-CURRENT PHASE: Phase 7 — Company research & screening (In progress)
-CURRENT TASK: Phase 7 ready for verification (Steps 7.1–7.5 done)
+CURRENT PHASE: Phase 8 — Interactive dashboard (In progress)
+CURRENT TASK: Phase 8 Steps 8.1, 8.2, 8.4, 8.5 — Streamlit dashboard views (prompt: prompts/21_phase8_steps8.1-8.5_dashboard_views.md)
 
 PHASE STATES (Not started / In progress / Blocked / Verified):
 - Phase 0  Feasibility & research design ........ VERIFIED (2026-10-18)
@@ -12,8 +12,8 @@ PHASE STATES (Not started / In progress / Blocked / Verified):
 - Phase 4  Backtesting engine ................... VERIFIED (2026-10-25)
 - Phase 5  Strategy laboratory .................. VERIFIED (2026-10-25)
 - Phase 6  Research validation .................. VERIFIED (2026-10-26)
-- Phase 7  Company research & screening ......... In progress — ready for verification
-- Phase 8  Interactive dashboard ................ Not started
+- Phase 7  Company research & screening ......... VERIFIED (2026-10-26)
+- Phase 8  Interactive dashboard ................ In progress
 - Phase 9  Market context & AI news ............. Not started
 - Phase 10 Integration, security, reliability ... Not started
 - Phase 11 CV & GitHub portfolio ................ Not started
@@ -405,8 +405,13 @@ FINDINGS (Step 2.3):
   bias where possible ✓ (point-in-time filings + tests, XOM CIK, survivors + hindsight stated, fair-universe needs
   listed as a limitation — not fixable with free data) → Phase 7: ready for verification.
 
+- PHASE 7 VERIFIED (2026-10-26) — Verified by chat Claude: SCREENING_METHOD.md committed alone in f66e267 (16:57)
+  before the scoring code + scores in 3ef65c2 (17:01); the 5 positive strategy–stock pairs of 40 re-computed from the
+  run records (S4-S1 INTC +63.4, S3 T +25.2, S3 XOM +16.9, S3 INTC +3.6, S4-S2 MSFT +1.9) — identical. All 4 roadmap
+  criteria met.
+
 IN PROGRESS:
-- none (Phase 7 waiting for verification)
+- Phase 8 Steps 8.1, 8.2, 8.4, 8.5 (prompt 21)
 
 BLOCKED / OPEN QUESTIONS:
 - (resolved 2026-10-26, see the Steps 7.1–7.2 check) T FY2016 NI, PG FY2014 / XOM FY2019 revenue CONFLICT, INTC liabilities.
@@ -493,7 +498,7 @@ IMPORTANT DECISIONS:
      (only Goggy sets it) · D9 type hints required on every function in src/; no type-checker yet.
 
 NEXT ACTION:
-- Chat Claude verifies Phase 7, then Phase 8 dashboard.
+- Desktop Code session: "Read prompts/21_phase8_steps8.1-8.5_dashboard_views.md and do exactly what it says."
 
 TESTS RUN (2026-10-26, Steps 7.3–7.5):
 - uv run pytest -q → 320 passed in 2.51s · uv run ruff check . → All checks passed! ·
