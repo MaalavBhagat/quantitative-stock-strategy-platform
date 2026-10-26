@@ -92,6 +92,9 @@ These rules are what the code does now (`src/quant_research/data/`); Phase 3+ co
 | **Tiingo bad bar (found Phase 6):** INTC 2014-06-13 has open = high = low = close = 27.96 (the previous close repeated) with volume 3.6× median; Yahoo shows the real day (+6.8%) | Signals/fills on that day would use a stale price (development period only) | Reported in reports/data_validation/phase6_all_stocks_2008-2020.md §4; NOT fixed. It is the only flat bar in all 24 files. The 9 checks don't catch it (no rule for flat bars) |
 | Yahoo applies a later NON-split adjustment to AT&T (T) prices but not its dividends (found Phase 6) | A plain Yahoo comparison for T fails ("basis not explained") | crosscheck(allow_constant_later_factor=True): a constant factor, value never reported (it describes the locked period, D8); T then agrees with Tiingo on days, splits and dividends |
 | Same-day cross-source differences on 2014-07-28 for XOM (+1.085%) and T (−1.953%) | Unknown which source is right | Listed, not fixed (third source needed) |
+| Stock list chosen in 2026 with hindsight (Phase 7, Step 7.4) | All 8 are survivors; screen ranks and strategy results look better than a real 2010 investor could have expected | Stated in every screen (reports/screening/screening_2010-2020.md §4); NOT fixed |
+| No point-in-time index membership (who was in e.g. the S&P 500 on each date) | A fair, unbiased universe cannot be rebuilt from our free data | LIMITATION, not fixed — would need a paid / historical constituents source plus delisted companies |
+| Ticker ≠ company over time (Step 7.1: XOM now maps to a different CIK) | A screen built from today's ticker list can silently pick the wrong company | Map each ticker to the filer that actually filed in the period (XOM → CIK 34088, DATA_SOURCES §11) |
 
 ## 9. AUD/USD exchange rate source (chosen 2026-10-20, for portfolio start/end conversion)
 | Item | Value | Label / source |

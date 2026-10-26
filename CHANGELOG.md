@@ -149,3 +149,11 @@
 - `screening.trading`: yearly dollar volume, volatility, daily range, drawdown, trailing dividend yield.
 - `scripts/build_indicators.py` → `reports/screening/indicators_2010-2020.md`. DATA_SOURCES §11; PROJECT_GUIDE.
 - `.env.example`: SEC_USER_AGENT (empty).
+
+## 2026-10-26 — Phase 7, Steps 7.3–7.5 + Phase 7 check (prompt 20) (version stays 0.1.0)
+- `research/SCREENING_METHOD.md` v1 — committed before any score.
+- `screening.score`: rank sub-scores (ties averaged, one company → 0.5), quality score (≥ 4 of 5 inputs), computed
+  "why" lines, Spearman, latest 10-K filed before the as-of date.
+- `scripts/build_screening.py` → `reports/screening/screening_2010-2020.md` (scores 2009–2020, selection bias,
+  company comparison, correlations with caveat, Q4.11).
+- `research/IDEAS_FOR_LATER.md` (untested hypotheses); DATA_SOURCES §8 selection-bias rows; PROJECT_GUIDE.

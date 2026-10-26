@@ -2,7 +2,7 @@
 Last updated: 2026-10-26
 
 CURRENT PHASE: Phase 7 — Company research & screening (In progress)
-CURRENT TASK: Phase 7 Steps 7.3–7.5 — screening method, selection bias, company comparison (prompt: prompts/20_phase7_steps7.3-7.5_screening.md)
+CURRENT TASK: Phase 7 ready for verification (Steps 7.1–7.5 done)
 
 PHASE STATES (Not started / In progress / Blocked / Verified):
 - Phase 0  Feasibility & research design ........ VERIFIED (2026-10-18)
@@ -12,7 +12,7 @@ PHASE STATES (Not started / In progress / Blocked / Verified):
 - Phase 4  Backtesting engine ................... VERIFIED (2026-10-25)
 - Phase 5  Strategy laboratory .................. VERIFIED (2026-10-25)
 - Phase 6  Research validation .................. VERIFIED (2026-10-26)
-- Phase 7  Company research & screening ......... In progress
+- Phase 7  Company research & screening ......... In progress — ready for verification
 - Phase 8  Interactive dashboard ................ Not started
 - Phase 9  Market context & AI news ............. Not started
 - Phase 10 Integration, security, reliability ... Not started
@@ -389,8 +389,24 @@ FINDINGS (Step 2.3):
   score — treated as unavailable; T FY2016 NI stays MISSING (later-filed data can't be used for that year); INTC
   liabilities fallback kept as a labelled ASSUMPTION (no material non-controlling interest before 2022).
 
+- Phase 7 Steps 7.3–7.5 + Phase 7 check — DONE 2026-10-26 (prompt 20):
+  research/SCREENING_METHOD.md v1 committed BEFORE any score (f66e267, pushed on the branch). screening/score.py
+  (rank sub-scores with tie averaging, ≥ 4-of-5 rule, "why" lines, Spearman, as-of 10-K selection).
+  scripts/build_screening.py → reports/screening/screening_2010-2020.md: scores per 31 Dec 2009–2020 (2009 only
+  for the development comparison — only AAPL had an XBRL 10-K, so that score is the neutral 0.5), selection-bias
+  section, company comparison, Spearman (8 points, not evidence), Q4.11 answer: no stock type where any strategy
+  reliably beat buy-and-hold; 5 of 40 strategy–stock pairs above 0 in validation (S4-S1 INTC, S3 T/XOM/INTC,
+  S4-S2 MSFT), 0 above 0 in both periods. research/IDEAS_FOR_LATER.md (3 untested hypotheses). DATA_SOURCES §8: 3 rows.
+  Fixed during the step: a pre-written "falling stocks" sentence contradicted the data (INTC, MSFT rose) → the
+  paragraph is now computed.
+  PHASE 7 CHECK (report only, not marked Verified): screening criteria documented ✓ (SCREENING_METHOD.md, report §1)
+  · rankings explainable ✓ (computed "why" line + sub-scores for every company and date, §3) · data limitations
+  visible ✓ (report §8, indicators report §4, DATA_SOURCES §8/§11) · historical conclusions account for selection
+  bias where possible ✓ (point-in-time filings + tests, XOM CIK, survivors + hindsight stated, fair-universe needs
+  listed as a limitation — not fixable with free data) → Phase 7: ready for verification.
+
 IN PROGRESS:
-- Phase 7 Steps 7.3–7.5 (prompt 20)
+- none (Phase 7 waiting for verification)
 
 BLOCKED / OPEN QUESTIONS:
 - (resolved 2026-10-26, see the Steps 7.1–7.2 check) T FY2016 NI, PG FY2014 / XOM FY2019 revenue CONFLICT, INTC liabilities.
@@ -477,7 +493,11 @@ IMPORTANT DECISIONS:
      (only Goggy sets it) · D9 type hints required on every function in src/; no type-checker yet.
 
 NEXT ACTION:
-- Desktop Code session: "Read prompts/20_phase7_steps7.3-7.5_screening.md and do exactly what it says."
+- Chat Claude verifies Phase 7, then Phase 8 dashboard.
+
+TESTS RUN (2026-10-26, Steps 7.3–7.5):
+- uv run pytest -q → 320 passed in 2.51s · uv run ruff check . → All checks passed! ·
+  uv run ruff format --check . → 127 files already formatted. Mutation: as-of filter "filed <= D" → 1 test fails (restored).
 
 TESTS RUN (2026-10-26, Steps 7.1–7.2):
 - uv run pytest -q → 310 passed in 2.28s · uv run ruff check . → All checks passed! ·

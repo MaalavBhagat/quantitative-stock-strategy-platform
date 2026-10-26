@@ -58,7 +58,7 @@ anything system-wide.
 | `strategies/` — **created** (`buy_and_hold` = S0, `profit_target` = S1, S2, S4, `mean_reversion` = S3, `indicators`, `registry`) | 4–5 | Read past data, return order intents (reinvest only when cash ≥ `reinvest_min_cash_usd`) | touch cash or shares directly; see any data after day T |
 | `metrics/` — **created** (`performance`) | 4, 6 | Returns, CAGR, drawdown + dates, volatility, Sharpe, worst year, costs, dividends, time in cash, round trips (floats OK) | change results or re-run trades |
 | `research/` | 6 | Experiment runner: grids, periods, walk-forward, saving run records | run anything on dates ≥ 2021-01-01 unless `final_test_unlocked: true` (D8) |
-| `screening/` — **created** (`fundamentals`, `trading`) | 7 | Company indicators (SEC XBRL, point-in-time: usable only on days AFTER the filing date; restatements from their own filing date) and trading indicators; later screens + suitability profiles | feed results back into backtests silently; use a fact on or before its filing date; fill a MISSING value |
+| `screening/` — **created** (`fundamentals`, `trading`, `score`) | 7 | Company indicators (SEC XBRL, point-in-time: usable only on days AFTER the filing date; restatements from their own filing date) and trading indicators; later screens + suitability profiles | feed results back into backtests silently; use a fact on or before its filing date; fill a MISSING value |
 | `reporting/` | 6+ | Tables and charts built from saved results only | type or edit any number by hand |
 | `dashboard/` | 8 | Streamlit app to view saved results | run new experiments or hold logic of its own |
 | `news/` | 9 | News / AI context (only if the baseline is solid) | influence past backtests with information from later dates |
