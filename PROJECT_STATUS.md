@@ -1,8 +1,8 @@
 # PROJECT_STATUS.md
 Last updated: 2026-10-26
 
-CURRENT PHASE: Phase 8 — Interactive dashboard (In progress)
-CURRENT TASK: Phase 8 ready for verification (Steps 8.1–8.7 done)
+CURRENT PHASE: Phase 9 — Market context & company events (In progress)
+CURRENT TASK: Phase 9 Steps 9.1–9.4 — market context + SEC 8-K events + leakage rules, no backtests (prompt: prompts/23_phase9_steps9.1-9.4_context_events.md)
 
 PHASE STATES (Not started / In progress / Blocked / Verified):
 - Phase 0  Feasibility & research design ........ VERIFIED (2026-10-18)
@@ -13,8 +13,8 @@ PHASE STATES (Not started / In progress / Blocked / Verified):
 - Phase 5  Strategy laboratory .................. VERIFIED (2026-10-25)
 - Phase 6  Research validation .................. VERIFIED (2026-10-26)
 - Phase 7  Company research & screening ......... VERIFIED (2026-10-26)
-- Phase 8  Interactive dashboard ................ In progress — ready for verification
-- Phase 9  Market context & AI news ............. Not started
+- Phase 8  Interactive dashboard ................ VERIFIED (2026-10-27)
+- Phase 9  Market context & AI news ............. In progress
 - Phase 10 Integration, security, reliability ... Not started
 - Phase 11 CV & GitHub portfolio ................ Not started
 
@@ -457,8 +457,11 @@ FINDINGS (Step 2.3):
   not hidden ✓ (REJECTED verdict table on Overview + lab, FAILED_EXPERIMENTS linked) · results exportable and
   reproducible ✓ (6 export files + licence; config round-trip test) → Phase 8: ready for verification.
 
+- DECISION 2026-10-27 (Goggy): Phase 9 scope = free sources only — market context from existing data + company events from SEC 8-K filings (item codes + acceptance time). Optional AI labelling of 8-K text = exploratory side test later.
+- PHASE 9 PLAN: 23 = data + features + leakage rules (no backtests, no return analysis) · 24 = pre-registration v2 of the Phase 9 strategies (before any backtest with the new data) · 25 = runs, comparisons (9.5–9.6), Phase 9 check; then the one-time final test 2021+ for everything (Goggy unlocks).
+
 IN PROGRESS:
-- none (Phase 8 waiting for verification)
+- Phase 9 Steps 9.1–9.4 (prompt 23)
 
 BLOCKED / OPEN QUESTIONS:
 - (resolved 2026-10-26, see the Steps 7.1–7.2 check) T FY2016 NI, PG FY2014 / XOM FY2019 revenue CONFLICT, INTC liabilities.
@@ -503,6 +506,7 @@ KNOWN BUGS:
 - None known
 
 IMPORTANT DECISIONS:
+- DECISION 2026-10-27 (Goggy): Phase 9 scope = free sources only — market context from existing data + company events from SEC 8-K filings (item codes + acceptance time). Optional AI labelling of 8-K text = exploratory side test later.
 - DECISION 2026-10-26 (Goggy): final test 2021+ stays LOCKED until after Phase 9; then it is run ONCE for S1–S4 and any Phase 9 model together, under a new pre-registration tag. Until then nothing dated ≥ 2021-01-01 is downloaded, stored or summarised.
 - 2026-10-17: Work in small, single tasks. Every task ends by updating this file.
 - 2026-10-17: Facts (fees, data prices, provider limits) must have a source link
@@ -545,7 +549,15 @@ IMPORTANT DECISIONS:
      (only Goggy sets it) · D9 type hints required on every function in src/; no type-checker yet.
 
 NEXT ACTION:
-- Chat Claude verifies Phase 8, then Phase 9 plan.
+- DECISION 2026-10-27 (Goggy): Phase 9 = free market context + SEC 8-K events.
+- Desktop Code session: "Read prompts/23_phase9_steps9.1-9.4_context_events.md and do exactly what it says."
+
+PHASE 8 VERIFIED by chat Claude 2026-10-27: main at 1cfe277, clean tree; /data/exports + /data/runs/lab git-ignored;
+lab runs labelled exploratory, clean (dirty False); lab S4-S2 AAPL 2/4 = US$22,849.41 (= pre-registered run); exports
+carry the licence header; config round-trip test reproduces 22,849.41 / 23 fills. All 5 roadmap criteria met.
+PHASE 9 SOURCE RESEARCH (chat Claude 2026-10-27): Alpha Vantage NEWS_SENTIMENT historical = premium only (free key
+refused); Tiingo news starts 2014-01, free-plan access unverified; GDELT free from 2015 but company matching noisy;
+SEC 8-K filings = free, official, exact acceptance time + item codes (2.02 earnings, 2.01 acquisition, 5.02 officers…).
 
 TESTS RUN (2026-10-26, Steps 8.3, 8.6, 8.7):
 - uv run pytest -q → 341 passed in 4.90s · uv run --group dashboard pytest -q tests/dashboard → 20 passed ·
