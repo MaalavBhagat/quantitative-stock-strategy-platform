@@ -133,3 +133,17 @@ Report: reports/data_validation/phase6_all_stocks_2008-2020.md.
 | Not available (D8) | FY2020 10-Ks filed in 2021 (KO, XOM, INTC, T) | — |
 | Known gaps | T FY2016: no net income / EPS fact from the original 10-K (filed 2017-02-17) in companyfacts — only from 2018+ filings → MISSING. XOM FY2010 revenue first tagged in the 2012 10-K → MISSING. PG FY2014 and XOM FY2019: revenue tags disagree → CONFLICT (not picked). INTC never tags total liabilities or non-controlling interest → derived fallback (ASSUMPTION: no NCI) | reports/screening/indicators_2010-2020.md §4 |
 | Spreads | NOT in free daily data (Tiingo or SEC) → only the ASSUMED spread levels are used | EXPERIMENT_PLAN |
+
+## 12. Company events — SEC Form 8-K filings + availability rule (Phase 9, Steps 9.2–9.4; downloaded 2026-10-27)
+| Item | Fact | Source |
+|---|---|---|
+| API | `https://data.sec.gov/submissions/CIK##########.json`: newest ~1,000 filings in `filings.recent`, older ones in the pages listed in `filings.files` (all followed). Free, no key; ≤ 1 request/s, User-Agent from .env | [SEC EDGAR APIs](https://www.sec.gov/search-filings/edgar-application-programming-interfaces) |
+| Field names (checked in the real JSON) | `form`, `filingDate`, `acceptanceDateTime`, `items` (comma list, e.g. "2.02,9.01"), `accessionNumber`, `primaryDocument`, `reportDate` (+ others not used) | downloaded files |
+| Kept | forms 8-K and 8-K/A only, same CIKs as §11 (XOM = 34088). Stored in data/raw/sec/submissions/ (git-ignored) with .meta.json | — |
+| D8 trim | filings with filingDate OR acceptance date (US/Eastern) after 2020-12-31 dropped before saving. Dropped: AAPL 49 · MSFT 54 · KO 75 · PG 114 · XOM 93 · INTC 94 · T 111. Latest kept: 2020-12-30 | .meta.json |
+| **Timezone (checked)** | `acceptanceDateTime` ends in "Z" and **is UTC**. Evidence: Apple's earnings 8-Ks (released 16:30 ET) read 2019-10-30T20:30:40Z (EDT) and 2020-01-28T**21**:30:40Z (EST) — the raw clock moves with daylight saving, so it cannot be Eastern time labelled "Z". Converted with the tz database (America/New_York) | reports/phase9/context_and_events_2010-2020.md §2 |
+| Item codes | SEC Form 8-K, form SEC 873 (02-25): Items 1.01–9.01 → categories in `news/events.py`. Pre-Aug-2004 single-number items (1, 2, 4, 5, 7, 9, 12) are reported as UNRECOGNISED, never mapped — none falls in 2010–2020 | [SEC Form 8-K](https://www.sec.gov/files/form8-k.pdf) |
+| **Availability rule** | An event is usable for a decision at the **close of the first NYSE trading day D whose close is after its acceptance time** (US/Eastern; 16:00, or 13:00 on early-close days — stricter than a fixed 16:00) → trade at D+1's open. Weekend / holiday → next trading day's close. An 8-K/A is a separate event at its own acceptance time (never back-dated) | tests/news/test_events.py; `check_events_no_lookahead` |
+| Not available / not used | VIX and other market indices, sector data, analyst estimates, news text (Alpha Vantage historical news = premium; Tiingo news free access unverified; GDELT matching noisy — chat Claude 2026-10-27). 8-K text is not read; AI labelling = optional exploratory side test later | PROJECT_STATUS decision 2026-10-27 |
+| Market context (Step 9.1) | from the Tiingo files already on disk (2008–2020): SPY above 200-day average, its 20-day slope, SPY 20-day volatility; stock 60-day momentum, 20-day volatility, volume ÷ 50-day median — point-in-time, split-adjusted as of T | `news/context.py` |
+

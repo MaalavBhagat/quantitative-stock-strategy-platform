@@ -51,7 +51,7 @@ anything system-wide.
 *not created yet* and get created only when a phase needs them (no empty modules).
 | Module | Phase | Its job | It must NOT |
 |---|---|---|---|
-| `data/` — **created** (`tiingo`, `storage`, `validation`, `crosscheck`, `loader`, `fx`, `sec`) | 2 | Download, validate, cache and load prices, dividends, splits (all years, incl. 2021+, for quality checks only — D8). Conventions: DATA_SOURCES §7 | trade, compute signals, chart or summarise 2021+ prices, or silently fill/fix bad data |
+| `data/` — **created** (`tiingo`, `storage`, `validation`, `crosscheck`, `loader`, `fx`, `sec`, `sec_submissions`) | 2 | Download, validate, cache and load prices, dividends, splits (all years, incl. 2021+, for quality checks only — D8). Conventions: DATA_SOURCES §7 | trade, compute signals, chart or summarise 2021+ prices, or silently fill/fix bad data |
 | `portfolio/` — **created** (`money`, `ledger`) | 3 | The ledger: cash, shares, costs, dividends, valuation (the only place cash changes) | decide when to trade or read future prices |
 | `execution/` — **created** (`costs`, `orders`, `fills`) | 3–4 | Turn an order into a fill: next-open price, gaps, costs, rounding | decide *whether* to trade; use the signal day's close as the fill price |
 | `backtesting/` — **created** (`engine`, `run`, `lookahead`, `synthetic`) | 4 | Run the day-by-day timeline: data → signal → order → fill → ledger. Strategy interface: `on_close(day, history, portfolio_view) -> list[OrderIntent]` (no price field) | contain strategy rules or fee numbers; run on dates ≥ 2021-01-01 while locked (D8) |
@@ -61,7 +61,7 @@ anything system-wide.
 | `screening/` — **created** (`fundamentals`, `trading`, `score`) | 7 | Company indicators (SEC XBRL, point-in-time: usable only on days AFTER the filing date; restatements from their own filing date) and trading indicators; later screens + suitability profiles | feed results back into backtests silently; use a fact on or before its filing date; fill a MISSING value |
 | `reporting/` — **created** (`run_report`) | 6+, 8 | Markdown research reports built from saved run records only | type or edit any number by hand |
 | `dashboard/` — **created** (`data`, `lab`, `export` + `app/`: `main`, `ui`, `views/overview`, `company`, `performance`, `trades`, `report`, `lab`) | 8 | Streamlit app (uv group `dashboard`): views saved results; may START runs only through run.py (lab runs labelled exploratory, saved under data/runs/lab/); holds no strategy or accounting logic. Exports to data/exports/ with licence headers; localhost only | hold strategy or accounting logic, estimate a missing number, show dates ≥ 2021-01-01, mix lab runs with pre-registered runs, be deployed |
-| `news/` | 9 | News / AI context (only if the baseline is solid) | influence past backtests with information from later dates |
+| `news/` — **created** (`context`, `events`) | 9 | Market context features (point-in-time, via strategies/indicators) and SEC 8-K events: rule-based categories from official item codes, US/Eastern timing, the availability rule (DATA_SOURCES §12) | use an event before its usable close, read prices or returns around events before the Phase 9 pre-registration, use AI labels as facts |
 
 Planned test folders (roadmap): `tests/unit/`, `tests/accounting/`, `tests/backtesting/`,
 `tests/integration/`, plus `tests/fixtures/` for small data files. `config/`, `reports/`, `scripts/` exist.

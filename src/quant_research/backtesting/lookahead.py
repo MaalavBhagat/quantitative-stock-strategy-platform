@@ -97,3 +97,37 @@ def check_no_lookahead(
     eq_a = [e for e in res_a.equity if e.day <= cut_day]
     eq_b = [e for e in res_b.equity if e.day <= cut_day]
     assert eq_a == eq_b, "equity up to the cut changed when only later data changed"
+
+
+def check_events_no_lookahead(
+    decide: Callable[[date, list], object],
+    days: list[date],
+    events: list,
+    schedule: dict | None = None,
+) -> None:
+    """Events version of the spy check (Phase 9, Step 9.4).
+
+    `decide(day, events)` gets the FULL event list and must itself use only events available at `day`'s close.
+    For every event: move it one calendar day later and re-decide; every decision on a day BEFORE the event's
+    original usable day must be unchanged. A decision that peeks at an event too early (e.g. counts an
+    after-close filing on its own day) changes and raises AssertionError.
+    """
+    from dataclasses import replace
+    from datetime import timedelta
+
+    from quant_research.news.events import usable_close_day
+
+    base = {d: decide(d, list(events)) for d in days}
+    for k, event in enumerate(events):
+        first = usable_close_day(event.accepted_et, schedule)
+        moved = list(events)
+        moved[k] = replace(event, accepted_et=event.accepted_et + timedelta(days=1))
+        for d in days:
+            if d >= first:
+                break
+            after = decide(d, moved)
+            if after != base[d]:
+                raise AssertionError(
+                    f"decision on {d} changed when event {event.accession} (usable from {first}) was moved later: "
+                    f"{base[d]!r} → {after!r} — look-ahead"
+                )

@@ -460,8 +460,24 @@ FINDINGS (Step 2.3):
 - DECISION 2026-10-27 (Goggy): Phase 9 scope = free sources only — market context from existing data + company events from SEC 8-K filings (item codes + acceptance time). Optional AI labelling of 8-K text = exploratory side test later.
 - PHASE 9 PLAN: 23 = data + features + leakage rules (no backtests, no return analysis) · 24 = pre-registration v2 of the Phase 9 strategies (before any backtest with the new data) · 25 = runs, comparisons (9.5–9.6), Phase 9 check; then the one-time final test 2021+ for everything (Goggy unlocks).
 
+- Phase 9 Steps 9.1–9.4 — DONE 2026-10-27 (prompt 23; data + features + leakage rules ONLY — no returns, no
+  backtests, nothing about what happened after events):
+  8-K / 8-K/A lists for 7 companies from the SEC submissions API (older pages followed; fields checked in the real JSON:
+  form, filingDate, acceptanceDateTime, items, accessionNumber, primaryDocument, reportDate). D8 trim at download:
+  AAPL 49 · MSFT 54 · KO 75 · PG 114 · XOM 93 · INTC 94 · T 111 dropped; 1,359 filings in 2010–2020 (1,341 8-K, 18 8-K/A).
+  TIMEZONE: acceptanceDateTime is TRUE UTC — Apple earnings 8-Ks 2019-10-30T20:30:40Z (EDT) and 2020-01-28T21:30:40Z
+  (EST) both = 16:30:40 ET; converted to US/Eastern (tests incl. a DST switch).
+  Categories from the official item codes (SEC Form 8-K, SEC 873 (02-25)); pre-2004 codes 1/2/4/5/7/9/12 reported
+  as UNRECOGNISED (all 1994–2004, none in 2010–2020). Timing 2010–2020: 331 before open · 340 during trading ·
+  688 after close · 0 non-trading day.
+  Availability rule (DATA_SOURCES §12): usable at the close of the first NYSE day whose close (16:00, 13:00 on early
+  closes — stricter than a fixed 16:00) is after acceptance; 8-K/A = own event. Events spy check
+  check_events_no_lookahead catches a leaky decision. Market context features (news/context.py; new indicator
+  functions in strategies/indicators.py): full coverage 2010–2020 for all 8 tickers (warm-up from 2008 data).
+  Report: reports/phase9/context_and_events_2010-2020.md (counts + timing only).
+
 IN PROGRESS:
-- Phase 9 Steps 9.1–9.4 (prompt 23)
+- none (Steps 9.1–9.4 waiting for chat Claude's check)
 
 BLOCKED / OPEN QUESTIONS:
 - (resolved 2026-10-26, see the Steps 7.1–7.2 check) T FY2016 NI, PG FY2014 / XOM FY2019 revenue CONFLICT, INTC liabilities.
@@ -549,15 +565,12 @@ IMPORTANT DECISIONS:
      (only Goggy sets it) · D9 type hints required on every function in src/; no type-checker yet.
 
 NEXT ACTION:
-- DECISION 2026-10-27 (Goggy): Phase 9 = free market context + SEC 8-K events.
-- Desktop Code session: "Read prompts/23_phase9_steps9.1-9.4_context_events.md and do exactly what it says."
+- Chat Claude checks the timezone evidence + counts, then prompt 24: pre-registration v2.
 
-PHASE 8 VERIFIED by chat Claude 2026-10-27: main at 1cfe277, clean tree; /data/exports + /data/runs/lab git-ignored;
-lab runs labelled exploratory, clean (dirty False); lab S4-S2 AAPL 2/4 = US$22,849.41 (= pre-registered run); exports
-carry the licence header; config round-trip test reproduces 22,849.41 / 23 fills. All 5 roadmap criteria met.
-PHASE 9 SOURCE RESEARCH (chat Claude 2026-10-27): Alpha Vantage NEWS_SENTIMENT historical = premium only (free key
-refused); Tiingo news starts 2014-01, free-plan access unverified; GDELT free from 2015 but company matching noisy;
-SEC 8-K filings = free, official, exact acceptance time + item codes (2.02 earnings, 2.01 acquisition, 5.02 officers…).
+TESTS RUN (2026-10-27, Steps 9.1–9.4):
+- uv run pytest -q → 366 passed in 5.08s · uv run ruff check . → All checks passed! ·
+  uv run ruff format --check . → 159 files already formatted. Mutation: event at exactly 16:00:00 counted at that
+  close (< → <=) → 1 test fails (restored).
 
 TESTS RUN (2026-10-26, Steps 8.3, 8.6, 8.7):
 - uv run pytest -q → 341 passed in 4.90s · uv run --group dashboard pytest -q tests/dashboard → 20 passed ·

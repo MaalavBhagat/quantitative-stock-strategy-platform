@@ -176,3 +176,12 @@
   (vl-convert-python in the `dashboard` group), licence headers, data/exports/. Config round-trip test.
 - Screenshot script covers lab + report; smoke check covers 6 pages. README, PROJECT_GUIDE (dashboard, reporting).
 
+## 2026-10-27 — Phase 9, Steps 9.1–9.4: market context, SEC 8-K events, leakage rules (prompt 23) (version stays 0.1.0)
+- `data.sec_submissions` + `scripts/download_sec_8k.py`: 8-K / 8-K/A lists (older pages followed), D8 trim at download,
+  UTC → US/Eastern (timezone proven from Apple's earnings filings).
+- `news.events`: categories from official item codes (unrecognised codes reported), timing, availability rule with the
+  real NYSE close (early closes), `backtesting.lookahead.check_events_no_lookahead`.
+- `news.context` + `strategies.indicators` (split_adjusted_volumes, realised_volatility, momentum, ratio_to_median).
+- `scripts/build_phase9_report.py` → `reports/phase9/context_and_events_2010-2020.md` (counts and timing only).
+- DATA_SOURCES §12; PROJECT_GUIDE (news/, data/).
+

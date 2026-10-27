@@ -5,7 +5,9 @@ up to day T only. Tiingo's close_adj must NOT be used — it already contains sp
 happen AFTER day T (e.g. AAPL's later ~4:1 split), which would be look-ahead. Not dividend-adjusted.
 """
 
+import itertools
 import math
+import statistics
 from collections.abc import Sequence
 
 import pandas as pd
@@ -62,3 +64,43 @@ def strong_uptrend(values: Sequence[float], sma_window: int = 200, slope_lag: in
         return False
     # price above its average AND the average rising (vs slope_lag days ago)
     return values[-1] > now > before
+
+
+def split_adjusted_volumes(history: pd.DataFrame) -> list[float]:
+    """Volumes up to T in post-split share units of day T: each volume × every snapped split ratio after it (≤ T)."""
+    volumes = [float(v) for v in history["volume_raw"]]
+    factors = [float(f) for f in history["split_factor"]]
+    adjusted = [0.0] * len(volumes)
+    multiplier = 1.0
+    for i in range(len(volumes) - 1, -1, -1):
+        adjusted[i] = volumes[i] * multiplier
+        if (
+            abs(factors[i] - 1.0) > 1e-12
+        ):  # split at day i's open → earlier volumes are in pre-split shares
+            multiplier *= float(nearest_simple_ratio(factors[i]))
+    return adjusted
+
+
+def realised_volatility(values: Sequence[float], window: int = 20) -> float | None:
+    """Sample std (ddof = 1) of the last `window` daily simple returns × √252. Needs window + 1 values, else None."""
+    if window < 2 or len(values) < window + 1:
+        return None
+    w = values[-(window + 1) :]
+    rets = [b / a - 1 for a, b in itertools.pairwise(w)]
+    mean = sum(rets) / window
+    return math.sqrt(sum((r - mean) ** 2 for r in rets) / (window - 1)) * math.sqrt(252)
+
+
+def momentum(values: Sequence[float], lookback: int = 60) -> float | None:
+    """Return over the last `lookback` trading days: value_T ÷ value_(T − lookback) − 1. None if not enough data."""
+    if lookback < 1 or len(values) < lookback + 1:
+        return None
+    return values[-1] / values[-1 - lookback] - 1
+
+
+def ratio_to_median(values: Sequence[float], window: int = 50) -> float | None:
+    """value_T ÷ median of the `window` values ending at T (T included). None if not enough data or median 0."""
+    if window < 1 or len(values) < window:
+        return None
+    med = statistics.median(values[-window:])
+    return None if med == 0 else values[-1] / med
