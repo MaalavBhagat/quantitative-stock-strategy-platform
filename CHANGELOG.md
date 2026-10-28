@@ -218,3 +218,14 @@
   verdict changed from validation.
 - Dashboard: "final" period (shows 2021–2025 only on that page; nothing ≥ 2026), final verdict table on Overview,
   `verdict_for(label, period)`. RESULTS_SUMMARY final-test section at the top; FAILED_EXPERIMENTS updated.
+
+## 2026-10-28 — Phase 10: integration, error handling, security, reproducibility, docs (prompt 27)
+- `tests/integration/`: end-to-end test on made-up data (values by hand) + replay of 20 saved runs (skips without data/).
+- `tests/test_error_handling.py` (34 cases). Fixes: registry picks the 8-K files covering the run's end date (a final
+  E1 config re-run used to miss 2021–2025 earnings silently); clear errors for invalid JSON, non-numeric Tiingo values,
+  bad CSVs, bad YAML, unknown strategy/broker/spread/share mode, AUD ≤ 0, unreadable RBA files.
+- `scripts/scan_secrets.py` (whole history: 0 findings) + self-tests; pip-audit clean; repo confirmed private.
+- `scripts/reproduce_reports.py` (11/12 byte-identical, 1 date stamp), `scripts/record_environment.py` →
+  `reports/ENVIRONMENT.md`; fresh-clone check.
+- `--help` on every script (`scripts/_help.py`) + test; performance table in PROJECT_GUIDE.
+- New `RESEARCH_METHODOLOGY.md`, `TESTING.md`; README and PROJECT_GUIDE folder map audited and fixed.

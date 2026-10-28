@@ -2,7 +2,7 @@
 Last updated: 2026-10-28
 
 CURRENT PHASE: Phase 10 — Integration, security, reliability (In progress)
-CURRENT TASK: Phase 10 — integration, error handling, security, reproducibility, docs audit (prompt: prompts/27_phase10_integration_reliability.md)
+CURRENT TASK: Phase 10 ready for verification (chat Claude); then Phase 11
 
 PHASE STATES (Not started / In progress / Blocked / Verified):
 - Phase 0  Feasibility & research design ........ VERIFIED (2026-10-18)
@@ -15,7 +15,7 @@ PHASE STATES (Not started / In progress / Blocked / Verified):
 - Phase 7  Company research & screening ......... VERIFIED (2026-10-26)
 - Phase 8  Interactive dashboard ................ VERIFIED (2026-10-27)
 - Phase 9  Market context & AI news ............. VERIFIED (2026-10-28)
-- Phase 10 Integration, security, reliability ... In progress
+- Phase 10 Integration, security, reliability ... In progress (ready for verification 2026-10-28)
 - Phase 11 CV & GitHub portfolio ................ Not started
 
 COMPLETED:
@@ -552,6 +552,33 @@ FINDINGS (Step 2.3):
   all 7 S0 finals (AAPL 16,485.23 · MSFT 17,613.26 · KO 11,559.85 · PG 8,798.98 · XOM 26,057.70 · INTC 6,305.17 ·
   SPY 14,963.53) and all 23 C1 SPY trades (final 13,005.76) exactly. All 8 strategies REJECTED in both validation and
   final test. The 3 'used' notes committed 23 s after the tag, before any download — accepted.
+- Phase 10 (Steps 10.1–10.6) — DONE 2026-10-28 (prompt 27; no new research, no runs on 2021+):
+  10.1 tests/integration/: end-to-end on made-up data (mocked Tiingo → save → loader+validation → run_backtest S0 + S4-S2
+  → run record → metrics → report → dashboard data), every value by hand (S4-S2 last close US$7,501.74, AUD 10,648.25;
+  S0 US$7,093.05, AUD 10,067.92); replay of 20 seeded saved runs (validation/phase9/final) → identical finals and fills
+  (skips without data/). 10.2 tests/test_error_handling.py (34 cases). FIXES: (1) registry read the 2020 8-K files for
+  every config — a final-test E1 config re-run from its saved settings would silently miss 2021–2025 earnings (the
+  final batch itself passed the 2025 events directly, so no result changes; mutation: old behaviour → 1 replay fails);
+  (2) invalid JSON from Tiingo / SEC; (3) non-numeric Tiingo values; (4) empty CSV / no date column / bad dates;
+  (5) broken or non-mapping YAML; (6) unknown strategy / broker / spread / share mode and AUD ≤ 0 now refused by
+  parse_config (were accepted, failed mid-run); (7) unreadable RBA file — all now clear messages.
+  10.3 scripts/scan_secrets.py over ALL refs (8 refs, 4 tags, 95 commits, 516 file versions; real Tiingo key + SEC
+  email from .env checked without printing): 0 findings (one named exemption: the scanner's own self-test with FAKE
+  shapes, real values still checked there); no data/, .env, Excel or price CSV ever committed. uvx pip-audit 2.10.1 on
+  65 locked packages: no known vulnerabilities. gh: repo PRIVATE.
+  10.4 scripts/reproduce_reports.py: 11/12 generated reports byte-identical, 1 (2010-2016_AAPL_XOM.md) differs only in
+  its "generated on" date; 6 not regenerated, each with its reason. reports/ENVIRONMENT.md (Python 3.13.16, uv 0.13.2,
+  64 packages). Fresh clone: uv sync --all-groups → 428 passed, 22 skipped (data-dependent, reasons printed); plain
+  uv sync → 431 passed, 23 skipped.
+  10.5 performance table in PROJECT_GUIDE §2 (suite ≈ 17 s, one backtest 0.6–0.9 s, batches 249–362 s, dashboard pages
+  ≤ 1.1 s) — nothing optimised. --help on all 28 scripts (scripts/_help.py; describes + exits, does nothing else).
+  10.6 RESEARCH_METHODOLOGY.md + TESTING.md created; README updated (final-test findings, .env keys, groups, fresh
+  clone note, period picker, six pages); PROJECT_GUIDE folder map rewritten from the real tree (research/ module never
+  created); every command in README / PROJECT_GUIDE / TESTING checked to exist and run.
+  PHASE 10 CHECK (report only, NOT marked Verified): core workflows reproducible ✓ (replay 20/20, reports 11/12 + 1
+  date stamp, fresh clone) · integration tests pass ✓ · important failures handled clearly ✓ (34 cases, 7 fixes) ·
+  secrets / licensed data protected ✓ (history scan 0, pip-audit clean, repo private) · known limitations documented ✓
+  (DATA_SOURCES §8, TESTING.md "not tested", RESULTS_SUMMARY §5).
 
 IN PROGRESS:
 - none (Phase 9 ready for verification)
@@ -644,8 +671,13 @@ IMPORTANT DECISIONS:
      (only Goggy sets it) · D9 type hints required on every function in src/; no type-checker yet.
 
 NEXT ACTION:
-- Desktop Code session: "Read prompts/27_phase10_integration_reliability.md and do exactly what it says."
-- Then Phase 11 (prompt 28): README polish, demo, diagrams, CV bullets, interview prep, decide public vs private.
+- Chat Claude verifies Phase 10; then Phase 11 (prompt 28): README polish, demo, diagrams, CV bullets, interview prep,
+  decide public vs private.
+
+TESTS RUN (2026-10-28, prompt 27 — Phase 10):
+- uv run pytest -q → 454 passed in 17.15s · uv run ruff check . → All checks passed! ·
+  uv run ruff format --check . → 191 files already formatted · smoke_dashboard → PASS · scan_secrets → findings: 0 ·
+  reproduce_reports → 11 identical + 1 date stamp · fresh clone (--all-groups) → 428 passed, 22 skipped.
 
 TESTS RUN (2026-10-28, prompt 26 — final test):
 - uv run pytest -q → 392 passed in 4.47s · uv run ruff check . → All checks passed! ·
