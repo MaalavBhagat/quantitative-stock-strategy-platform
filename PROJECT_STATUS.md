@@ -2,7 +2,7 @@
 Last updated: 2026-10-28
 
 CURRENT PHASE: Phase 9 — Market context & company events (In progress)
-CURRENT TASK: Phase 9 ready for verification (chat Claude); then Goggy decides on the one-time final test 2021+
+CURRENT TASK: ONE-TIME FINAL TEST 2021–2025 (prompt: prompts/26_final_test_2021-2025.md)
 
 PHASE STATES (Not started / In progress / Blocked / Verified):
 - Phase 0  Feasibility & research design ........ VERIFIED (2026-10-18)
@@ -14,7 +14,7 @@ PHASE STATES (Not started / In progress / Blocked / Verified):
 - Phase 6  Research validation .................. VERIFIED (2026-10-26)
 - Phase 7  Company research & screening ......... VERIFIED (2026-10-26)
 - Phase 8  Interactive dashboard ................ VERIFIED (2026-10-27)
-- Phase 9  Market context & AI news ............. In progress (ready for verification 2026-10-28)
+- Phase 9  Market context & AI news ............. VERIFIED (2026-10-28)
 - Phase 10 Integration, security, reliability ... Not started
 - Phase 11 CV & GitHub portfolio ................ Not started
 
@@ -521,6 +521,12 @@ FINDINGS (Step 2.3):
   spy check, 3 mutation checks in prompt 24) · AI interpretations distinguished from verified facts ✓ (AI labels only
   in the exploratory side test, never in any verdict; item codes = facts) · added complexity justified by evidence or
   labelled exploratory ✓ (pre-registered test said NO for C1/C2/E1 — not adopted).
+- Phase 9 VERIFIED by chat Claude 2026-10-28: 3,200 runs from clean 3b86c53; independent re-implementation
+  reproduced all 8 C1 finals (AAPL 27,274.87 · MSFT 18,995.15 · KO 9,694.31 · PG 9,003.55 · XOM 3,764.25 · INTC 6,675.66 ·
+  T 6,181.34 · SPY 10,360.50) and all 27 C1 AAPL trades exactly. C1, C2, E1 REJECTED vs twins; H7 not supported.
+- FINAL TEST pre-registration written 2026-10-28 BEFORE any 2021+ data: research/FINAL_TEST_PREREG.md (tag
+  prereg-final) — 2021 → 2025-12-31, 7 stocks (T excluded: 2022 spin-off), thresholds ≥ 6 of 7 / REJECTED ≤ 2 of 7,
+  rules otherwise unchanged, 5,096 runs, run ONCE.
 
 IN PROGRESS:
 - none (Phase 9 ready for verification)
@@ -613,9 +619,8 @@ IMPORTANT DECISIONS:
      (only Goggy sets it) · D9 type hints required on every function in src/; no type-checker yet.
 
 NEXT ACTION:
-- Chat Claude verifies Phase 9 (runs, twin check, verdicts, AI side test); then Goggy decides on the one-time final
-  test 2021+.
-- Remaining after that: final test 2021+ (once, Goggy unlocks) · Phase 10 integration/reliability · Phase 11 CV + GitHub.
+- DECISIONS 2026-10-28 (Goggy): unlock the final test now; exclude T (2022 spin-off), judge on 7 stocks.
+- Desktop Code session: "Read prompts/26_final_test_2021-2025.md and do exactly what it says."
 
 TESTS RUN (2026-10-28, prompt 25):
 - uv run pytest -q → 388 passed in 4.51s · uv run ruff check . → All checks passed! ·
