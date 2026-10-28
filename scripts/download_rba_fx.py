@@ -8,6 +8,7 @@ Refuses to overwrite existing files. Writes a .meta.json next to each file.
 deleted, so nothing after 2025-12-31 is ever on disk (2018–2020 rows are already in 2018-2020_from_2018-2022.csv).
 """
 
+import subprocess
 import sys
 import tempfile
 import urllib.request
@@ -38,9 +39,9 @@ def final_test() -> int:
                 print(f"{out_name}: already saved — not overwritten")
                 continue
             source, url = Path(tmp) / name, RBA_BASE_URL + name
-            request = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
-            with urllib.request.urlopen(request) as response:  # fixed official RBA URL
-                source.write_bytes(response.read())
+            # curl verifies the certificate with the system trust store (Python's own store failed the RBA chain
+            # on 2026-10-28); certificate checking is never switched off
+            subprocess.run(["curl", "-sSfL", "-A", "Mozilla/5.0", "-o", str(source), url], check=True)
             meta = trim_rba_xls(source, out, url, now_utc(), keep_from=keep_from, cutoff=keep_to)
             source.unlink()
             print(f"{name} → {out_name} (+ {meta.name}); original deleted")
