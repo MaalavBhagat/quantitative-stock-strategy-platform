@@ -63,3 +63,7 @@ DECISION 2026-10-26 (Goggy): final test 2021+ stays LOCKED until after Phase 9; 
 ## Change log
 - 2026-10-26: file created (prompt 18, Step 6.7). Options only — no decision, no unlock.
 - 2026-10-26: Goggy's decision recorded (final test deferred to after Phase 9).
+DECISION 2026-10-28 (Goggy): **option (a)** — the final test is run ONCE now on 2021 → 2025-12-31 for S0–S4 and
+C1/C2/E1, on 7 stocks (T excluded: 2022 WarnerMedia spin-off), thresholds scaled to 7. Rules: research/FINAL_TEST_PREREG.md
+(tag `prereg-final`), written before any 2021+ data was downloaded. **After this run the 2021–2025 period is USED:
+anything later run on it is not out-of-sample.**

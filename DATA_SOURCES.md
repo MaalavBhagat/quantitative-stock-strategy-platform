@@ -95,6 +95,7 @@ These rules are what the code does now (`src/quant_research/data/`); Phase 3+ co
 | Stock list chosen in 2026 with hindsight (Phase 7, Step 7.4) | All 8 are survivors; screen ranks and strategy results look better than a real 2010 investor could have expected | Stated in every screen (reports/screening/screening_2010-2020.md §4); NOT fixed |
 | No point-in-time index membership (who was in e.g. the S&P 500 on each date) | A fair, unbiased universe cannot be rebuilt from our free data | LIMITATION, not fixed — would need a paid / historical constituents source plus delisted companies |
 | Ticker ≠ company over time (Step 7.1: XOM now maps to a different CIK) | A screen built from today's ticker list can silently pick the wrong company | Map each ticker to the filer that actually filed in the period (XOM → CIK 34088, DATA_SOURCES §11) |
+| **Final test 2021–2025 (decided 2026-10-28)** | After the one-time final test (research/FINAL_TEST_PREREG.md, tag `prereg-final`) the 2021–2025 period is USED — anything later run on it is NOT out-of-sample; no unseen period remains | T excluded from 2021+ (2022 WarnerMedia spin-off not modelled); downloaders accept end dates ≤ 2025-12-31 for that task only |
 
 ## 9. AUD/USD exchange rate source (chosen 2026-10-20, for portfolio start/end conversion)
 | Item | Value | Label / source |
