@@ -195,3 +195,13 @@
 - `news.events`: logged `OVERRIDES` (AT&T 2012 8-K item 1.03 coding error → "deal signed (1.01-type), reclassified"),
   `filing_categories`, `load_events`; Phase 9 counts report regenerated; DATA_SOURCES §12, PROJECT_GUIDE.
 - Tests on synthetic data only (387 pass). No real-data strategy runs.
+
+## 2026-10-28 — Phase 9 Steps 9.5–9.6: pre-registered runs (prompt 25)
+- `scripts/run_phase9.py`: 3,200 runs (C1, C2, E1 + twins S0, S4-S2; validation × 7 variants + development MAIN) from
+  clean commit 3b86c53, 0 failed; kept outside the repo while running.
+- `scripts/report_phase9.py` → `reports/experiments/phase9_information_2017-2020.md`: twin consistency gate (952/952
+  identical to Phase 6), R1–R6 vs the twin — C1, C2, E1 all REJECTED (H7 not supported).
+- `scripts/ai_label_sample.py` + `reports/phase9/ai_labels_sample.{json,md}`: exploratory AI labelling of 40 masked
+  8-Ks — 37/40 exact agreement with the item codes.
+- Dashboard: Phase 9 runs in the menus, Phase 9 verdict table on Overview, verdicts per strategy (`verdict_for`).
+- RESULTS_SUMMARY §8, FAILED_EXPERIMENTS (C1, C2, E1), PREREGISTRATION_V2 change log.

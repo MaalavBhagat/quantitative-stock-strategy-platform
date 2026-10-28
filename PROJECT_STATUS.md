@@ -2,7 +2,7 @@
 Last updated: 2026-10-28
 
 CURRENT PHASE: Phase 9 — Market context & company events (In progress)
-CURRENT TASK: Phase 9 Steps 9.5–9.6 — pre-registered runs of C1, C2, E1 vs twins (prompt: prompts/25_phase9_runs_steps9.5-9.6.md)
+CURRENT TASK: Phase 9 ready for verification (chat Claude); then Goggy decides on the one-time final test 2021+
 
 PHASE STATES (Not started / In progress / Blocked / Verified):
 - Phase 0  Feasibility & research design ........ VERIFIED (2026-10-18)
@@ -14,7 +14,7 @@ PHASE STATES (Not started / In progress / Blocked / Verified):
 - Phase 6  Research validation .................. VERIFIED (2026-10-26)
 - Phase 7  Company research & screening ......... VERIFIED (2026-10-26)
 - Phase 8  Interactive dashboard ................ VERIFIED (2026-10-27)
-- Phase 9  Market context & AI news ............. In progress
+- Phase 9  Market context & AI news ............. In progress (ready for verification 2026-10-28)
 - Phase 10 Integration, security, reliability ... Not started
 - Phase 11 CV & GitHub portfolio ................ Not started
 
@@ -500,9 +500,30 @@ FINDINGS (Step 2.3):
   2015-01-02 → 2020-12-31 (1,511 rows); T events 547, bankruptcy 0, reclassified 1.
 - Prompt 24 verified by chat Claude 2026-10-28: prereg-v2 tag on 4497870 (16:27:46 +1100); no C1/C2/E1 run records
   exist before it; labels shipped (display only).
+- Phase 9 Steps 9.5–9.6 — DONE 2026-10-28 (prompt 25; rules exactly PREREGISTRATION_V2, tag prereg-v2):
+  3,200 runs from clean commit 3b86c53 (validation: C1 8 + C2 128 + E1 128 + twins S0 8 + S4-S2 128 = 400 × 7 variants
+  = 2,800; development MAIN 400), 0 failed, 250 s, under data/runs/phase9/. Run script kept OUTSIDE the repo during the
+  batch, copied in afterwards (sha256 6bed0791…66a6 = file that ran; then ruff-formatted → 1252506c…10c3, same program
+  checked by AST comparison). TWIN CONSISTENCY: all 952 twin runs (136 MAIN) identical to the Phase 6 records (final
+  USD + AUD to the cent, every fill), e.g. S0 AAPL 34,304.60, S4-S2 AAPL 2/4 22,849.41.
+  VERDICTS vs twin (SIMULATED, HISTORICAL, validation 2017–2020, prices already seen for the twins): C1 Market-trend
+  gate REJECTED (R1 1/8; median −43.4 pp vs S0) · C2 Market-gated pullback REJECTED (R1 1/8; −0.5 pp) · E1 Earnings
+  cool-off REJECTED (R1 3/8, R2 13/16 but R4/R5/R6 fail; +0.0 pp) → H7 NOT supported for any of the three.
+  Report: reports/experiments/phase9_information_2017-2020.md (verdicts, 9.5 vs twin + vs S0, 9.6 per variant / top-3
+  trades / regime / dev vs val, appendix: C1 finals, C1 AAPL + E1 KO 3/3 trade lists with the earnings events behind
+  the 2 skipped signals). Dashboard shows the Phase 9 runs (names) + Phase 9 verdict table on Overview.
+  PART D AI labelling side test (EXPLORATORY, Goggy approved): 40 random 2010–2020 8-Ks (seed 20261028), item codes +
+  official titles masked, labelled by Claude Code (claude-opus-5-5) → 37/40 exact agreement with the item codes, 40/40
+  share ≥ 1 category; 3 disagreements listed for Goggy's spot-check; 5 masking leaks (titles split over a line break)
+  reported. reports/phase9/ai_labels_sample.md.
+  PHASE 9 CHECK (report only, NOT marked Verified): news sources + limitations documented ✓ (DATA_SOURCES §12, Phase 9
+  report §9) · historical decisions use only available information ✓ (availability rule tests, events spy check, SPY
+  spy check, 3 mutation checks in prompt 24) · AI interpretations distinguished from verified facts ✓ (AI labels only
+  in the exploratory side test, never in any verdict; item codes = facts) · added complexity justified by evidence or
+  labelled exploratory ✓ (pre-registered test said NO for C1/C2/E1 — not adopted).
 
 IN PROGRESS:
-- none (prereg-v2 tagged; prompt 25 = Phase 9 runs + comparisons)
+- none (Phase 9 ready for verification)
 
 BLOCKED / OPEN QUESTIONS:
 - (resolved 2026-10-26, see the Steps 7.1–7.2 check) T FY2016 NI, PG FY2014 / XOM FY2019 revenue CONFLICT, INTC liabilities.
@@ -592,8 +613,14 @@ IMPORTANT DECISIONS:
      (only Goggy sets it) · D9 type hints required on every function in src/; no type-checker yet.
 
 NEXT ACTION:
-- Desktop Code session: "Read prompts/25_phase9_runs_steps9.5-9.6.md and do exactly what it says."
+- Chat Claude verifies Phase 9 (runs, twin check, verdicts, AI side test); then Goggy decides on the one-time final
+  test 2021+.
 - Remaining after that: final test 2021+ (once, Goggy unlocks) · Phase 10 integration/reliability · Phase 11 CV + GitHub.
+
+TESTS RUN (2026-10-28, prompt 25):
+- uv run pytest -q → 388 passed in 4.51s · uv run ruff check . → All checks passed! ·
+  uv run ruff format --check . → 171 files already formatted · smoke_dashboard → 6 pages, 0 errors, bare IDs none,
+  PASS; C1 + E1 runs opened on 4 pages headless → 0 exceptions. report_phase9 → twin consistency 952/952, 0 differences.
 
 TESTS RUN (2026-10-28, prompt 24):
 - uv run pytest -q → 387 passed in 4.15s · uv run ruff check . → All checks passed! ·
