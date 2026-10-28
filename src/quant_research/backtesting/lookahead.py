@@ -131,3 +131,34 @@ def check_events_no_lookahead(
                     f"decision on {d} changed when event {event.accession} (usable from {first}) was moved later: "
                     f"{base[d]!r} → {after!r} — look-ahead"
                 )
+
+
+def check_market_no_lookahead(
+    make_strategy: Callable[[pd.DataFrame], Strategy],
+    prices: pd.DataFrame,
+    market: pd.DataFrame,
+    cut: int,
+    ticker: str,
+    settings: EngineSettings,
+    cash: Decimal,
+) -> None:
+    """Market-data version of the spy check (Phase 9, C1 / C2): change every SPY row AFTER the stock's day `cut`
+    (prices × 3, new dividends) and run again — every decision, order and equity row up to that day must be identical.
+    `make_strategy(market)` builds the strategy from a market table."""
+    cut_day = prices["date"].iloc[cut]
+    market_cut = int(market.index[market["date"] <= cut_day][-1])
+    spy_a, res_a = run_with_spy(lambda: make_strategy(market), prices, ticker, settings, cash)
+    spy_b, res_b = run_with_spy(
+        lambda: make_strategy(scramble_after(market, market_cut)), prices, ticker, settings, cash
+    )
+    a = [d for d in spy_a.decisions if d[0] <= cut_day]
+    b = [d for d in spy_b.decisions if d[0] <= cut_day]
+    assert a == b, (
+        "decisions up to the cut changed when only later MARKET data changed — look-ahead"
+    )
+    orders_a = [(o.created_day, o.intent) for o in res_a.orders if o.created_day <= cut_day]
+    orders_b = [(o.created_day, o.intent) for o in res_b.orders if o.created_day <= cut_day]
+    assert orders_a == orders_b, "orders up to the cut changed when only later MARKET data changed"
+    eq_a = [e for e in res_a.equity if e.day <= cut_day]
+    eq_b = [e for e in res_b.equity if e.day <= cut_day]
+    assert eq_a == eq_b, "equity up to the cut changed when only later MARKET data changed"

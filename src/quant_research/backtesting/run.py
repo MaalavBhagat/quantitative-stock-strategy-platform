@@ -73,7 +73,14 @@ DECIMAL_FIELDS = {
     "mr_k",
 }
 XY_GRID = (Decimal("0.02"), Decimal("0.03"), Decimal("0.04"), Decimal("0.05"))  # EXPERIMENT_PLAN §3
-XY_STRATEGIES = ("s1_profit_target", "s2_pullback", "s4_trend_s1", "s4_trend_s2")
+XY_STRATEGIES = (
+    "s1_profit_target",
+    "s2_pullback",
+    "s4_trend_s1",
+    "s4_trend_s2",
+    "c2_market_gated_pullback",  # PREREGISTRATION_V2: same 16 X/Y settings as its twin S4-S2
+    "e1_earnings_cooloff",
+)
 MR_K_GRID = (Decimal("1.5"), Decimal("2.0"), Decimal("2.5"))  # EXPERIMENT_PLAN §3 (S3)
 MR_WINDOW_GRID = (20, 50)  # EXPERIMENT_PLAN §3 (S3)
 

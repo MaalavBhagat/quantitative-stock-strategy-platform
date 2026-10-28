@@ -174,3 +174,29 @@ def test_spy_check_catches_a_decision_that_peeks_after_the_close():
 
     with pytest.raises(AssertionError, match="look-ahead"):
         check_events_no_lookahead(leaky, DAYS, EVENTS)
+
+
+# ---------- logged override + loading saved events ----------
+def test_att_override_reclassifies_only_that_filing():
+    from quant_research.news.events import OVERRIDES, filing_categories
+
+    att = {"accessionNumber": "0000732717-12-000006", "items": "1.03,9.01"}
+    other = {"accessionNumber": "0000732717-12-000007", "items": "1.03,9.01"}
+    assert filing_categories(att) == ["deal signed (1.01-type), reclassified"]
+    assert filing_categories(other) == ["bankruptcy"]  # the rule itself is unchanged
+    assert OVERRIDES["0000732717-12-000006"][2].startswith(
+        "https://www.sec.gov/Archives/edgar/data/732717/"
+    )
+
+
+def test_load_events_from_a_saved_file(tmp_path):
+    import json
+
+    from quant_research.news.events import load_events
+
+    kept, _ = keep_8k_until_cutoff([row("8-K", "2019-10-30", "2019-10-30T20:30:40.000Z", accn="X")])
+    (tmp_path / "AAA_CIK0000000001_8k_to-2020-12-31.json").write_text(json.dumps({"filings": kept}))
+    [e] = load_events("aaa", tmp_path)
+    assert (e.accession, e.form, e.categories) == ("X", "8-K", ("earnings",))
+    assert e.accepted_et.isoformat() == "2019-10-30T16:30:40-04:00"
+    assert load_events("SPY", tmp_path) == []  # a fund files no 8-Ks

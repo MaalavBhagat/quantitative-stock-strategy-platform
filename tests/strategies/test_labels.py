@@ -5,7 +5,7 @@ from quant_research.strategies.registry import STRATEGY_NAMES
 
 
 def test_every_registry_strategy_has_a_label():
-    assert set(STRATEGY_NAMES) <= set(labels.IDS)
+    assert set(STRATEGY_NAMES) == set(labels.IDS)
     for sid in labels.IDS.values():
         name, explanation = labels.LABELS[sid]
         assert name and explanation

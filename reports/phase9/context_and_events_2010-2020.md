@@ -55,6 +55,16 @@ Source: SEC Form 8-K (form SEC 873 (02-25)), https://www.sec.gov/files/form8-k.p
 | any other official item | other (code kept) |
 | code not on the official list | UNRECOGNISED (code kept, never guessed) |
 
+**Logged per-filing overrides** (proven filer coding errors only; `news/events.py` OVERRIDES — the item codes
+on disk are unchanged):
+
+| Accession | Category used | Reason | Source |
+|---|---|---|---|
+| 0000732717-12-000006 | deal signed (1.01-type), reclassified | AT&T 8-K 2012-01-13 is tagged item 1.03 (bankruptcy), but its own heading reads 'Item 1.03 Entry into a Material Definitive Agreement' and it concerns reducing a US$5bn credit facility to US$3bn — a filer coding error (chat Claude ruling 2026-10-28, PROJECT_STATUS). | https://www.sec.gov/Archives/edgar/data/732717/000073271712000006/creditfacility_8k.htm |
+
+XOM files more item 2.02 filings than the others (about 7 a year to 2016: quarterly results plus extra annual /
+reserves updates, filed as 2.02 + 7.01). Checked by chat Claude 2026-10-28: real — kept as filed.
+
 ## 4. Filings per company × category × year (2010–2020; a filing can count in several categories)
 
 **AAPL**
@@ -138,9 +148,9 @@ Source: SEC Form 8-K (form SEC 873 (02-25)), https://www.sec.gov/files/form8-k.p
 
 | Category | 2010 | 2011 | 2012 | 2013 | 2014 | 2015 | 2016 | 2017 | 2018 | 2019 | 2020 | Total |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
-| bankruptcy | 0 | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 1 |
 | deal completed | 0 | 0 | 0 | 0 | 0 | 2 | 0 | 0 | 2 | 0 | 0 | 4 |
 | deal signed | 1 | 3 | 1 | 4 | 3 | 3 | 2 | 0 | 3 | 1 | 2 | 23 |
+| deal signed (1.01-type), reclassified | 0 | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 1 |
 | disclosure / other | 18 | 16 | 19 | 22 | 20 | 21 | 16 | 30 | 32 | 17 | 24 | 235 |
 | earnings | 4 | 5 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 5 | 4 | 46 |
 | exhibits only | 1 | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 0 | 1 | 0 | 3 |

@@ -7,10 +7,12 @@ whose close (16:00 ET, 13:00 ET on early-close days) is AFTER the acceptance tim
 """
 
 import bisect
+import json
 from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import date, datetime, time
 from functools import cache
+from pathlib import Path
 from zoneinfo import ZoneInfo
 
 EASTERN = ZoneInfo("America/New_York")
@@ -36,6 +38,18 @@ CATEGORY = {
     "8.01": "disclosure / other",
 }
 EXHIBITS_ONLY = "exhibits only"
+# Logged per-filing overrides (accession → categories, reason, source). Only for proven filer coding errors.
+OVERRIDES: dict[str, tuple[tuple[str, ...], str, str]] = {
+    "0000732717-12-000006": (
+        ("deal signed (1.01-type), reclassified",),
+        (
+            "AT&T 8-K 2012-01-13 is tagged item 1.03 (bankruptcy), but its own heading reads 'Item 1.03 Entry into "
+            "a Material Definitive Agreement' and it concerns reducing a US$5bn credit facility to US$3bn — a filer "
+            "coding error (chat Claude ruling 2026-10-28, PROJECT_STATUS)."
+        ),
+        "https://www.sec.gov/Archives/edgar/data/732717/000073271712000006/creditfacility_8k.htm",
+    ),
+}
 
 
 def categories(items: str) -> list[str]:
@@ -59,6 +73,12 @@ def categories(items: str) -> list[str]:
         if label not in out:
             out.append(label)
     return out or ["UNRECOGNISED (no item codes)"]
+
+
+def filing_categories(filing: dict) -> list[str]:
+    """Categories of a saved filing: the logged override if its accession has one, else categories(items)."""
+    override = OVERRIDES.get(filing["accessionNumber"])
+    return list(override[0]) if override else categories(filing["items"])
 
 
 @cache
@@ -114,6 +134,24 @@ class Event:
     form: str  # 8-K or 8-K/A (an amendment is its own event)
     accepted_et: datetime
     categories: tuple[str, ...]
+
+
+def load_events(ticker: str, sub_dir: Path) -> list[Event]:
+    """8-K / 8-K/A events of one company from the saved submissions file (≤ 2020-12-31). No file (e.g. SPY) → []."""
+    paths = sorted(sub_dir.glob(f"{ticker.upper()}_CIK*_8k_to-2020-12-31.json"))
+    if not paths:
+        return []
+    [path] = paths
+    filings = json.loads(path.read_text(encoding="utf-8"))["filings"]
+    return [
+        Event(
+            f["accessionNumber"],
+            f["form"],
+            datetime.fromisoformat(f["acceptance_eastern"]),
+            tuple(filing_categories(f)),
+        )
+        for f in filings
+    ]
 
 
 def usable_by(

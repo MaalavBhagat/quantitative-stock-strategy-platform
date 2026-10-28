@@ -32,7 +32,7 @@ label = c2.selectbox("Strategy", list(lab.STRATEGIES), format_func=labels.displa
 c2.caption(ui.explanation(label))
 variant = c3.selectbox("Cost variant", list(lab.VARIANTS), help=str(lab.VARIANTS))
 x = y = k = w = None
-if label in ("S1", "S2", "S4-S1", "S4-S2"):
+if label in lab.XY_LABELS:
     a, b = st.columns(2)
     x = Decimal(str(a.number_input("X (profit target)", 0.005, 0.50, 0.02, 0.005, format="%.3f")))
     y = Decimal(str(b.number_input("Y (dip)", 0.005, 0.50, 0.04, 0.005, format="%.3f")))

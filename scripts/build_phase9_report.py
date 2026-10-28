@@ -15,7 +15,14 @@ import pandas as pd
 
 from quant_research.data.loader import load_prices, load_prices_with_warmup
 from quant_research.news.context import daily, market_context, stock_context
-from quant_research.news.events import CATEGORY, EXHIBITS_ONLY, categories, timing, usable_close_day
+from quant_research.news.events import (
+    CATEGORY,
+    EXHIBITS_ONLY,
+    OVERRIDES,
+    filing_categories,
+    timing,
+    usable_close_day,
+)
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 SUB = PROJECT_ROOT / "data" / "raw" / "sec" / "submissions"
@@ -93,6 +100,16 @@ def main() -> int:
         "| any other official item | other (code kept) |",
         "| code not on the official list | UNRECOGNISED (code kept, never guessed) |",
         "",
+        "**Logged per-filing overrides** (proven filer coding errors only; `news/events.py` OVERRIDES — the item codes",
+        "on disk are unchanged):",
+        "",
+        "| Accession | Category used | Reason | Source |",
+        "|---|---|---|---|",
+        *[f"| {a} | {', '.join(c)} | {why} | {url} |" for a, (c, why, url) in OVERRIDES.items()],
+        "",
+        "XOM files more item 2.02 filings than the others (about 7 a year to 2016: quarterly results plus extra annual /",
+        "reserves updates, filed as 2.02 + 7.01). Checked by chat Claude 2026-10-28: real — kept as filed.",
+        "",
         "## 4. Filings per company × category × year (2010–2020; a filing can count in several categories)",
         "",
     ]
@@ -103,7 +120,7 @@ def main() -> int:
     for t, (fs, _) in data.items():
         table: dict[str, Counter] = defaultdict(Counter)
         for f in fs:
-            cats = categories(f["items"])
+            cats = filing_categories(f)
             year = int(f["filingDate"][:4])
             for c in cats:
                 if c.startswith("UNRECOGNISED"):

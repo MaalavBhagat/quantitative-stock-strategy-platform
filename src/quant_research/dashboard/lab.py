@@ -49,7 +49,11 @@ STRATEGIES = {
     "S3": "s3_mean_reversion",
     "S4-S1": "s4_trend_s1",
     "S4-S2": "s4_trend_s2",
+    "C1": "c1_market_gate",
+    "C2": "c2_market_gated_pullback",
+    "E1": "e1_earnings_cooloff",
 }
+XY_LABELS = ("S1", "S2", "S4-S1", "S4-S2", "C2", "E1")
 
 
 @dataclass(frozen=True)
@@ -74,7 +78,7 @@ class LabResult:
 
 def _params(spec: LabSpec) -> tuple[dict[str, Any], bool]:
     """Strategy parameters for run.py and whether they lie on the pre-registered grid."""
-    if spec.strategy in ("S1", "S2", "S4-S1", "S4-S2"):
+    if spec.strategy in XY_LABELS:
         if spec.x is None or spec.y is None:
             raise ValueError(f"{spec.strategy} needs X and Y")
         return {"profit_target_x": str(spec.x), "rebuy_dip_y": str(spec.y)}, (
@@ -86,7 +90,7 @@ def _params(spec: LabSpec) -> tuple[dict[str, Any], bool]:
         return {"mr_k": str(spec.k), "mr_window": spec.w}, (
             spec.k in MR_K_GRID and spec.w in MR_WINDOW_GRID
         )
-    if spec.strategy == "S0":
+    if spec.strategy in ("S0", "C1"):
         return {}, True
     raise ValueError(f"unknown strategy {spec.strategy!r}")
 
