@@ -205,3 +205,16 @@
   8-Ks — 37/40 exact agreement with the item codes.
 - Dashboard: Phase 9 runs in the menus, Phase 9 verdict table on Overview, verdicts per strategy (`verdict_for`).
 - RESULTS_SUMMARY §8, FAILED_EXPERIMENTS (C1, C2, E1), PREREGISTRATION_V2 change log.
+
+## 2026-10-28 — ONE-TIME FINAL TEST 2021–2025 (prompt 26; tag prereg-final)
+- `research/FINAL_TEST_PREREG.md` (tag `prereg-final`) written before any 2021+ data: 2021 → 2025-12-31, 7 stocks
+  (T excluded — 2022 spin-off), thresholds ≥ 6 of 7 / REJECTED ≤ 2 of 7, rules otherwise unchanged.
+- Logged data-code change: `--final-test` on the Tiingo, RBA and 8-K downloaders (≤ 2025-12-31, T refused); RBA
+  extracts trimmed to their own `trimmed_to`; 8-K cutoff parameter + XOM's second filer; NYSE event calendar to 2026;
+  RBA fetched with curl (certificate check kept on).
+- `scripts/validate_final_data.py` → `reports/data_validation/final_2021-2025.md` (0 errors, 0 corporate-action flags).
+- `scripts/run_final_test.py`: 5,096 runs from clean commit b3287e4, 0 failed.
+- `scripts/report_final_test.py` → `reports/experiments/FINAL_TEST_2021-2025.md`: all 8 strategies REJECTED; no
+  verdict changed from validation.
+- Dashboard: "final" period (shows 2021–2025 only on that page; nothing ≥ 2026), final verdict table on Overview,
+  `verdict_for(label, period)`. RESULTS_SUMMARY final-test section at the top; FAILED_EXPERIMENTS updated.

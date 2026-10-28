@@ -2,7 +2,7 @@
 Last updated: 2026-10-28
 
 CURRENT PHASE: Phase 9 — Market context & company events (In progress)
-CURRENT TASK: ONE-TIME FINAL TEST 2021–2025 (prompt: prompts/26_final_test_2021-2025.md)
+CURRENT TASK: Final test 2021–2025 DONE (run once) — waiting for chat Claude's verification; then Phase 10
 
 PHASE STATES (Not started / In progress / Blocked / Verified):
 - Phase 0  Feasibility & research design ........ VERIFIED (2026-10-18)
@@ -527,6 +527,26 @@ FINDINGS (Step 2.3):
 - FINAL TEST pre-registration written 2026-10-28 BEFORE any 2021+ data: research/FINAL_TEST_PREREG.md (tag
   prereg-final) — 2021 → 2025-12-31, 7 stocks (T excluded: 2022 spin-off), thresholds ≥ 6 of 7 / REJECTED ≤ 2 of 7,
   rules otherwise unchanged, 5,096 runs, run ONCE.
+- FINAL TEST 2021–2025 — DONE 2026-10-28 (prompt 26), run ONCE:
+  ORDER: tag prereg-final 16:48:19 +1100 (commit 17d62ed) → first 2021+ download 18:51:52 +1100. (The three
+  "period will be USED" notes in PREREGISTRATION §9 / FINAL_TEST_OPTIONS / DATA_SOURCES missed the tagged commit
+  because my edit script stopped part-way; added in 726c16b at 16:48:42, still before any download. The binding rules
+  file FINAL_TEST_PREREG.md, incl. its "USED" section, is in the tag.)
+  DATA (reports/data_validation/final_2021-2025.md): Tiingo 7 stocks × 1,255 sessions, 0 ERROR, 1 WARNING (INTC
+  2024-08-02 −26.1%, real; Yahoo agrees), no split rows, joins to 2020 with no gap, Yahoo 0 day/split differences and
+  0 closes > 0.5% apart; INTC dividend stopped in 2024 (not an unsupported action); 0 corporate-action flags. RBA
+  1,254 rates 2021-01-04 → 2025-12-31 (official files trimmed, 207 rows of 2026 never saved; curl used — certificate
+  check kept on). SEC 8-Ks to 2025-12-31: Exxon's new holding company CIK 2115436 filed no 8-K before 2026 → all
+  2021–2025 Exxon 8-Ks are from CIK 34088. Goggy approved the data report before any run.
+  RUNS: 5,096 (7 stocks × 104 settings × 7 variants) from clean commit b3287e4, 0 failed, 363 s; run script outside
+  the repo during the batch (sha256 6366c484… = file that ran; ruff-formatted copy fdec5961…, same program by AST).
+  VERDICTS (SIMULATED, HISTORICAL, FINAL TEST; reports/experiments/FINAL_TEST_2021-2025.md): S1 REJECTED (R1 2/7) ·
+  S2 REJECTED (2/7) · S3 REJECTED (2/7) · S4-S1 REJECTED (2/7) · S4-S2 REJECTED (0/7) · C1 REJECTED (2/7) · C2 REJECTED
+  (1/7) · E1 REJECTED (2/7). No verdict changed from validation. H1, H3, H4, H7 rejected; H2, H5, H6 not judged.
+  Start: AUD 10,000 at RBA 0.7701 (2021-01-05) → US$7,658.64. S0 finals: AAPL 16,485.23 · MSFT 17,613.26 ·
+  KO 11,559.85 · PG 8,798.98 · XOM 26,057.70 · INTC 6,305.17 · SPY 14,963.53.
+  Dashboard: period picker final / validation / development (final page may show 2021–2025, nothing ≥ 2026).
+  2021–2025 is now USED — nothing later run on it is out-of-sample.
 
 IN PROGRESS:
 - none (Phase 9 ready for verification)
@@ -619,8 +639,14 @@ IMPORTANT DECISIONS:
      (only Goggy sets it) · D9 type hints required on every function in src/; no type-checker yet.
 
 NEXT ACTION:
-- DECISIONS 2026-10-28 (Goggy): unlock the final test now; exclude T (2022 spin-off), judge on 7 stocks.
-- Desktop Code session: "Read prompts/26_final_test_2021-2025.md and do exactly what it says."
+- Chat Claude verifies the final test (data report, run records, verdicts, appendix trade lists); then Phase 10.
+
+TESTS RUN (2026-10-28, prompt 26 — final test):
+- uv run pytest -q → 392 passed in 4.47s · uv run ruff check . → All checks passed! ·
+  uv run ruff format --check . → 178 files already formatted · smoke_dashboard → 6 pages, 0 errors, bare IDs none,
+  PASS (final period default); S1 / S4-S2 / C1 / E1 final runs opened on the report page → 0 exceptions.
+  validate_final_data → 0 errors, 0 corporate-action flags. report_final_test → all checks passed (5,096 runs, one
+  clean commit, every run 2021-01-04 → 2025-12-31, final_test_unlocked only in these configs).
 
 TESTS RUN (2026-10-28, prompt 25):
 - uv run pytest -q → 388 passed in 4.51s · uv run ruff check . → All checks passed! ·
