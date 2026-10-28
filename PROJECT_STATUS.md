@@ -2,7 +2,7 @@
 Last updated: 2026-10-28
 
 CURRENT PHASE: Phase 9 — Market context & company events (In progress)
-CURRENT TASK: Phase 9 — runs + comparisons under prereg-v2 (Steps 9.5–9.6; prompt 25, not written yet)
+CURRENT TASK: Phase 9 Steps 9.5–9.6 — pre-registered runs of C1, C2, E1 vs twins (prompt: prompts/25_phase9_runs_steps9.5-9.6.md)
 
 PHASE STATES (Not started / In progress / Blocked / Verified):
 - Phase 0  Feasibility & research design ........ VERIFIED (2026-10-18)
@@ -498,6 +498,8 @@ FINDINGS (Step 2.3):
   D8 lock check; backtesting.lookahead.check_market_no_lookahead; news/events.py OVERRIDES (AT&T 1.03 → reclassified,
   Phase 9 report regenerated: only that row moved) + load_events. Load-only wiring check (no strategy run): SPY
   2015-01-02 → 2020-12-31 (1,511 rows); T events 547, bankruptcy 0, reclassified 1.
+- Prompt 24 verified by chat Claude 2026-10-28: prereg-v2 tag on 4497870 (16:27:46 +1100); no C1/C2/E1 run records
+  exist before it; labels shipped (display only).
 
 IN PROGRESS:
 - none (prereg-v2 tagged; prompt 25 = Phase 9 runs + comparisons)
@@ -590,7 +592,8 @@ IMPORTANT DECISIONS:
      (only Goggy sets it) · D9 type hints required on every function in src/; no type-checker yet.
 
 NEXT ACTION:
-- prompt 25: Phase 9 runs + comparisons (C1/C2/E1 and their twins under prereg-v2; Steps 9.5–9.6).
+- Desktop Code session: "Read prompts/25_phase9_runs_steps9.5-9.6.md and do exactly what it says."
+- Remaining after that: final test 2021+ (once, Goggy unlocks) · Phase 10 integration/reliability · Phase 11 CV + GitHub.
 
 TESTS RUN (2026-10-28, prompt 24):
 - uv run pytest -q → 387 passed in 4.15s · uv run ruff check . → All checks passed! ·
