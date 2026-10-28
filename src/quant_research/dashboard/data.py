@@ -166,16 +166,20 @@ def load_run(run_json: Path, period: str) -> RunRecord:
 def run_index(period: str, runs_dir: Path = RUNS_DIR) -> dict[tuple[str, str, str], Path]:
     """{(strategy label, ticker, setting): run.json} for the records the reports use."""
     out: dict[tuple[str, str, str], Path] = {}
+    # Phase 9 records (C1 / C2 / E1 and their re-run twins) come AFTER the Phase 5 / 6 ones, so a twin key keeps the
+    # earlier record (identical to the cent — Phase 9 twin consistency check).
     if period == "validation":
         paths = sorted((runs_dir / "validation" / "main").glob("*/run.json"))
+        paths += sorted((runs_dir / "phase9" / "validation" / "main").glob("*/run.json"))
     elif period == "development":
         paths = sorted(runs_dir.glob("*/run.json"))
+        paths += sorted((runs_dir / "phase9" / "development" / "main").glob("*/run.json"))
     else:
         raise ValueError(f"unknown period {period!r}")
     for p in paths:
         r = json.loads(p.read_text(encoding="utf-8"))
         label = LABELS[r["config"]["strategy"]]
-        if period == "development":
+        if period == "development" and "phase9" not in p.parts:
             commit = str(r.get("git_commit"))[:7]
             if commit not in DEV_COMMITS or label not in DEV_COMMITS[commit]:
                 continue
@@ -412,11 +416,36 @@ def trading_profile(ticker: str) -> pd.DataFrame:
     )
 
 
+PHASE9_REPORT = REPORTS_DIR / "experiments" / "phase9_information_2017-2020.md"
+PHASE9_IDS = ("C1", "C2", "E1")
+
+
+def phase9_verdict_table() -> str:
+    """The Phase 9 verdict table (each information strategy vs its twin), copied as saved (not recomputed)."""
+    return verdict_table(PHASE9_REPORT)
+
+
+def verdict_source(label: str) -> str:
+    if label in PHASE9_IDS:
+        return "reports/experiments/phase9_information_2017-2020.md §1 (rules: research/PREREGISTRATION_V2.md)"
+    return "reports/experiments/validation_2017-2020.md §1 (rules: research/PREREGISTRATION.md)"
+
+
 def verdict_for(label: str) -> str | None:
-    """The saved verdict table reduced to its header + this strategy's row (None for S0 — the benchmark)."""
+    """The saved verdict table reduced to its header + this strategy's row (None for S0 — the benchmark).
+
+    S1–S4: Phase 6 table (vs S0). C1 / C2 / E1: Phase 9 table (vs their twin), row 'Name (ID) (vs …)'."""
     if label == "S0":
         return None
-    lines = verdict_table().splitlines()
+    phase9 = label in PHASE9_IDS
+    if phase9 and not PHASE9_REPORT.exists():
+        return None
+    lines = (phase9_verdict_table() if phase9 else verdict_table()).splitlines()
     table = [ln for ln in lines if ln.startswith("|")]
-    row = [ln for ln in table[2:] if ln.split("|")[1].strip() == label]
+    first = [ln.split("|")[1].strip() for ln in table]
+    row = [
+        ln
+        for ln, cell in zip(table[2:], first[2:], strict=True)
+        if (cell.split(" (vs ")[0].endswith(f"({label})") if phase9 else cell == label)
+    ]
     return "\n".join([table[0], table[1], *row]) if row else None

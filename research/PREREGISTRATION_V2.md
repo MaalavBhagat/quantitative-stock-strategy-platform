@@ -110,3 +110,8 @@ As v1 §8: every run saves its full record under data/runs/ (git-ignored); repor
 - 2026-10-28: v2 created (prompt 24) with decisions 1–5 approved by Goggy; tagged `prereg-v2` before any C1, C2 or E1
   run on real data. Code: strategies/information.py (C1, C2, E1) + registry / config support;
   tests on synthetic data only (tests/strategies/test_information.py).
+- 2026-10-28: pre-registered runs done (prompt 25) — 3,200 runs from clean commit 3b86c53 (2,800 validation incl. all 7
+  variants + 400 development MAIN), 0 failed, 250 s. Twin consistency: all 952 twin runs identical to the Phase 6
+  records. No bug found, no rule changed. Verdicts (reports/experiments/phase9_information_2017-2020.md): C1, C2, E1
+  REJECTED vs their twins → H7 not supported.
+

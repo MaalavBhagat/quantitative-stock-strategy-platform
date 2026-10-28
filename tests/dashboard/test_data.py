@@ -163,6 +163,16 @@ def test_verdict_table_is_copied_from_the_report():
     assert t in REPORT.read_text(encoding="utf-8")
 
 
+@pytest.mark.skipif(not dd.PHASE9_REPORT.exists(), reason="Phase 9 report missing")
+def test_phase9_verdicts_are_found_by_strategy_id():
+    for sid in ("C1", "C2", "E1"):
+        rows = [ln for ln in dd.verdict_for(sid).splitlines()[2:]]
+        assert len(rows) == 1 and f"({sid}) (vs " in rows[0]
+    assert "PREREGISTRATION_V2" in dd.verdict_source("E1")
+    assert "validation_2017-2020" in dd.verdict_source("S4-S2")
+    assert dd.verdict_for("S4-S2").splitlines()[2].split("|")[1].strip() == "S4-S2"
+
+
 def test_display_formatting_cents_shares_and_dash(tmp_path):
     rows = [
         "2020-01-03,buy,1.2345678,100,100.05,0.005,3.00,0.00,3.00,0,,1.234567",

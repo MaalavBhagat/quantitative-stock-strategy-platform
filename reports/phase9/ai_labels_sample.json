@@ -1,0 +1,296 @@
+{
+ "model": "Claude Opus 5.5 (claude-opus-5-5), running in Claude Code",
+ "date": "2026-10-28",
+ "who": "Claude Code, from the masked texts printed by `scripts/ai_label_sample.py show`",
+ "labels": {
+  "0001193125-20-199178": {
+   "n": 1,
+   "categories": [
+    "disclosure / other"
+   ],
+   "reason": "Furnishes a press release; the text does not say what it is about."
+  },
+  "0001193125-17-370870": {
+   "n": 2,
+   "categories": [
+    "leadership change",
+    "shareholder vote",
+    "disclosure / other"
+   ],
+   "reason": "Two directors appointed; shareholder letter with certified director election results furnished."
+  },
+  "0001193125-19-102881": {
+   "n": 3,
+   "categories": [
+    "leadership change"
+   ],
+   "reason": "Special equity awards to an officer (compensatory arrangement)."
+  },
+  "0000034088-14-000042": {
+   "n": 4,
+   "categories": [
+    "earnings",
+    "disclosure / other"
+   ],
+   "reason": "News release on third-quarter 2014 results furnished under two items."
+  },
+  "0001193125-18-348840": {
+   "n": 5,
+   "categories": [
+    "deal signed",
+    "other"
+   ],
+   "reason": "New US$7.5bn credit agreements entered (agreement + new financial obligation)."
+  },
+  "0000080424-18-000087": {
+   "n": 6,
+   "categories": [
+    "disclosure / other"
+   ],
+   "reason": "Informational re-presentation of past earnings after an accounting-standard change; no restatement."
+  },
+  "0000034088-12-000030": {
+   "n": 7,
+   "categories": [
+    "earnings",
+    "disclosure / other"
+   ],
+   "reason": "Second-quarter 2012 results furnished under two items."
+  },
+  "0001193125-15-336615": {
+   "n": 8,
+   "categories": [
+    "leadership change"
+   ],
+   "reason": "New director appointed."
+  },
+  "0001193125-17-232047": {
+   "n": 9,
+   "categories": [
+    "earnings"
+   ],
+   "reason": "Press release with quarterly and annual financial results."
+  },
+  "0000080424-11-000005": {
+   "n": 10,
+   "categories": [
+    "disclosure / other"
+   ],
+   "reason": "Furnished news release: Pringles to merge into Diamond Foods; details still to be finalised."
+  },
+  "0000732717-11-000113": {
+   "n": 11,
+   "categories": [
+    "other"
+   ],
+   "reason": "Termination of the T-Mobile USA stock purchase agreement (break-up charge)."
+  },
+  "0000021344-13-000012": {
+   "n": 12,
+   "categories": [
+    "earnings"
+   ],
+   "reason": "Press release with first-quarter 2013 results."
+  },
+  "0001193125-13-380142": {
+   "n": 13,
+   "categories": [
+    "leadership change"
+   ],
+   "reason": "Senior executive severance plan approved (officer compensation)."
+  },
+  "0000320193-18-000067": {
+   "n": 14,
+   "categories": [
+    "earnings"
+   ],
+   "reason": "Press release with second fiscal quarter results."
+  },
+  "0001193125-19-307019": {
+   "n": 15,
+   "categories": [
+    "disclosure / other"
+   ],
+   "reason": "Furnishes a press release; topic not stated in the text."
+  },
+  "0000080424-19-000011": {
+   "n": 16,
+   "categories": [
+    "disclosure / other"
+   ],
+   "reason": "Furnishes conference-call slides; the results release itself was separate."
+  },
+  "0001193125-19-133251": {
+   "n": 17,
+   "categories": [
+    "exhibits only"
+   ],
+   "reason": "Only pro forma financial information attached as an exhibit."
+  },
+  "0000034088-11-000037": {
+   "n": 18,
+   "categories": [
+    "earnings",
+    "disclosure / other"
+   ],
+   "reason": "Third-quarter 2011 results furnished under two items."
+  },
+  "0001193125-19-142117": {
+   "n": 19,
+   "categories": [
+    "disclosure / other"
+   ],
+   "reason": "Investor meeting presentations furnished."
+  },
+  "0000021344-10-000010": {
+   "n": 20,
+   "categories": [
+    "exhibits only"
+   ],
+   "reason": "Amendment saying no financial statements are required under the exhibits item."
+  },
+  "0000080424-18-000090": {
+   "n": 21,
+   "categories": [
+    "shareholder vote"
+   ],
+   "reason": "Annual meeting final voting results."
+  },
+  "0001181431-12-038301": {
+   "n": 22,
+   "categories": [
+    "leadership change"
+   ],
+   "reason": "Principal accounting officer to retire."
+  },
+  "0000918866-17-000002": {
+   "n": 23,
+   "categories": [
+    "disclosure / other"
+   ],
+   "reason": "Quarterly dividend declared; news release furnished."
+  },
+  "0000080424-17-000044": {
+   "n": 24,
+   "categories": [
+    "disclosure / other"
+   ],
+   "reason": "Conference-call slides on quarterly results furnished."
+  },
+  "0000080424-18-000109": {
+   "n": 25,
+   "categories": [
+    "disclosure / other"
+   ],
+   "reason": "Furnishes a news release; topic not stated in the text."
+  },
+  "0001193125-13-448625": {
+   "n": 26,
+   "categories": [
+    "shareholder vote"
+   ],
+   "reason": "Annual meeting voting results."
+  },
+  "0000050863-10-000094": {
+   "n": 27,
+   "categories": [
+    "deal signed",
+    "disclosure / other"
+   ],
+   "reason": "Furnished press release: definitive agreement to buy Infineon's wireless business."
+  },
+  "0001193125-20-123202": {
+   "n": 28,
+   "categories": [
+    "leadership change",
+    "shareholder vote"
+   ],
+   "reason": "CEO succession and new director; annual meeting voting results."
+  },
+  "0000080424-18-000045": {
+   "n": 29,
+   "categories": [
+    "disclosure / other"
+   ],
+   "reason": "Quarterly dividend declared; news release furnished."
+  },
+  "0000034088-12-000044": {
+   "n": 30,
+   "categories": [
+    "earnings",
+    "disclosure / other"
+   ],
+   "reason": "Third-quarter 2012 results furnished under two items."
+  },
+  "0000050863-10-000063": {
+   "n": 31,
+   "categories": [
+    "disclosure / other"
+   ],
+   "reason": "Furnished press release on a joint motion with the FTC."
+  },
+  "0000080424-16-000204": {
+   "n": 32,
+   "categories": [
+    "disclosure / other"
+   ],
+   "reason": "Conference-call slides on annual results furnished."
+  },
+  "0001193125-15-039270": {
+   "n": 33,
+   "categories": [
+    "disclosure / other"
+   ],
+   "reason": "Note issue under an underwriting agreement; documents filed for the shelf registration."
+  },
+  "0000034088-17-000019": {
+   "n": 34,
+   "categories": [
+    "disclosure / other"
+   ],
+   "reason": "Furnished news release on proved oil and gas reserves."
+  },
+  "0001628280-19-012399": {
+   "n": 35,
+   "categories": [
+    "earnings"
+   ],
+   "reason": "Press release with third-quarter 2019 results."
+  },
+  "0001193125-17-187506": {
+   "n": 36,
+   "categories": [
+    "disclosure / other"
+   ],
+   "reason": "Closed a note sale; exhibits filed for incorporation into the registration statement."
+  },
+  "0000735244-11-000002": {
+   "n": 37,
+   "categories": [
+    "disclosure / other"
+   ],
+   "reason": "Quarterly dividend declared; news release furnished."
+  },
+  "0000080424-12-000082": {
+   "n": 38,
+   "categories": [
+    "shareholder vote"
+   ],
+   "reason": "Annual meeting final voting results."
+  },
+  "0000080424-12-000080": {
+   "n": 39,
+   "categories": [
+    "disclosure / other"
+   ],
+   "reason": "Quarterly dividend declared; news release furnished."
+  },
+  "0000080424-11-000003": {
+   "n": 40,
+   "categories": [
+    "leadership change"
+   ],
+   "reason": "New director appointed."
+  }
+ }
+}

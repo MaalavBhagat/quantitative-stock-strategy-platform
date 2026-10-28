@@ -92,7 +92,7 @@ def build_run_report(run: dd.RunRecord, s0: dd.RunRecord | None, exploratory: bo
         [
             verdict,
             "",
-            "Source: reports/experiments/validation_2017-2020.md §1 (rules: research/PREREGISTRATION.md).",
+            f"Source: {dd.verdict_source(run.label)}.",
         ]
         if verdict
         else ["S0 is the benchmark — it has no verdict of its own."]

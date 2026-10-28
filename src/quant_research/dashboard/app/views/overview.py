@@ -19,6 +19,15 @@ st.error(
     icon="❌",
 )
 st.markdown(dd.named_verdict_table())
+if dd.PHASE9_REPORT.exists():
+    st.markdown(
+        "### Phase 9: does extra information help? (each vs its twin, validation 2017–2020, MAIN)"
+    )
+    st.caption(
+        "Rules: research/PREREGISTRATION_V2.md (tag prereg-v2). Prices 2017–2020 were already seen for the twins — "
+        "the clean test is the final 2021+ run."
+    )
+    st.markdown(labels.name_ids(dd.phase9_verdict_table()))
 
 st.markdown("### Key results of this run")
 results = ui.results_table(dd.key_results(run, s0))
