@@ -1,8 +1,8 @@
 # PROJECT_STATUS.md
 Last updated: 2026-10-28
 
-CURRENT PHASE: Phase 9 — Market context & company events (In progress)
-CURRENT TASK: Final test 2021–2025 DONE (run once) — waiting for chat Claude's verification; then Phase 10
+CURRENT PHASE: Phase 10 — Integration, security, reliability (In progress)
+CURRENT TASK: Phase 10 — integration, error handling, security, reproducibility, docs audit (prompt: prompts/27_phase10_integration_reliability.md)
 
 PHASE STATES (Not started / In progress / Blocked / Verified):
 - Phase 0  Feasibility & research design ........ VERIFIED (2026-10-18)
@@ -15,7 +15,7 @@ PHASE STATES (Not started / In progress / Blocked / Verified):
 - Phase 7  Company research & screening ......... VERIFIED (2026-10-26)
 - Phase 8  Interactive dashboard ................ VERIFIED (2026-10-27)
 - Phase 9  Market context & AI news ............. VERIFIED (2026-10-28)
-- Phase 10 Integration, security, reliability ... Not started
+- Phase 10 Integration, security, reliability ... In progress
 - Phase 11 CV & GitHub portfolio ................ Not started
 
 COMPLETED:
@@ -547,6 +547,11 @@ FINDINGS (Step 2.3):
   KO 11,559.85 · PG 8,798.98 · XOM 26,057.70 · INTC 6,305.17 · SPY 14,963.53.
   Dashboard: period picker final / validation / development (final page may show 2021–2025, nothing ≥ 2026).
   2021–2025 is now USED — nothing later run on it is out-of-sample.
+- FINAL TEST VERIFIED by chat Claude 2026-10-28: prereg-final tagged 17d62ed at 16:48:19 +1100, first 2021+ download
+  07:51:54Z (18:51:54 +1100); T not downloaded; 5,096 runs from clean b3287e4. Independent re-implementation reproduced
+  all 7 S0 finals (AAPL 16,485.23 · MSFT 17,613.26 · KO 11,559.85 · PG 8,798.98 · XOM 26,057.70 · INTC 6,305.17 ·
+  SPY 14,963.53) and all 23 C1 SPY trades (final 13,005.76) exactly. All 8 strategies REJECTED in both validation and
+  final test. The 3 'used' notes committed 23 s after the tag, before any download — accepted.
 
 IN PROGRESS:
 - none (Phase 9 ready for verification)
@@ -639,7 +644,8 @@ IMPORTANT DECISIONS:
      (only Goggy sets it) · D9 type hints required on every function in src/; no type-checker yet.
 
 NEXT ACTION:
-- Chat Claude verifies the final test (data report, run records, verdicts, appendix trade lists); then Phase 10.
+- Desktop Code session: "Read prompts/27_phase10_integration_reliability.md and do exactly what it says."
+- Then Phase 11 (prompt 28): README polish, demo, diagrams, CV bullets, interview prep, decide public vs private.
 
 TESTS RUN (2026-10-28, prompt 26 — final test):
 - uv run pytest -q → 392 passed in 4.47s · uv run ruff check . → All checks passed! ·
