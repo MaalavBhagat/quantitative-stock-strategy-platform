@@ -11,6 +11,15 @@ from quant_research.strategies.profit_target import (
     TrendFilteredPullback,
 )
 
+STRATEGY_NAMES = (
+    "s0_buy_and_hold",
+    "s1_profit_target",
+    "s2_pullback",
+    "s3_mean_reversion",
+    "s4_trend_s1",
+    "s4_trend_s2",
+)
+
 
 def make_strategy(config: RunConfig) -> Strategy:
     if config.strategy == "s0_buy_and_hold":

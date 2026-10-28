@@ -25,6 +25,7 @@ from quant_research.metrics.performance import (
     sharpe,
 )
 from quant_research.portfolio.money import to_display
+from quant_research.strategies import labels
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 RUNS_DIR = PROJECT_ROOT / "data" / "runs"
@@ -37,14 +38,7 @@ PERIODS = {
     "development": "Development period 2010-01-04 → 2016-12-30",
     "screen": "Screening years 2010–2020 (development + validation; point-in-time)",
 }
-LABELS = {
-    "s0_buy_and_hold": "S0",
-    "s1_profit_target": "S1",
-    "s2_pullback": "S2",
-    "s3_mean_reversion": "S3",
-    "s4_trend_s1": "S4-S1",
-    "s4_trend_s2": "S4-S2",
-}
+LABELS = labels.IDS  # config strategy name → ID (display names: strategies/labels.py)
 # The development records the reports use (same as scripts/report_validation.py DEV_COMMITS).
 DEV_COMMITS = {"987c81c": ("S0", "S1", "S2"), "8f3cf46": ("S0", "S3", "S4-S1", "S4-S2")}
 
@@ -106,6 +100,11 @@ class RunRecord:
     @property
     def label(self) -> str:
         return LABELS[self.config["strategy"]]
+
+    @property
+    def title(self) -> str:
+        """'AAPL · Trend filter + pullback (S4-S2) · X 2% / Y 4%' — for page headings and reports."""
+        return f"{self.ticker} · {labels.display(self.label)} · {self.setting}"
 
     @property
     def ticker(self) -> str:
@@ -321,6 +320,11 @@ def trade_effect(run: RunRecord, i: int) -> dict[str, str]:
         ),
         "Note": "cash at the close = cash after the fill, unless a dividend arrived that day",
     }
+
+
+def named_verdict_table() -> str:
+    """The saved verdict table for display: each strategy ID with its plain-English name."""
+    return labels.name_ids(verdict_table())
 
 
 def verdict_table(report: Path = REPORTS_DIR / "experiments" / "validation_2017-2020.md") -> str:

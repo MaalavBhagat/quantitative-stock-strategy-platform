@@ -4,21 +4,24 @@ import streamlit as st
 
 from quant_research.dashboard import data as dd
 from quant_research.dashboard.app import ui
+from quant_research.strategies import labels
+
+S0 = labels.display("S0")
 
 period, run, s0 = ui.pick_run()
 st.title("Overview")
 ui.banner(period)
-st.subheader(f"{run.ticker} · {run.label} · {run.setting}")
+ui.title(run)
 
 st.markdown("### Pre-registered verdicts (validation 2017–2020, MAIN settings)")
 st.error(
     "All five strategies were **REJECTED** against buy-and-hold under rules fixed in advance.",
     icon="❌",
 )
-st.markdown(dd.verdict_table())
+st.markdown(dd.named_verdict_table())
 
 st.markdown("### Key results of this run")
-results = dd.key_results(run, s0)
+results = ui.results_table(dd.key_results(run, s0))
 LONG = (
     "Starting capital",
     "Test period",
@@ -32,7 +35,7 @@ for i, (name, value) in enumerate(short.items()):
     cols[i % 3].metric(name, value)
 if s0 is not None and run.label != "S0":
     st.caption(
-        f"Excess = this run's total return − S0 (buy-and-hold) total return on {run.ticker}, same period."
+        f"Excess = this run's total return − {S0} total return on {run.ticker}, same period."
     )
 ui.assumptions(run)
 
@@ -45,4 +48,5 @@ for title, path in [
     ),
 ]:
     with st.expander(f"{title} — {path.relative_to(dd.PROJECT_ROOT)}"):
-        st.markdown(path.read_text(encoding="utf-8").replace("$", "\\$"))  # "$" is not maths
+        text = labels.name_ids(path.read_text(encoding="utf-8"))
+        st.markdown(text.replace("$", "\\$"))  # "$" is not maths

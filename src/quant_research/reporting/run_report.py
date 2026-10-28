@@ -5,6 +5,7 @@ Everything comes from the run record (run.json + CSVs) via dashboard.data and me
 
 from quant_research.dashboard import data as dd
 from quant_research.metrics.performance import stranded
+from quant_research.strategies import labels
 
 LICENCE_NOTE = (
     "Source data licences: Tiingo price data — internal / personal use only; RBA exchange rates — personal, "
@@ -24,7 +25,9 @@ def build_run_report(run: dd.RunRecord, s0: dd.RunRecord | None, exploratory: bo
         else "Saved run from the pre-registered experiment set (records under data/runs/)."
     )
     out = [
-        f"# Run report — {run.ticker} · {run.label} · {run.setting}",
+        f"# Run report — {run.title}",
+        "",
+        f"*{labels.explain(run.label)}*",
         "",
         f"> **{dd.banner(run.period)}**",
         "",
@@ -106,4 +109,4 @@ def build_run_report(run: dd.RunRecord, s0: dd.RunRecord | None, exploratory: bo
         f"*{dd.BANNER}. {LICENCE_NOTE}*",
         "",
     ]
-    return "\n".join(out)
+    return labels.name_ids("\n".join(out))  # every strategy ID shown with its plain-English name

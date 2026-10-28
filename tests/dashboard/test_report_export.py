@@ -10,12 +10,13 @@ from quant_research.backtesting.run import load_config, run_backtest
 from quant_research.dashboard import data as dd
 from quant_research.dashboard import export as ex
 from quant_research.reporting.run_report import build_run_report
+from quant_research.strategies import labels
 from quant_research.strategies.registry import make_strategy
 
 SECTIONS = [
     "## Settings",
     "## Data provenance",
-    "## Results vs S0",
+    "## Results vs Buy-and-hold (S0)",
     "## Costs",
     "## Trading activity",
     "## Pre-registered verdict for this strategy",
@@ -31,7 +32,9 @@ def test_report_has_every_section_banner_and_limitations_link(tmp_path):
     assert "SIMULATED, HISTORICAL — not financial advice" in text
     assert "EXPLORATORY — NOT PRE-REGISTERED" in text
     assert "DATA_SOURCES.md §8" in text
-    assert "| Excess vs S0 (pp, USD) | not available |" in text
+    assert "| Excess vs Buy-and-hold (S0) (pp, USD) | not available |" in text
+    assert "# Run report — AAA · Profit target (S1) · X 2% / Y 4%" in text
+    assert labels.bare_ids(text) == []  # every strategy ID shown with its name
     assert "Personal use; do not redistribute." in text
 
 

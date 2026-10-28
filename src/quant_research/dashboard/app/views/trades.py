@@ -8,7 +8,7 @@ from quant_research.dashboard.app import ui
 period, run, _ = ui.pick_run()
 st.title("Trade explorer")
 ui.banner(period)
-st.subheader(f"{run.ticker} · {run.label} · {run.setting}")
+ui.title(run)
 
 st.markdown(f"### Fills ({len(run.fills)})")
 st.caption(

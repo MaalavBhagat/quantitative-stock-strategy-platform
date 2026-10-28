@@ -5,8 +5,9 @@ import streamlit as st
 
 from quant_research.dashboard import data as dd
 from quant_research.data.fx import load_usd_per_aud
+from quant_research.strategies import labels
 
-ORDER = ["S0", "S1", "S2", "S3", "S4-S1", "S4-S2"]
+ORDER = ["S0", "S1", "S2", "S3", "S4-S1", "S4-S2", "C1", "C2", "E1"]
 
 
 @st.cache_data(show_spinner=False)
@@ -26,17 +27,32 @@ def fx():
     return load_usd_per_aud()
 
 
+def explanation(strategy_id: str) -> str:
+    """The one-line explanation, with any strategy it mentions named too."""
+    return labels.name_ids(labels.explain(strategy_id))
+
+
+def title(r: dd.RunRecord) -> None:
+    """Page sub-heading for a run: stock · name (ID) · setting, with the one-line explanation."""
+    st.subheader(r.title)
+    st.caption(explanation(r.label))
+
+
 def banner(period: str) -> None:
     st.warning(dd.banner(period), icon="⚠️")
 
 
-def _kept(widget, label: str, options: list, name: str):
+def _kept(widget, label: str, options: list, name: str, **kwargs):
     """A sidebar widget whose choice survives page changes (Streamlit clears widget state when a page changes,
     so the choice is copied to a plain session key and used as the starting index next time)."""
     store = f"keep_{name}"
     saved = st.session_state.get(store)
     choice = widget(
-        label, options, index=options.index(saved) if saved in options else 0, key=f"w_{name}"
+        label,
+        options,
+        index=options.index(saved) if saved in options else 0,
+        key=f"w_{name}",
+        **kwargs,
     )
     st.session_state[store] = choice
     return choice
@@ -49,8 +65,9 @@ def pick_run() -> tuple[str, dd.RunRecord, dd.RunRecord | None]:
     idx = index(period)
     tickers = sorted({t for _, t, _ in idx})
     ticker = _kept(st.sidebar.selectbox, "Stock", tickers, "ticker")
-    labels = [lbl for lbl in ORDER if any(k[0] == lbl and k[1] == ticker for k in idx)]
-    label = _kept(st.sidebar.selectbox, "Strategy", labels, "label")
+    ids = [lbl for lbl in ORDER if any(k[0] == lbl and k[1] == ticker for k in idx)]
+    label = _kept(st.sidebar.selectbox, "Strategy", ids, "label", format_func=labels.display)
+    st.sidebar.caption(explanation(label))
     settings = sorted(s for lbl, t, s in idx if lbl == label and t == ticker)
     setting = _kept(st.sidebar.selectbox, "Setting", settings, "setting")
     chosen = run(idx[(label, ticker, setting)], period)
@@ -67,6 +84,11 @@ def assumptions(r: dd.RunRecord) -> None:
     with st.expander("Assumptions of this run (from the saved run record)", expanded=True):
         a = dd.assumptions(r)
         st.table(pd.DataFrame({"value": list(a.values())}, index=list(a)))
+
+
+def results_table(results: dict[str, str]) -> dict[str, str]:
+    """Key results with any strategy ID in a row name given its name ('Excess vs Buy-and-hold (S0) …')."""
+    return {labels.name_ids(k): v for k, v in results.items()}
 
 
 def report_and_exports(r: dd.RunRecord, s0: dd.RunRecord | None, exploratory: bool) -> None:

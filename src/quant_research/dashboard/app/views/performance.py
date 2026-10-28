@@ -6,19 +6,23 @@ import streamlit as st
 
 from quant_research.dashboard import data as dd
 from quant_research.dashboard.app import ui
+from quant_research.strategies import labels
+
+S0 = labels.display("S0")
 
 period, run, s0 = ui.pick_run()
 st.title("Performance")
 ui.banner(period)
-st.subheader(f"{run.ticker} · {run.label} · {run.setting}")
+ui.title(run)
 currency = st.radio("Currency", ["USD", "AUD"], horizontal=True)
 col = "total_usd" if currency == "USD" else "total_aud"
 fx = ui.fx() if currency == "AUD" else None
 
 eq = dd.equity_table(run, fx)
-lines = [eq.assign(series=f"{run.label} {run.setting}")[["day", col, "series"]]]
+strategy_name = f"{labels.display(run.label)} {run.setting}"
+lines = [eq.assign(series=strategy_name)[["day", col, "series"]]]
 if s0 is not None and run.label != "S0":
-    lines.append(dd.equity_table(s0, fx).assign(series="S0 buy-and-hold")[["day", col, "series"]])
+    lines.append(dd.equity_table(s0, fx).assign(series=S0)[["day", col, "series"]])
 both = pd.concat(lines)
 st.markdown(f"### Total value ({currency}, at each close)")
 st.altair_chart(
@@ -36,11 +40,10 @@ if currency == "AUD":
         "AUD = USD value ÷ RBA rate of that day (latest rate dated ≤ day) — same rule as the run."
     )
 
-strategy_name = f"{run.label} {run.setting}"
 st.markdown(f"### Drawdown of {strategy_name} (value ÷ highest value so far − 1)")
 dds = [eq.assign(series=strategy_name)[["day", "drawdown", "series"]]]
 if s0 is not None and run.label != "S0":
-    dds.append(dd.equity_table(s0).assign(series="S0 buy-and-hold")[["day", "drawdown", "series"]])
+    dds.append(dd.equity_table(s0).assign(series=S0)[["day", "drawdown", "series"]])
 st.altair_chart(
     alt.Chart(pd.concat(dds))
     .mark_line()

@@ -10,6 +10,7 @@ from pathlib import Path
 
 from quant_research.dashboard import data as dd
 from quant_research.reporting.run_report import LICENCE_NOTE, build_run_report
+from quant_research.strategies import labels
 
 EXPORTS_DIR = dd.PROJECT_ROOT / "data" / "exports"
 
@@ -47,12 +48,12 @@ def equity_chart(run: dd.RunRecord, s0: dd.RunRecord | None):
     import altair as alt
     import pandas as pd
 
-    parts = [dd.equity_table(run).assign(series=f"{run.label} {run.setting}")]
+    parts = [dd.equity_table(run).assign(series=f"{labels.display(run.label)} {run.setting}")]
     if s0 is not None and run.label != "S0":
-        parts.append(dd.equity_table(s0).assign(series="S0 buy-and-hold"))
+        parts.append(dd.equity_table(s0).assign(series=labels.display("S0")))
     data = pd.concat(parts)[["day", "total_usd", "series"]]
     return (
-        alt.Chart(data, title=f"{run.ticker} — total value (USD). {dd.BANNER}")
+        alt.Chart(data, title=f"{run.title} — total value (USD). {dd.BANNER}")
         .mark_line()
         .encode(
             x=alt.X("day:T", title="Date"),

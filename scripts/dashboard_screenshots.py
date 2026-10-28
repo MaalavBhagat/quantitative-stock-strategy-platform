@@ -5,6 +5,8 @@ Needs the dashboard running on localhost:8501 (README "How to open the dashboard
 Pages showing a run use S4-S2 · AAPL · X 2% / Y 4% (validation) — the run checked against the validation report.
 It also presses "Generate report + export files" (→ data/exports/) and starts ONE exploratory lab run
 (→ data/runs/lab/, labelled EXPLORATORY — NOT PRE-REGISTERED).
+With --dropdown it ONLY saves data/screenshots/0_overview_dropdown.png (the Overview strategy menu opened, showing
+the plain-English names) — no export, no lab run.
 """
 
 import os
@@ -41,6 +43,17 @@ def choose(page: Page, label: str, option: str) -> None:
         raise SystemExit(f"could not choose {option!r} in {label!r} (shows {box.input_value()!r})")
 
 
+def dropdown_only(page: Page) -> None:
+    """Overview with the sidebar strategy menu open (labels shown as 'Name (ID)')."""
+    choose(page, "Strategy", "Trend filter + pullback (S4-S2)")
+    page.get_by_role("combobox", name="Strategy").click(force=True)
+    page.wait_for_timeout(800)
+    path = OUT / "0_overview_dropdown.png"
+    page.screenshot(path=str(path))
+    options = page.get_by_role("option").all_inner_texts()
+    print(f"saved {path.relative_to(PROJECT_ROOT)} — menu options: {options}")
+
+
 def main() -> int:
     if not os.environ.get("PLAYWRIGHT_BROWSERS_PATH"):
         os.environ["PLAYWRIGHT_BROWSERS_PATH"] = str(PROJECT_ROOT / ".playwright-browsers")
@@ -50,7 +63,11 @@ def main() -> int:
         page = browser.new_page(viewport={"width": 1440, "height": 2200})
         page.goto(URL)
         settle(page)
-        choose(page, "Strategy", "S4-S2")
+        if "--dropdown" in sys.argv:
+            dropdown_only(page)
+            browser.close()
+            return 0
+        choose(page, "Strategy", "Trend filter + pullback (S4-S2)")
         choose(page, "Setting", "X 2% / Y 4%")
         for name, title in PAGES:
             page.get_by_role("link", name=title, exact=True).click(force=True)
@@ -73,9 +90,9 @@ def main() -> int:
         settle(page)
         page.get_by_text("validation", exact=True).click(force=True)
         settle(page)
-        choose(page, "Strategy", "S4-S2")
+        choose(page, "Strategy", "Trend filter + pullback (S4-S2)")
         page.get_by_role(
-            "button", name="Run (through run.py) — plus S0 with the same settings"
+            "button", name="Run (through run.py) — plus Buy-and-hold (S0) with the same settings"
         ).click(force=True)
         settle(page)
         page.screenshot(path=str(OUT / "6_lab.png"))
