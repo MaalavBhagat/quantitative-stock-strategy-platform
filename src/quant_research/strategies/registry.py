@@ -5,6 +5,7 @@ they are loaded from the saved files AFTER the final-test lock check (D8) — ne
 """
 
 from collections.abc import Sequence
+from datetime import date
 from pathlib import Path
 
 import pandas as pd
@@ -51,11 +52,24 @@ def load_market(config: RunConfig) -> pd.DataFrame:
     return load_prices(MARKET_TICKER, config.start, config.end)
 
 
+EVENT_CUTOFFS = (
+    "2020-12-31",
+    "2025-12-31",
+)  # saved 8-K files: Phase 9 (to 2020) and the final test (to 2025)
+
+
 def load_company_events(config: RunConfig, sub_dir: Path = SUBMISSIONS_DIR) -> list[Event]:
+    """8-K events from the saved files whose cutoff covers the run's end date (the earliest such cutoff).
+
+    Fix (Phase 10): this used to read the 2020 files for every config, so re-running a final-test E1 config from its
+    saved settings would silently miss every 2021–2025 earnings event."""
     from quant_research.news.events import load_events
 
     check_final_test_lock(config)
-    return load_events(config.ticker, sub_dir)
+    covering = [c for c in EVENT_CUTOFFS if date.fromisoformat(c) >= config.end]
+    if not covering:
+        raise ValueError(f"no saved 8-K files reach {config.end} (cutoffs {EVENT_CUTOFFS})")
+    return load_events(config.ticker, sub_dir, covering[0])
 
 
 def make_strategy(

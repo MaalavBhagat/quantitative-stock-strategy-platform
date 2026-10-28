@@ -121,6 +121,23 @@ def parse_config(raw: dict[str, Any]) -> RunConfig:
         raise ValueError(f"config is missing required keys: {exc}") from None
     if config.end < config.start:
         raise ValueError(f"end {config.end} is before start {config.start}")
+    # Phase 10: unknown choices used to pass here and fail later, mid-run
+    from quant_research.execution.costs import BROKERS
+    from quant_research.strategies.labels import IDS
+
+    choices = {
+        "strategy": tuple(IDS),
+        "broker": BROKERS,
+        "spread_level": ("tight", "normal", "wide"),
+        "share_mode": ("fractional", "whole"),
+    }
+    for key, allowed in choices.items():
+        if getattr(config, key) not in allowed:
+            raise ValueError(
+                f"{key} must be one of {', '.join(allowed)} — got {getattr(config, key)!r}"
+            )
+    if config.initial_aud <= 0:
+        raise ValueError(f"initial_aud must be more than 0, got {config.initial_aud}")
     if config.fx_source not in ("rba", "fixed"):
         raise ValueError(f"fx_source must be 'rba' or 'fixed', got {config.fx_source!r}")
     if config.fx_source == "fixed" and (
@@ -179,7 +196,16 @@ def config_to_yaml(config: RunConfig) -> str:
 
 
 def load_config(path: Path) -> RunConfig:
-    return parse_config(yaml.safe_load(path.read_text(encoding="utf-8")))
+    """Read and validate a YAML run config (Phase 10: YAML errors and non-mapping files name the file)."""
+    try:
+        raw = yaml.safe_load(path.read_text(encoding="utf-8"))
+    except yaml.YAMLError as exc:
+        raise ValueError(f"{path.name} is not valid YAML: {exc}") from None
+    if not isinstance(raw, dict):
+        raise ValueError(
+            f"{path.name} must be a list of 'key: value' settings, got {type(raw).__name__}"
+        )
+    return parse_config(raw)
 
 
 def check_final_test_lock(config: RunConfig) -> None:

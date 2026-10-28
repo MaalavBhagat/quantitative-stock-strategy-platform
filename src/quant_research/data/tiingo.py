@@ -78,7 +78,13 @@ def _get_json(
                 last_problem = f"network error: {type(exc).__name__}"
             else:
                 if response.status_code == 200:
-                    return response.json()
+                    try:
+                        return response.json()
+                    except ValueError:  # Phase 10 fix: was a bare JSONDecodeError traceback
+                        raise TiingoError(
+                            f"Tiingo returned HTTP 200 but the body is not valid JSON for {url} "
+                            f"(starts {response.text[:60]!r}) — try again later; nothing was saved"
+                        ) from None
                 if response.status_code not in RETRY_STATUS_CODES:
                     raise TiingoError(
                         f"Tiingo returned HTTP {response.status_code} for {url} — "
@@ -131,6 +137,17 @@ def parse_prices(records: list[dict[str, Any]], ticker: str) -> pd.DataFrame:
         )
     df["date"] = timestamps.dt.date
 
+    numeric = [v for v in COLUMN_MAP.values() if v != "date"]
+    for (
+        col
+    ) in numeric:  # Phase 10 fix: a non-number used to fail with a bare "could not convert" error
+        bad = pd.to_numeric(df[col], errors="coerce").isna() & df[col].notna()
+        if bad.any():
+            first = bad.idxmax()
+            raise TiingoError(
+                f"{ticker}: column {col} has a non-numeric value {df.loc[first, col]!r} on {df.loc[first, 'date']} "
+                "— the response is malformed; nothing was saved"
+            )
     for col in ("volume_raw", "volume_adj"):
         df[col] = pd.to_numeric(df[col])
     float_cols = [v for v in COLUMN_MAP.values() if v not in ("date", "volume_raw", "volume_adj")]

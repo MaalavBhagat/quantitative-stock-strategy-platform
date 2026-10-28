@@ -82,7 +82,13 @@ def get_json(
                 last_problem = f"network error: {type(exc).__name__}"
             else:
                 if response.status_code == 200:
-                    return response.json()
+                    try:
+                        return response.json()
+                    except ValueError:  # Phase 10 fix: was a bare JSONDecodeError traceback
+                        raise SecError(
+                            f"SEC returned HTTP 200 but the body is not valid JSON for {url} "
+                            f"(starts {response.text[:60]!r}) — try again later; nothing was saved"
+                        ) from None
                 if response.status_code not in RETRY_STATUS_CODES:
                     raise SecError(
                         f"SEC returned HTTP {response.status_code} for {url} (not retried)"

@@ -71,7 +71,7 @@ def test_example_config_loads():
 def test_config_rejects_floats_unknown_keys_and_bad_dates():
     raw = {
         "run_name": "x",
-        "strategy": "s",
+        "strategy": "s0_buy_and_hold",
         "ticker": "T",
         "start": date(2010, 1, 4),
         "end": date(2010, 2, 1),

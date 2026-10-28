@@ -403,7 +403,23 @@ def validate_prices(
 
 
 def load_raw_csv(path: Any) -> pd.DataFrame:
-    """Read a saved raw CSV back, with `date` as plain dates. No other changes."""
-    df = pd.read_csv(path)
-    df["date"] = pd.to_datetime(df["date"], format="%Y-%m-%d").dt.date
+    """Read a saved raw CSV back, with `date` as plain dates. No other changes.
+
+    Phase 10: an empty file, a missing `date` column or a date that is not YYYY-MM-DD raises ValueError naming the
+    file (other missing columns are reported by validate_prices as ERRORs)."""
+    name = getattr(path, "name", str(path))
+    try:
+        df = pd.read_csv(path)
+    except pd.errors.EmptyDataError:
+        raise ValueError(f"{name} is empty — re-download it") from None
+    except pd.errors.ParserError as exc:
+        raise ValueError(f"{name} is not a readable CSV ({exc}) — re-download it") from None
+    if "date" not in df.columns:
+        raise ValueError(
+            f"{name} has no 'date' column (columns: {list(df.columns)}) — not a saved price file"
+        )
+    try:
+        df["date"] = pd.to_datetime(df["date"], format="%Y-%m-%d").dt.date
+    except (ValueError, TypeError) as exc:
+        raise ValueError(f"{name}: a date is not in YYYY-MM-DD form ({exc})") from None
     return df

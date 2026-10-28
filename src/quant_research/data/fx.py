@@ -36,8 +36,13 @@ class FxDataError(ValueError):
 
 def parse_rba_xls(path: Path) -> list[tuple[date, Decimal]]:
     """(date, usd_per_aud) rows from one RBA .xls file. Blank / "N/A" cells are skipped (no rate)."""
-    book = xlrd.open_workbook(str(path))
-    sheet = book.sheet_by_name("Data")
+    try:
+        book = xlrd.open_workbook(str(path))
+        sheet = book.sheet_by_name("Data")
+    except xlrd.XLRDError as exc:  # Phase 10 fix: was a bare xlrd traceback
+        raise FxDataError(
+            f"{path.name}: not a readable RBA .xls with a 'Data' sheet ({exc}) — re-download it"
+        ) from None
     id_row = next(
         (
             r
