@@ -86,3 +86,24 @@ def test_trimmed_csv_loads_and_refuses_post_2020_rows(tmp_path):
     bad.write_text("date,usd_per_aud\n2020-12-31,0.7700\n2021-01-04,0.7800\n")
     with pytest.raises(FxDataError, match="after 2020-12-31"):
         parse_trimmed_csv(bad)
+
+
+def test_final_test_extracts_follow_their_own_trim_date(tmp_path):
+    import json
+
+    from quant_research.data.fx import parse_trimmed_csv
+
+    ok = tmp_path / "2023-2025_from_2023-current.csv"
+    ok.write_text("date,usd_per_aud\n2025-12-30,0.6650\n2025-12-31,0.6700\n")
+    ok.with_suffix(".meta.json").write_text(json.dumps({"trimmed_to": "2025-12-31"}))
+    assert parse_trimmed_csv(ok)[-1] == (date(2025, 12, 31), D("0.6700"))
+    late = tmp_path / "late.csv"
+    late.write_text("date,usd_per_aud\n2025-12-31,0.6700\n2026-01-02,0.6710\n")
+    late.with_suffix(".meta.json").write_text(json.dumps({"trimmed_to": "2025-12-31"}))
+    with pytest.raises(FxDataError, match="after 2025-12-31"):
+        parse_trimmed_csv(late)
+    beyond = tmp_path / "beyond.csv"
+    beyond.write_text("date,usd_per_aud\n2026-01-02,0.6710\n")
+    beyond.with_suffix(".meta.json").write_text(json.dumps({"trimmed_to": "2026-06-30"}))
+    with pytest.raises(FxDataError, match="is after 2025-12-31"):
+        parse_trimmed_csv(beyond)

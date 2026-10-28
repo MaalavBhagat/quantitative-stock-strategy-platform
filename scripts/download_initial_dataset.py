@@ -3,7 +3,9 @@
 Run from the project folder:  uv run python scripts/download_initial_dataset.py [START END [TICKERS]]
   default dates 2010-01-01 2016-12-31, default tickers AAPL,XOM; warm-up (prompt 14): 2008-01-01 2009-12-31
   TICKERS = comma list, e.g. MSFT,KO,PG,INTC,T,SPY (prompt 16). One API call per ticker.
-Needs TIINGO_API_KEY in .env. Refuses to overwrite existing files. Never asks for dates ≥ 2021-01-01 (D8 hygiene).
+Needs TIINGO_API_KEY in .env. Refuses to overwrite existing files. Never asks for dates ≥ 2021-01-01 (D8 hygiene)
+— except with --final-test (research/FINAL_TEST_PREREG.md, Goggy 2026-10-28): END may then be up to 2025-12-31,
+for the 7 final-test tickers only (T is excluded: its 2022 spin-off is not modelled).
 """
 
 import logging
@@ -49,8 +51,15 @@ def summarise(ticker: str, df: pd.DataFrame) -> None:
             print(f"  {col}: {count}")
 
 
+FINAL_END = date(2025, 12, 31)
+FINAL_TICKERS = {"AAPL", "MSFT", "KO", "PG", "XOM", "INTC", "SPY"}
+
+
 def main() -> int:
     global START, END, TICKERS
+    final = "--final-test" in sys.argv
+    if final:
+        sys.argv.remove("--final-test")
     if len(sys.argv) in (3, 4):
         START, END = date.fromisoformat(sys.argv[1]), date.fromisoformat(sys.argv[2])
         if len(sys.argv) == 4:
@@ -61,7 +70,14 @@ def main() -> int:
             file=sys.stderr,
         )
         return 2
-    if END >= date(2021, 1, 1):
+    if final:
+        if END > FINAL_END or set(TICKERS) - FINAL_TICKERS:
+            print(
+                f"refused: --final-test allows END ≤ {FINAL_END} and only {sorted(FINAL_TICKERS)}",
+                file=sys.stderr,
+            )
+            return 2
+    elif END >= date(2021, 1, 1):
         print(
             "refused: END ≥ 2021-01-01 — the final test period stays locked (D8)", file=sys.stderr
         )

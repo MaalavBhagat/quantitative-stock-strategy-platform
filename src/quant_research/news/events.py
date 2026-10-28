@@ -83,10 +83,13 @@ def filing_categories(filing: dict) -> list[str]:
 
 @cache
 def _schedule() -> dict[date, datetime]:
-    """NYSE session date → its close time (US/Eastern), 1994–2021, from exchange_calendars (early closes included)."""
+    """NYSE session date → its close time (US/Eastern), 1994–2026, from exchange_calendars (early closes included).
+
+    Extended from 2021 to 2026 for the one-time final test (research/FINAL_TEST_PREREG.md): a filing accepted late on
+    2025-12-31 needs the first 2026 session."""
     import exchange_calendars as xcals
 
-    cal = xcals.get_calendar("XNYS", start="1994-01-01", end="2021-12-31")
+    cal = xcals.get_calendar("XNYS", start="1994-01-01", end="2026-12-31")
     sched = cal.schedule
     return {
         d.date(): c.to_pydatetime().astimezone(EASTERN)
@@ -136,13 +139,26 @@ class Event:
     categories: tuple[str, ...]
 
 
-def load_events(ticker: str, sub_dir: Path) -> list[Event]:
-    """8-K / 8-K/A events of one company from the saved submissions file (≤ 2020-12-31). No file (e.g. SPY) → []."""
-    paths = sorted(sub_dir.glob(f"{ticker.upper()}_CIK*_8k_to-2020-12-31.json"))
+def load_events(ticker: str, sub_dir: Path, cutoff: str = "2020-12-31") -> list[Event]:
+    """8-K / 8-K/A events of one company from the saved submissions file(s) up to `cutoff`. No file (e.g. SPY) → [].
+
+    Several files (one per CIK — e.g. XOM's old filer and its new holding company) are merged; an accession number
+    that appears twice must be the same filing, otherwise ValueError."""
+    paths = sorted(sub_dir.glob(f"{ticker.upper()}_CIK*_8k_to-{cutoff}.json"))
     if not paths:
         return []
-    [path] = paths
-    filings = json.loads(path.read_text(encoding="utf-8"))["filings"]
+    by_accession: dict[str, dict] = {}
+    for path in paths:
+        for f in json.loads(path.read_text(encoding="utf-8"))["filings"]:
+            seen = by_accession.get(f["accessionNumber"])
+            if seen is not None and seen != f:
+                raise ValueError(
+                    f"{ticker}: accession {f['accessionNumber']} differs between files"
+                )
+            by_accession[f["accessionNumber"]] = f
+    filings = sorted(
+        by_accession.values(), key=lambda f: (f["acceptanceDateTime"], f["accessionNumber"])
+    )
     return [
         Event(
             f["accessionNumber"],

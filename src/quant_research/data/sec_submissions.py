@@ -22,6 +22,9 @@ from quant_research.data.storage import git_state
 SUBMISSIONS_URL = "https://data.sec.gov/submissions/CIK{cik:010d}.json"
 FILES_URL = "https://data.sec.gov/submissions/{name}"
 EASTERN = ZoneInfo("America/New_York")
+FINAL_CUTOFF = date(
+    2025, 12, 31
+)  # one-time final test (research/FINAL_TEST_PREREG.md) — never later
 FORMS = ("8-K", "8-K/A")
 FIELDS = (
     "form",
@@ -77,7 +80,7 @@ def keep_8k_until_cutoff(
 
 
 def fetch_8k(
-    cik: int, user_agent: str, throttle: Throttle
+    cik: int, user_agent: str, throttle: Throttle, cutoff: date = CUTOFF
 ) -> tuple[list[dict[str, Any]], dict[str, Any]]:
     """All 8-K / 8-K/A filings ≤ cutoff for one CIK, following the older-filing pages. Nothing is written here."""
     main = get_json(SUBMISSIONS_URL.format(cik=cik), user_agent, throttle)
@@ -94,7 +97,7 @@ def fetch_8k(
             raise SecError(f"CIK {cik}: accession {r['accessionNumber']} appears twice")
         seen.add(r["accessionNumber"])
         unique.append(r)
-    kept, counts = keep_8k_until_cutoff(unique)
+    kept, counts = keep_8k_until_cutoff(unique, cutoff)
     info = {
         "entity_name": main.get("name"),
         "pages_followed": pages,
@@ -111,16 +114,19 @@ def save_8k(
     cik: int,
     out_dir: Path,
     repo_dir: Path,
+    cutoff: date = CUTOFF,
 ) -> Path:
+    if cutoff > FINAL_CUTOFF:
+        raise SecError(f"cutoff {cutoff} is after the final-test limit {FINAL_CUTOFF}")
     late = [
         f
         for f in filings
-        if f["filingDate"] > CUTOFF.isoformat() or f["acceptance_eastern"][:10] > CUTOFF.isoformat()
+        if f["filingDate"] > cutoff.isoformat() or f["acceptance_eastern"][:10] > cutoff.isoformat()
     ]
     if late:
-        raise SecError(f"{ticker}: refusing to save — {len(late)} filings after {CUTOFF}")
+        raise SecError(f"{ticker}: refusing to save — {len(late)} filings after {cutoff}")
     out_dir.mkdir(parents=True, exist_ok=True)
-    path = out_dir / f"{ticker.upper()}_CIK{cik:010d}_8k_to-{CUTOFF.isoformat()}.json"
+    path = out_dir / f"{ticker.upper()}_CIK{cik:010d}_8k_to-{cutoff.isoformat()}.json"
     if path.exists():
         raise FileExistsError(f"{path} already exists")
     path.write_text(
@@ -130,7 +136,7 @@ def save_8k(
         "source": "SEC EDGAR submissions API",
         "endpoint": SUBMISSIONS_URL.format(cik=cik),
         "downloaded_at_utc": datetime.now(UTC).isoformat(timespec="seconds"),
-        "cutoff_on_or_before": CUTOFF.isoformat(),
+        "cutoff_on_or_before": cutoff.isoformat(),
         "forms_kept": list(FORMS),
         **info,
         "timezone_note": "acceptanceDateTime is UTC ('Z'); acceptance_eastern added (America/New_York)",

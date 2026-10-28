@@ -200,3 +200,36 @@ def test_load_events_from_a_saved_file(tmp_path):
     assert (e.accession, e.form, e.categories) == ("X", "8-K", ("earnings",))
     assert e.accepted_et.isoformat() == "2019-10-30T16:30:40-04:00"
     assert load_events("SPY", tmp_path) == []  # a fund files no 8-Ks
+
+
+def test_final_test_cutoff_and_two_filers_merge(tmp_path):
+    import json
+
+    from quant_research.data.sec_submissions import FINAL_CUTOFF, save_8k
+    from quant_research.news.events import load_events
+
+    rows = [
+        row("8-K", "2025-12-30", "2025-12-30T21:00:00.000Z", accn="A"),
+        row("8-K", "2026-01-05", "2026-01-05T14:00:00.000Z", accn="LATE"),
+    ]
+    kept, counts = keep_8k_until_cutoff(rows, FINAL_CUTOFF)
+    assert [r["accessionNumber"] for r in kept] == ["A"] and counts["8k_dropped_after_cutoff"] == 1
+    info = {"pages_followed": [], "rows_read": 1}
+    save_8k(kept, info, "XOM", 34088, tmp_path, tmp_path, FINAL_CUTOFF)
+    newer = [row("8-K", "2025-12-31", "2025-12-31T13:00:00.000Z", accn="B"), kept[0]]
+    newer, _ = keep_8k_until_cutoff(newer, FINAL_CUTOFF)
+    save_8k(newer, info, "XOM", 2115436, tmp_path, tmp_path, FINAL_CUTOFF)
+    events = load_events("XOM", tmp_path, "2025-12-31")
+    assert [e.accession for e in events] == ["A", "B"]  # A appears in both files → kept once
+    assert load_events("XOM", tmp_path) == []  # the 2020 files are separate
+    with pytest.raises(SecError, match="after the final-test limit"):
+        save_8k(kept, info, "XOM", 1, tmp_path, tmp_path, date(2026, 1, 31))
+    # a filing accepted after the last 2025 close is usable at the first 2026 session (calendar extended)
+    from quant_research.news.events import usable_close_day
+
+    assert usable_close_day(et("2025-12-31T22:00:00.000Z")) == date(2026, 1, 2)
+    bad = json.loads((tmp_path / "XOM_CIK0002115436_8k_to-2025-12-31.json").read_text())
+    bad["filings"][0]["items"] = "8.01"  # accession A is in both files — now with different content
+    (tmp_path / "XOM_CIK0002115436_8k_to-2025-12-31.json").write_text(json.dumps(bad))
+    with pytest.raises(ValueError, match="differs between files"):
+        load_events("XOM", tmp_path, "2025-12-31")

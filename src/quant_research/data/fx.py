@@ -123,30 +123,49 @@ def build_series(rows: list[tuple[date, Decimal]], source_files: tuple[str, ...]
 
 
 TRIM_CUTOFF = date(2020, 12, 31)  # RBA 2018-2022.xls is kept only up to here (D8, Goggy 2026-10-25)
+# One-time final test (research/FINAL_TEST_PREREG.md, Goggy 2026-10-28): extracts may reach 2025-12-31, never later.
+FINAL_CUTOFF = date(2025, 12, 31)
 
 
 def parse_trimmed_csv(path: Path) -> list[tuple[date, Decimal]]:
-    """(date, usd_per_aud) rows from a trimmed RBA extract (CSV: date,usd_per_aud). Must end ≤ 2020-12-31."""
+    """(date, usd_per_aud) rows from a trimmed RBA extract (CSV: date,usd_per_aud).
+
+    Rows must end ≤ the extract's own `trimmed_to` (from its .meta.json; 2020-12-31 if there is none), and no extract
+    may reach past 2025-12-31 (final-test limit)."""
     import csv
 
+    meta_path = path.with_suffix(".meta.json")
+    meta = json.loads(meta_path.read_text(encoding="utf-8")) if meta_path.exists() else {}
+    cutoff = date.fromisoformat(meta.get("trimmed_to", TRIM_CUTOFF.isoformat()))
+    if cutoff > FINAL_CUTOFF:
+        raise FxDataError(f"{path.name}: trimmed_to {cutoff} is after {FINAL_CUTOFF}")
     with path.open(encoding="utf-8") as handle:
         rows = [
             (date.fromisoformat(r["date"]), Decimal(r["usd_per_aud"]))
             for r in csv.DictReader(handle)
         ]
-    if rows and max(d for d, _ in rows) > TRIM_CUTOFF:
+    if rows and max(d for d, _ in rows) > cutoff:
         raise FxDataError(
-            f"{path.name} contains dates after {TRIM_CUTOFF} — final-test data must not be on disk"
+            f"{path.name} contains dates after {cutoff} — data past the trim date must not be on disk"
         )
     return rows
 
 
-def trim_rba_xls(source: Path, out_csv: Path, url: str, downloaded_at_utc: str) -> Path:
-    """Write ONLY the rows dated ≤ 2020-12-31 of an RBA .xls to out_csv (+ .meta.json). Source is not kept here."""
+def trim_rba_xls(
+    source: Path,
+    out_csv: Path,
+    url: str,
+    downloaded_at_utc: str,
+    keep_from: date | None = None,
+    cutoff: date = TRIM_CUTOFF,
+) -> Path:
+    """Write ONLY the rows keep_from … cutoff of an RBA .xls to out_csv (+ .meta.json). Source is not kept here."""
     import csv
 
+    if cutoff > FINAL_CUTOFF:
+        raise FxDataError(f"cutoff {cutoff} is after {FINAL_CUTOFF}")
     rows = parse_rba_xls(source)
-    kept = [(d, r) for d, r in rows if d <= TRIM_CUTOFF]
+    kept = [(d, r) for d, r in rows if d <= cutoff and (keep_from is None or d >= keep_from)]
     with out_csv.open("w", newline="", encoding="utf-8") as handle:
         writer = csv.writer(handle)
         writer.writerow(["date", "usd_per_aud"])
@@ -160,13 +179,22 @@ def trim_rba_xls(source: Path, out_csv: Path, url: str, downloaded_at_utc: str) 
         "original_file": source.name,
         "original_rows_with_usd_rate": len(rows),
         "original_last_date": str(rows[-1][0]),
-        "trimmed_to": str(TRIM_CUTOFF),
+        "kept_from": str(keep_from) if keep_from else None,
+        "trimmed_to": str(cutoff),
         "rows_kept": len(kept),
         "first_date": str(kept[0][0]),
         "last_date": str(kept[-1][0]),
-        "rows_dropped_after_cutoff": len(rows) - len(kept),
-        "note": "Trimmed at download (Goggy 2026-10-25): rows after 2020-12-31 were never saved here and the original "
-        "file was deleted, so no final-test-period (D8) rate is on disk. Values unchanged (FXRUSD).",
+        "rows_dropped_after_cutoff": sum(d > cutoff for d, _ in rows),
+        "rows_before_kept_from": sum(keep_from is not None and d < keep_from for d, _ in rows),
+        "note": (
+            f"Trimmed at download: only rows {keep_from or 'start'} … {cutoff} were saved and the original file was "
+            "deleted. Values unchanged (FXRUSD)."
+            + (
+                " Final test (research/FINAL_TEST_PREREG.md)."
+                if cutoff > TRIM_CUTOFF
+                else " (D8, Goggy 2026-10-25)"
+            )
+        ),
         "licence_note": "RBA: personal, non-commercial use, attributed — never commit",
     }
     meta_path = out_csv.with_suffix(".meta.json")
