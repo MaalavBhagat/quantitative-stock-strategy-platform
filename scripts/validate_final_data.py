@@ -289,4 +289,7 @@ def build(files, joins, warmups, yahoo_rows, flags, flat, divs_by_year, fx, fx_r
 
 
 if __name__ == "__main__":
+    from _help import handle_help  # --help: describe and exit, do nothing else
+
+    handle_help(__doc__)
     sys.exit(main())

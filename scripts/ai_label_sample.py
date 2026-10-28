@@ -221,5 +221,8 @@ def compare() -> int:
 
 
 if __name__ == "__main__":
+    from _help import handle_help  # --help: describe and exit, do nothing else
+
+    handle_help(__doc__)
     command = sys.argv[1] if len(sys.argv) > 1 else ""
     sys.exit({"download": download, "show": show, "compare": compare}.get(command, lambda: 2)())

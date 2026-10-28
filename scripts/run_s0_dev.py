@@ -279,4 +279,7 @@ def build_report(rows: list[Row]) -> str:
 
 
 if __name__ == "__main__":
+    from _help import handle_help  # --help: describe and exit, do nothing else
+
+    handle_help(__doc__)
     sys.exit(main())
