@@ -232,8 +232,8 @@ def build(files, joins, warmups, yahoo_rows, flags, flat, divs_by_year, fx, fx_r
             f"| {t} | {n} | {s} | {a} → {b} | {ne} | {status}: {rows} rows, {first} → {last} |"
         )
     out += ["", "## 3. Yahoo cross-check (yfinance, auto_adjust=False, 2021-01-01 → 2025-12-31)", "",
-            "| Ticker | Days only-Tiingo / only-Yahoo | Split basis explained | Splits same | Dividends T / Y, max diff | "
-            "Closes max / median diff, days > 0.5% |", "|---|---|---|---|---|---|"]  # fmt: skip
+            ("| Ticker | Days only-Tiingo / only-Yahoo | Split basis explained | Splits same | Dividends T / Y, max diff | "
+            "Closes max / median diff, days > 0.5% |"), "|---|---|---|---|---|---|"]  # fmt: skip
     for t, c, err in yahoo_rows:
         if c is None:
             out.append(f"| {t} | — | **NO: {err}** | — | — | — |")
@@ -260,11 +260,11 @@ def build(files, joins, warmups, yahoo_rows, flags, flat, divs_by_year, fx, fx_r
         "- none found: no split rows at all in 2021–2025 for the 7 stocks, and no dividend > 2× the median."
     ]
     out += ["", "## 6. RBA AUD/USD (series FXRUSD)", "",
-            f"- Files: {', '.join(n for n in fx.source_files if n.startswith(('2021', '2023')))} (trimmed extracts of the "
-            "official 2018-2022.xls and 2023-current.xls; originals deleted; rows after 2025-12-31 never saved).",
+            (f"- Files: {', '.join(n for n in fx.source_files if n.startswith(('2021', '2023')))} (trimmed extracts of the "
+            "official 2018-2022.xls and 2023-current.xls; originals deleted; rows after 2025-12-31 never saved)."),
             f"- Rates dated 2021–2025: {len(fx_rows)} ({fx_rows[0]} → {fx_rows[-1]}).",
-            f"- Every NYSE session 2021-01-04 → 2025-12-31 ({len(sessions)}) has a rate dated ≤ that day and ≤ 5 days old;"
-            f" {stale} sessions use the previous RBA day's rate (Sydney holiday / US-only trading day)."]  # fmt: skip
+            (f"- Every NYSE session 2021-01-04 → 2025-12-31 ({len(sessions)}) has a rate dated ≤ that day and ≤ 5 days old;"
+            f" {stale} sessions use the previous RBA day's rate (Sydney holiday / US-only trading day).")]  # fmt: skip
     out += ["", "## 7. SEC 8-K filings 2021–2025 (for E1's earnings events; counts only)", "",
             "**Exxon filers** (checked, not assumed):", "",
             "| CIK | Entity | 8-K kept (≤ 2025-12-31) | 8-K after 2025-12-31 (dropped) | Filings read (all forms) |",
@@ -273,8 +273,8 @@ def build(files, joins, warmups, yahoo_rows, flags, flat, divs_by_year, fx, fx_r
         f"| {cik} | {name} | {kept} | {drop} | {rows} |"
         for cik, name, kept, drop, rows in xom_files
     ]
-    out += ["", "→ Every Exxon 8-K up to 2025-12-31 was filed by CIK 0000034088; the new holding company "
-            "(0002115436) filed its first 8-Ks after 2025-12-31. Both files are kept; events are merged by accession.",
+    out += ["", ("→ Every Exxon 8-K up to 2025-12-31 was filed by CIK 0000034088; the new holding company "
+            "(0002115436) filed its first 8-Ks after 2025-12-31. Both files are kept; events are merged by accession."),
             "", "| Company | " + " | ".join(f"{y} filings / earnings" for y in YEARS) + " | 8-K/A |",
             "|---|" + "---|" * (len(YEARS) + 1)]  # fmt: skip
     for t in COMPANIES:

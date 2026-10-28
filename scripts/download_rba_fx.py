@@ -41,7 +41,9 @@ def final_test() -> int:
             source, url = Path(tmp) / name, RBA_BASE_URL + name
             # curl verifies the certificate with the system trust store (Python's own store failed the RBA chain
             # on 2026-10-28); certificate checking is never switched off
-            subprocess.run(["curl", "-sSfL", "-A", "Mozilla/5.0", "-o", str(source), url], check=True)
+            subprocess.run(
+                ["curl", "-sSfL", "-A", "Mozilla/5.0", "-o", str(source), url], check=True
+            )
             meta = trim_rba_xls(source, out, url, now_utc(), keep_from=keep_from, cutoff=keep_to)
             source.unlink()
             print(f"{name} → {out_name} (+ {meta.name}); original deleted")

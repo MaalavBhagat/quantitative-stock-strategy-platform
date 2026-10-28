@@ -31,12 +31,15 @@ PROJECT_ROOT = Path(__file__).resolve().parents[3]
 RUNS_DIR = PROJECT_ROOT / "data" / "runs"
 REPORTS_DIR = PROJECT_ROOT / "reports"
 LOCK_DATE = date(2021, 1, 1)  # D8
+# The one-time final test (research/FINAL_TEST_PREREG.md) may show 2021-01-04 … 2025-12-31 — on its own page only.
+FINAL_LIMIT = date(2026, 1, 1)
 BANNER = "SIMULATED, HISTORICAL — not financial advice"
 NOT_AVAILABLE = "not available"
 PERIODS = {
     "validation": "Validation period 2017-01-03 → 2020-12-31",
     "development": "Development period 2010-01-04 → 2016-12-30",
     "screen": "Screening years 2010–2020 (development + validation; point-in-time)",
+    "final": "FINAL TEST 2021-01-04 → 2025-12-31 (run once, rules fixed in advance)",
 }
 LABELS = labels.IDS  # config strategy name → ID (display names: strategies/labels.py)
 # The development records the reports use (same as scripts/report_validation.py DEV_COMMITS).
@@ -47,11 +50,11 @@ class LockedPeriodError(RuntimeError):
     """Something dated in the locked final-test period (≥ 2021-01-01, D8) was about to be shown."""
 
 
-def check_dates(days: Iterable[date], what: str) -> None:
-    late = [d for d in days if d >= LOCK_DATE]
+def check_dates(days: Iterable[date], what: str, limit: date = LOCK_DATE) -> None:
+    late = [d for d in days if d >= limit]
     if late:
         raise LockedPeriodError(
-            f"{what}: {len(late)} rows dated ≥ {LOCK_DATE} (first {min(late)}) — D8 lock"
+            f"{what}: {len(late)} rows dated ≥ {limit} (first {min(late)}) — D8 lock"
         )
 
 
@@ -142,7 +145,8 @@ class RunRecord:
 
 
 def load_run(run_json: Path, period: str) -> RunRecord:
-    """One saved run (run.json + equity / fills / orders CSVs). Raises LockedPeriodError on any date ≥ 2021."""
+    """One saved run (run.json + equity / fills / orders CSVs). Raises LockedPeriodError on any date ≥ 2021 —
+    or, for period "final" (the one-time final test), on any date ≥ 2026."""
     record = json.loads(run_json.read_text(encoding="utf-8"))
     run = RunRecord(
         run_json,
@@ -152,13 +156,20 @@ def load_run(run_json: Path, period: str) -> RunRecord:
         _csv(run_json.parent / "fills.csv"),
         _csv(run_json.parent / "orders.csv"),
     )
+    limit = FINAL_LIMIT if period == "final" else LOCK_DATE
     check_dates(
-        [date.fromisoformat(str(record["config"]["end"]))], f"{run_json.parent.name} config end"
+        [date.fromisoformat(str(record["config"]["end"]))],
+        f"{run_json.parent.name} config end",
+        limit,
     )
-    check_dates(run.days, f"{run_json.parent.name} equity")
-    check_dates([date.fromisoformat(f["day"]) for f in run.fills], f"{run_json.parent.name} fills")
+    check_dates(run.days, f"{run_json.parent.name} equity", limit)
     check_dates(
-        [date.fromisoformat(o["created_day"]) for o in run.orders], f"{run_json.parent.name} orders"
+        [date.fromisoformat(f["day"]) for f in run.fills], f"{run_json.parent.name} fills", limit
+    )
+    check_dates(
+        [date.fromisoformat(o["created_day"]) for o in run.orders],
+        f"{run_json.parent.name} orders",
+        limit,
     )
     return run
 
@@ -174,6 +185,8 @@ def run_index(period: str, runs_dir: Path = RUNS_DIR) -> dict[tuple[str, str, st
     elif period == "development":
         paths = sorted(runs_dir.glob("*/run.json"))
         paths += sorted((runs_dir / "phase9" / "development" / "main").glob("*/run.json"))
+    elif period == "final":
+        paths = sorted((runs_dir / "final" / "main").glob("*/run.json"))
     else:
         raise ValueError(f"unknown period {period!r}")
     for p in paths:
@@ -417,6 +430,14 @@ def trading_profile(ticker: str) -> pd.DataFrame:
 
 
 PHASE9_REPORT = REPORTS_DIR / "experiments" / "phase9_information_2017-2020.md"
+FINAL_REPORT = REPORTS_DIR / "experiments" / "FINAL_TEST_2021-2025.md"
+
+
+def final_verdict_table() -> str:
+    """Both verdict tables of the final test, copied as saved (not recomputed)."""
+    return verdict_table(FINAL_REPORT)
+
+
 PHASE9_IDS = ("C1", "C2", "E1")
 
 
@@ -425,22 +446,31 @@ def phase9_verdict_table() -> str:
     return verdict_table(PHASE9_REPORT)
 
 
-def verdict_source(label: str) -> str:
+def verdict_source(label: str, period: str = "validation") -> str:
+    if period == "final":
+        return (
+            "reports/experiments/FINAL_TEST_2021-2025.md §1 (rules: research/FINAL_TEST_PREREG.md)"
+        )
     if label in PHASE9_IDS:
         return "reports/experiments/phase9_information_2017-2020.md §1 (rules: research/PREREGISTRATION_V2.md)"
     return "reports/experiments/validation_2017-2020.md §1 (rules: research/PREREGISTRATION.md)"
 
 
-def verdict_for(label: str) -> str | None:
+def verdict_for(label: str, period: str = "validation") -> str | None:
     """The saved verdict table reduced to its header + this strategy's row (None for S0 — the benchmark).
 
-    S1–S4: Phase 6 table (vs S0). C1 / C2 / E1: Phase 9 table (vs their twin), row 'Name (ID) (vs …)'."""
+    Validation — S1–S4: Phase 6 table (vs S0); C1 / C2 / E1: Phase 9 table (vs their twin), row 'Name (ID) (vs …)'.
+    Final: the final-test tables (every row 'Name (ID) (vs …)')."""
     if label == "S0":
         return None
-    phase9 = label in PHASE9_IDS
-    if phase9 and not PHASE9_REPORT.exists():
+    final = period == "final"
+    phase9 = final or label in PHASE9_IDS  # rows written as 'Name (ID) (vs …)'
+    report = FINAL_REPORT if final else (PHASE9_REPORT if label in PHASE9_IDS else None)
+    if report is not None and not report.exists():
         return None
-    lines = (phase9_verdict_table() if phase9 else verdict_table()).splitlines()
+    lines = verdict_table(
+        report if report is not None else REPORTS_DIR / "experiments" / "validation_2017-2020.md"
+    ).splitlines()
     table = [ln for ln in lines if ln.startswith("|")]
     first = [ln.split("|")[1].strip() for ln in table]
     row = [

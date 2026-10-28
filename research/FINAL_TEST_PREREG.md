@@ -63,3 +63,5 @@ All runs from one clean commit; the run script lives outside the project folder 
 
 ## 8. Change log
 - 2026-10-28: v1 written and tagged `prereg-final` before any 2021+ data was downloaded (prompt 26).
+- 2026-10-28: run ONCE (prompt 26) — 5,096 runs from clean commit b3287e4, 0 failed, 363 s; no bug found, no rule
+  changed. All 8 strategies REJECTED (reports/experiments/FINAL_TEST_2021-2025.md). The 2021–2025 period is now USED.

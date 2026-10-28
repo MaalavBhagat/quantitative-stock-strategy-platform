@@ -124,7 +124,7 @@ def test_d8_guard_refuses_2021_dates(tmp_path):
 
 def test_run_index_rejects_unknown_period(tmp_path):
     with pytest.raises(ValueError):
-        dd.run_index("final", tmp_path)
+        dd.run_index("nonsense", tmp_path)
 
 
 # ---------- consistency with the saved validation report (real local records; skipped without them) ----------
@@ -171,6 +171,28 @@ def test_phase9_verdicts_are_found_by_strategy_id():
     assert "PREREGISTRATION_V2" in dd.verdict_source("E1")
     assert "validation_2017-2020" in dd.verdict_source("S4-S2")
     assert dd.verdict_for("S4-S2").splitlines()[2].split("|")[1].strip() == "S4-S2"
+
+
+def test_final_period_shows_2021_2025_but_nothing_later(tmp_path):
+    ok = make_run(tmp_path, "final_ok", end="2025-12-31",
+                  equity_rows=["2025-12-30,100,0,100", "2025-12-31,100,0,100"],
+                  fills_rows=["2025-12-30,buy,1.000000,100,100.05,0.05,3.00,0.00,3.00,0,,1.000000"],
+                  orders_rows=["2025-12-29,2025-12-30,buy,AAA,max_affordable,FILLED,"])  # fmt: skip
+    assert dd.load_run(ok, "final").days[-1] == date(2025, 12, 31)
+    with pytest.raises(dd.LockedPeriodError):  # the same record is refused on any other page
+        dd.load_run(ok, "validation")
+    late = make_run(tmp_path, "final_late", end="2026-01-02")
+    with pytest.raises(dd.LockedPeriodError, match="2026-01-01"):
+        dd.load_run(late, "final")
+
+
+@pytest.mark.skipif(not dd.FINAL_REPORT.exists(), reason="final test report missing")
+def test_final_verdicts_are_found_by_strategy_id():
+    for sid in ("S1", "S2", "S3", "S4-S1", "S4-S2", "C1", "C2", "E1"):
+        rows = dd.verdict_for(sid, "final").splitlines()[2:]
+        assert len(rows) == 1 and f"({sid}) (vs " in rows[0]
+    assert "FINAL_TEST_PREREG" in dd.verdict_source("S1", "final")
+    assert dd.verdict_for("S0", "final") is None
 
 
 def test_display_formatting_cents_shares_and_dash(tmp_path):

@@ -84,15 +84,17 @@ def build_run_report(run: dd.RunRecord, s0: dd.RunRecord | None, exploratory: bo
         f"- Stranded at the end (sold and never bought back): {'yes' if is_stranded else 'no'}"
         + (f" — {stranded_days} trading days in cash at the end" if is_stranded else ""),
         "",
-        "## Pre-registered verdict for this strategy (validation 2017–2020, MAIN settings)",
+        "## Pre-registered verdict for this strategy ("
+        + ("FINAL TEST 2021–2025" if run.period == "final" else "validation 2017–2020")
+        + ", MAIN settings)",
         "",
     ]
-    verdict = dd.verdict_for(run.label)
+    verdict = dd.verdict_for(run.label, run.period)
     out += (
         [
             verdict,
             "",
-            f"Source: {dd.verdict_source(run.label)}.",
+            f"Source: {dd.verdict_source(run.label, run.period)}.",
         ]
         if verdict
         else ["S0 is the benchmark — it has no verdict of its own."]

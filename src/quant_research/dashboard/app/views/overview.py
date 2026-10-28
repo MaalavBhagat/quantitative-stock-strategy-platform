@@ -13,6 +13,13 @@ st.title("Overview")
 ui.banner(period)
 ui.title(run)
 
+if dd.FINAL_REPORT.exists():
+    st.markdown("### FINAL TEST verdicts (2021–2025, run once, MAIN settings)")
+    st.error(
+        "Every strategy was **REJECTED** in the one-time final test too — rules fixed in advance (prereg-final).",
+        icon="❌",
+    )
+    st.markdown(labels.name_ids(dd.final_verdict_table()))
 st.markdown("### Pre-registered verdicts (validation 2017–2020, MAIN settings)")
 st.error(
     "All five strategies were **REJECTED** against buy-and-hold under rules fixed in advance.",
