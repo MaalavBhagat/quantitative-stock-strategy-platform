@@ -173,5 +173,5 @@ def test_bad_yaml_files_name_the_file(tmp_path):
     with pytest.raises(ValueError, match="broken.yaml is not valid YAML"):
         load_config(tmp_path / "broken.yaml")
     (tmp_path / "list.yaml").write_text("- a\n- b\n")
-    with pytest.raises(ValueError, match="list.yaml must be a list of 'key: value' settings"):
+    with pytest.raises(TypeError, match="list.yaml must be a list of 'key: value' settings"):
         load_config(tmp_path / "list.yaml")

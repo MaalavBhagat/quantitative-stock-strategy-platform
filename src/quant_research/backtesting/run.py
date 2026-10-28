@@ -202,7 +202,7 @@ def load_config(path: Path) -> RunConfig:
     except yaml.YAMLError as exc:
         raise ValueError(f"{path.name} is not valid YAML: {exc}") from None
     if not isinstance(raw, dict):
-        raise ValueError(
+        raise TypeError(
             f"{path.name} must be a list of 'key: value' settings, got {type(raw).__name__}"
         )
     return parse_config(raw)
