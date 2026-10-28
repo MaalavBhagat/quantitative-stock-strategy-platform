@@ -1,8 +1,8 @@
 # PROJECT_STATUS.md
-Last updated: 2026-10-26
+Last updated: 2026-10-28
 
 CURRENT PHASE: Phase 9 — Market context & company events (In progress)
-CURRENT TASK: Phase 9 Steps 9.1–9.4 — market context + SEC 8-K events + leakage rules, no backtests (prompt: prompts/23_phase9_steps9.1-9.4_context_events.md)
+CURRENT TASK: Phase 9 — plain-English strategy labels + PRE-REGISTRATION v2 (C1, C2, E1) + code on synthetic data (prompt: prompts/24_phase9_prereg_v2_and_labels.md)
 
 PHASE STATES (Not started / In progress / Blocked / Verified):
 - Phase 0  Feasibility & research design ........ VERIFIED (2026-10-18)
@@ -475,9 +475,16 @@ FINDINGS (Step 2.3):
   check_events_no_lookahead catches a leaky decision. Market context features (news/context.py; new indicator
   functions in strategies/indicators.py): full coverage 2010–2020 for all 8 tickers (warm-up from 2008 data).
   Report: reports/phase9/context_and_events_2010-2020.md (counts + timing only).
+- Steps 9.1–9.4 checked by chat Claude 2026-10-28: UTC evidence accepted (Apple 16:30 NY release = 20:30Z in Oct 2019,
+  21:30Z in Jan 2020). Rulings: (1) AT&T 8-K 2012-01-13 (accession 0000732717-12-000006) is tagged item 1.03 but its own
+  heading reads 'Item 1.03 Entry into a Material Definitive Agreement' and it concerns reducing a US$5bn credit facility to
+  US$3bn — a filer coding error; reclassify THIS filing only to 'deal signed (1.01-type), reclassified' via a logged
+  override list with the SEC URL https://www.sec.gov/Archives/edgar/data/732717/000073271712000006/creditfacility_8k.htm.
+  (2) XOM's higher 2.02 count is real: ~7 per year to 2016 (quarterly results + extra annual/reserves updates, filed as
+  2.02 + 7.01) — keep as filed; note it.
 
 IN PROGRESS:
-- none (Steps 9.1–9.4 waiting for chat Claude's check)
+- Phase 9 prompt 24: strategy labels + PRE-REGISTRATION v2 (C1, C2, E1) + code on synthetic data
 
 BLOCKED / OPEN QUESTIONS:
 - (resolved 2026-10-26, see the Steps 7.1–7.2 check) T FY2016 NI, PG FY2014 / XOM FY2019 revenue CONFLICT, INTC liabilities.
@@ -565,7 +572,7 @@ IMPORTANT DECISIONS:
      (only Goggy sets it) · D9 type hints required on every function in src/; no type-checker yet.
 
 NEXT ACTION:
-- Chat Claude checks the timezone evidence + counts, then prompt 24: pre-registration v2.
+- Desktop Code session: "Read prompts/24_phase9_prereg_v2_and_labels.md and do exactly what it says."
 
 TESTS RUN (2026-10-27, Steps 9.1–9.4):
 - uv run pytest -q → 366 passed in 5.08s · uv run ruff check . → All checks passed! ·
