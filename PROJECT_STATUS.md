@@ -2,7 +2,7 @@
 Last updated: 2026-10-28
 
 CURRENT PHASE: Phase 9 — Market context & company events (In progress)
-CURRENT TASK: Phase 9 — plain-English strategy labels + PRE-REGISTRATION v2 (C1, C2, E1) + code on synthetic data (prompt: prompts/24_phase9_prereg_v2_and_labels.md)
+CURRENT TASK: Phase 9 — runs + comparisons under prereg-v2 (Steps 9.5–9.6; prompt 25, not written yet)
 
 PHASE STATES (Not started / In progress / Blocked / Verified):
 - Phase 0  Feasibility & research design ........ VERIFIED (2026-10-18)
@@ -482,9 +482,25 @@ FINDINGS (Step 2.3):
   override list with the SEC URL https://www.sec.gov/Archives/edgar/data/732717/000073271712000006/creditfacility_8k.htm.
   (2) XOM's higher 2.02 count is real: ~7 per year to 2016 (quarterly results + extra annual/reserves updates, filed as
   2.02 + 7.01) — keep as filed; note it.
+- Prompt 24 — DONE 2026-10-28 (labels + PRE-REGISTRATION v2 + C1/C2/E1 code; NO real-data strategy runs):
+  PART 0 plain-English names (display only; IDs unchanged everywhere): strategies/labels.py — S0 Buy-and-hold ·
+  S1 Profit target · S2 Pullback from peak · S3 Mean reversion · S4-S1 Trend filter + profit target · S4-S2 Trend
+  filter + pullback · C1 Market-trend gate · C2 Market-gated pullback · E1 Earnings cool-off; shown as "Name (ID)" with
+  the one-liner under every strategy menu / heading; dashboard (all pages, menus, tables, chart legends), run report,
+  exports. Smoke check now fails on any ID shown without its name (checked: breaking it gives FAIL). Commit e689d19.
+  PART A research/PREREGISTRATION_V2.md, tag **prereg-v2** = commit 4497870 (2026-10-28 16:27:46 +1100), pushed —
+  before any C1/C2/E1 run on real data. H7 judged per strategy vs its TWIN (C1 vs S0; C2, E1 vs S4-S2, same 16 X/Y),
+  validation 2017–2020, R1–R6 as PREREGISTRATION §9; also reported vs S0 (descriptive). Decisions 1–5 (Goggy):
+  E1 cool-off = usable day + next trading day; E1 does not block entry / dividend top-ups, P keeps updating, 8-K/A
+  counts; C2 day-1 entry not blocked; C1 starts in cash if the SPY condition is false; missing SPY day → run stops.
+  PART B strategies/information.py (C1 MarketTrendGate, C2 MarketGatedPullback, E1 EarningsCoolOff), registry +
+  config (c1_market_gate, c2_market_gated_pullback, e1_earnings_cooloff) + lab; SPY / events loaded only after the
+  D8 lock check; backtesting.lookahead.check_market_no_lookahead; news/events.py OVERRIDES (AT&T 1.03 → reclassified,
+  Phase 9 report regenerated: only that row moved) + load_events. Load-only wiring check (no strategy run): SPY
+  2015-01-02 → 2020-12-31 (1,511 rows); T events 547, bankruptcy 0, reclassified 1.
 
 IN PROGRESS:
-- Phase 9 prompt 24: strategy labels + PRE-REGISTRATION v2 (C1, C2, E1) + code on synthetic data
+- none (prereg-v2 tagged; prompt 25 = Phase 9 runs + comparisons)
 
 BLOCKED / OPEN QUESTIONS:
 - (resolved 2026-10-26, see the Steps 7.1–7.2 check) T FY2016 NI, PG FY2014 / XOM FY2019 revenue CONFLICT, INTC liabilities.
@@ -530,6 +546,8 @@ KNOWN BUGS:
 
 IMPORTANT DECISIONS:
 - DECISION 2026-10-27 (Goggy): Phase 9 scope = free sources only — market context from existing data + company events from SEC 8-K filings (item codes + acceptance time). Optional AI labelling of 8-K text = exploratory side test later.
+- 2026-10-28 (Goggy): PRE-REGISTRATION v2 approved and tagged prereg-v2 (C1, C2, E1 vs twins; decisions 1–5 —
+  research/PREREGISTRATION_V2.md). Strategy display names (display only) approved — strategies/labels.py.
 - DECISION 2026-10-26 (Goggy): final test 2021+ stays LOCKED until after Phase 9; then it is run ONCE for S1–S4 and any Phase 9 model together, under a new pre-registration tag. Until then nothing dated ≥ 2021-01-01 is downloaded, stored or summarised.
 - 2026-10-17: Work in small, single tasks. Every task ends by updating this file.
 - 2026-10-17: Facts (fees, data prices, provider limits) must have a source link
@@ -572,7 +590,14 @@ IMPORTANT DECISIONS:
      (only Goggy sets it) · D9 type hints required on every function in src/; no type-checker yet.
 
 NEXT ACTION:
-- Desktop Code session: "Read prompts/24_phase9_prereg_v2_and_labels.md and do exactly what it says."
+- prompt 25: Phase 9 runs + comparisons (C1/C2/E1 and their twins under prereg-v2; Steps 9.5–9.6).
+
+TESTS RUN (2026-10-28, prompt 24):
+- uv run pytest -q → 387 passed in 4.15s · uv run ruff check . → All checks passed! ·
+  uv run ruff format --check . → 165 files already formatted · smoke_dashboard → 6 pages, 0 errors, bare strategy
+  IDs none, PASS. Mutations (each restored): E1 uses the filing date → 3 tests fail (incl. events spy check);
+  C1 reads SPY up to the next day → 5 fail (incl. market spy check); C2 ignores the SPY gate → 1 fails; smoke check
+  with the raw verdict table → FAIL (5 bare IDs); menu without names → FAIL (24).
 
 TESTS RUN (2026-10-27, Steps 9.1–9.4):
 - uv run pytest -q → 366 passed in 5.08s · uv run ruff check . → All checks passed! ·

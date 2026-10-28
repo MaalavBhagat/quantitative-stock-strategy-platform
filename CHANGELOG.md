@@ -185,3 +185,13 @@
 - `scripts/build_phase9_report.py` → `reports/phase9/context_and_events_2010-2020.md` (counts and timing only).
 - DATA_SOURCES §12; PROJECT_GUIDE (news/, data/).
 
+## 2026-10-28 — Phase 9: strategy names, PRE-REGISTRATION v2, C1 / C2 / E1 (prompt 24; tag prereg-v2)
+- `strategies.labels`: plain-English display names ("Buy-and-hold (S0)" …) + one-line explanations, used by the
+  dashboard (all pages), the run report and exports; IDs unchanged in code, configs, run records, pre-registrations.
+  `scripts/smoke_dashboard.py` also fails on a strategy ID shown without its name; screenshot script `--dropdown`.
+- `research/PREREGISTRATION_V2.md` (tag `prereg-v2`): H7 — C1 Market-trend gate (twin S0), C2 Market-gated pullback
+  and E1 Earnings cool-off (twin S4-S2), judged vs the twin on validation 2017–2020.
+- `strategies.information` (C1, C2, E1), registry / config / lab support; `backtesting.lookahead.check_market_no_lookahead`.
+- `news.events`: logged `OVERRIDES` (AT&T 2012 8-K item 1.03 coding error → "deal signed (1.01-type), reclassified"),
+  `filing_categories`, `load_events`; Phase 9 counts report regenerated; DATA_SOURCES §12, PROJECT_GUIDE.
+- Tests on synthetic data only (387 pass). No real-data strategy runs.
