@@ -62,7 +62,11 @@ def main() -> int:
         before = committed(report)
         started = time.time()
         proc = subprocess.run(
-            [sys.executable, *command], cwd=PROJECT_ROOT, capture_output=True, text=True
+            [sys.executable, *command],
+            cwd=PROJECT_ROOT,
+            capture_output=True,
+            text=True,
+            check=False,
         )
         seconds = time.time() - started
         after = path.read_bytes() if path.exists() else b""
