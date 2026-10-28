@@ -34,6 +34,9 @@ SECRET_SHAPES = {
     "OpenAI/Anthropic-style key": re.compile(rb"sk-(ant-)?[A-Za-z0-9_\-]{20,}"),
     "private key": re.compile(rb"-----BEGIN [A-Z ]*PRIVATE KEY-----"),
 }
+# The scanner's own self-test contains FAKE secret shapes on purpose (commit 4447f20; built from pieces since).
+# Shape checks skip that one file; the checks for the REAL values from .env still cover it.
+SHAPE_EXEMPT = {"tests/test_scan_secrets.py"}
 PRICE_ROW = re.compile(rb"^\d{4}-\d{2}-\d{2}[^\n]*?,\d+(\.\d+)?,\d+(\.\d+)?", re.MULTILINE)
 
 
@@ -93,6 +96,8 @@ def main() -> int:
             if value in body:
                 findings.append(f"{where}: contains the {label}")
         for label, pattern in SECRET_SHAPES.items():
+            if paths[sha] <= SHAPE_EXEMPT:
+                continue
             if pattern.search(body):
                 findings.append(f"{where}: looks like a {label}")
         for e in {m.group(0).decode(errors="replace") for m in EMAIL.finditer(body)}:

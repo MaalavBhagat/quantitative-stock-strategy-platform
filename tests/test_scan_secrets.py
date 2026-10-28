@@ -12,11 +12,12 @@ SPEC.loader.exec_module(scan)
 
 def test_secret_shapes_are_detected():
     fake = {
-        "key/token assignment": b'TIINGO_API_KEY = "0123456789abcdef0123456789abcdef"',
-        "GitHub token": b"ghp_" + b"a" * 36,
-        "AWS access key": b"AKIA" + b"A" * 16,
-        "OpenAI/Anthropic-style key": b"sk-ant-" + b"x" * 30,
-        "private key": b"-----BEGIN RSA PRIVATE KEY-----",
+        # built from pieces so this file itself never looks like a secret to the scanner
+        "key/token assignment": b"TIINGO_API_" + b'KEY = "' + b"0123456789abcdef" * 2 + b'"',
+        "GitHub token": b"gh" + b"p_" + b"a" * 36,
+        "AWS access key": b"AK" + b"IA" + b"A" * 16,
+        "OpenAI/Anthropic-style key": b"sk" + b"-ant-" + b"x" * 30,
+        "private key": b"-----BEGIN RSA " + b"PRIVATE KEY-----",
     }
     for label, text in fake.items():
         assert scan.SECRET_SHAPES[label].search(text), label
