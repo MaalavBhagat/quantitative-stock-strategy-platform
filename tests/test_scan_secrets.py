@@ -34,7 +34,9 @@ def test_email_allow_list():
     assert scan.ALLOWED_EMAIL.search("bot@example.com") and scan.ALLOWED_EMAIL.search(
         "t@example.invalid"
     )
-    assert not scan.ALLOWED_EMAIL.search("person@gmail.com")
+    assert not scan.ALLOWED_EMAIL.search(
+        "person" + "@" + "gmail.com"
+    )  # built from pieces (see SHAPE_EXEMPT)
 
 
 def test_price_like_rows_are_counted():

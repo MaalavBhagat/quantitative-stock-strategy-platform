@@ -34,8 +34,8 @@ SECRET_SHAPES = {
     "OpenAI/Anthropic-style key": re.compile(rb"sk-(ant-)?[A-Za-z0-9_\-]{20,}"),
     "private key": re.compile(rb"-----BEGIN [A-Z ]*PRIVATE KEY-----"),
 }
-# The scanner's own self-test contains FAKE secret shapes on purpose (commit 4447f20; built from pieces since).
-# Shape checks skip that one file; the checks for the REAL values from .env still cover it.
+# The scanner's own self-test contains FAKE secret shapes and a FAKE ordinary email on purpose (commit 4447f20; built
+# from pieces since). Shape and email checks skip that one file; the checks for the REAL values from .env still cover it.
 SHAPE_EXEMPT = {"tests/test_scan_secrets.py"}
 PRICE_ROW = re.compile(rb"^\d{4}-\d{2}-\d{2}[^\n]*?,\d+(\.\d+)?,\d+(\.\d+)?", re.MULTILINE)
 
@@ -100,7 +100,12 @@ def main() -> int:
                 continue
             if pattern.search(body):
                 findings.append(f"{where}: looks like a {label}")
-        for e in {m.group(0).decode(errors="replace") for m in EMAIL.finditer(body)}:
+        emails = (
+            set()
+            if paths[sha] <= SHAPE_EXEMPT
+            else {m.group(0).decode(errors="replace") for m in EMAIL.finditer(body)}
+        )
+        for e in emails:
             if not ALLOWED_EMAIL.search(e) and not e.endswith((".png", ".jpg", ".svg")):
                 findings.append(
                     f"{where}: contains an email address (not shown) on domain {e.split('@')[-1]}"
@@ -117,8 +122,9 @@ def main() -> int:
                 findings.append(f"{p}: CSV with {len(PRICE_ROW.findall(body))} price-like rows")
     print(f"refs scanned: {len(refs)} ({sum(r.startswith('refs/tags/') for r in refs)} tags) · commits: {len(commits)} · "
           f"file versions (blobs): {len(contents)} · real secrets checked from .env: {len(exact)}")  # fmt: skip
+    findings = sorted(set(findings))
     print(f"findings: {len(findings)}")
-    for f in sorted(set(findings)):
+    for f in findings:
         print("  -", f)
     return 1 if findings else 0
 
