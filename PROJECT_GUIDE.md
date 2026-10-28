@@ -29,44 +29,54 @@ anything system-wide.
 
 ## 2. Folder map
 
-**What exists now**
+**What exists now** (checked against the real tree, Phase 10 — 2026-10-28)
 | Path | What it holds |
 |---|---|
 | `CLAUDE.md`, `PROJECT_BRIEF.md`, `PROJECT_STATUS.md`, `PROJECT_GUIDE.md` | rules, summary, progress, this guide |
+| `RESEARCH_METHODOLOGY.md`, `TESTING.md` | how the research was done; how the code is tested (Phase 10) |
 | `Quantitative Stock Strategy Research Platform.txt` | master roadmap (source of truth for phases) |
-| `README.md`, `CHANGELOG.md` | setup instructions; list of changes per task |
-| `research/` | Phase 0 design docs + `calc_feasibility.py` (a one-off calculator) + `PREREGISTRATION.md` (Phase 6 tests, frozen at tag `prereg-v1`) |
+| `README.md`, `CHANGELOG.md`, `DATA_SOURCES.md` | setup + findings; changes per task; every data source, licence and known limitation |
+| `research/` | design docs (RESEARCH_QUESTIONS, EXPERIMENT_PLAN, INITIAL_UNIVERSE, …), the pre-registrations (`PREREGISTRATION.md` tags `prereg-v1`/`v1.1`, `PREREGISTRATION_V2.md` tag `prereg-v2`, `FINAL_TEST_PREREG.md` tag `prereg-final`), SCREENING_METHOD, FAILED_EXPERIMENTS, FINAL_TEST_OPTIONS, IDEAS_FOR_LATER, `calc_feasibility.py` |
 | `prompts/` | the task prompts Goggy gives to Claude Code |
-| `src/quant_research/` | the Python package: `__init__.py` (version) + `data/` (Phase 2, see below) |
-| `tests/` | one test file per module + `fixtures/` (small made-up data files) |
-| `scripts/` | runnable steps: `download_initial_dataset.py`, `crosscheck_yfinance.py`, `validate_initial_dataset.py` |
-| `reports/` | generated reports, e.g. `data_validation/`, `accounting/` (counts, dates, % only — no prices) |
-| `config/` | run settings as YAML (`RunConfig`), e.g. `s0_buy_and_hold_aapl_dev.yaml`; money/rates quoted, `final_test_unlocked: false` |
-| `data/runs/` (git-ignored) | one folder per run: run.json (config, data provenance, git commit + dirty, times, summary), orders/fills/equity CSVs |
+| `src/quant_research/` | the Python package — modules in the table below, plus `ratios.py` (split-ratio snapping) |
+| `tests/` | `accounting/`, `backtesting/`, `strategies/`, `metrics/`, `screening/`, `news/`, `dashboard/`, `integration/` (end-to-end + replay of saved runs), top-level data / error-handling / security / script tests, `fixtures/` (small made-up files). See TESTING.md |
+| `scripts/` | every runnable step (downloads, validations, run batches, report builders, dashboard smoke + screenshots, `reproduce_reports.py`, `scan_secrets.py`, `record_environment.py`); each answers `--help` |
+| `reports/` | generated reports (`data_validation/`, `experiments/`, `screening/`, `phase9/`, `runs/`, `accounting/`), `RESULTS_SUMMARY.md`, `ENVIRONMENT.md` — counts, dates and summary numbers only, never price series |
+| `config/` | example run settings as YAML (`RunConfig`): money/rates quoted, `final_test_unlocked: false` |
 | `pyproject.toml`, `uv.lock`, `.python-version` | project settings, exact package versions, Python 3.13 |
-| `.gitignore`, `.env.example` | what Git must never save; template for API keys |
-| `data/` (git-ignored) | downloaded market data — never committed (licence): `raw/tiingo/`, `raw/rba/`, `raw/sec/`, `cache/yfinance/`, `reference/tiingo/` |
+| `.gitignore`, `.env.example`, `.streamlit/config.toml` | what Git must never save; template for keys; dashboard = localhost only |
+| `data/` (git-ignored, licensed) | `raw/tiingo/`, `raw/rba/`, `raw/sec/` (companyfacts, 8-K lists, 8-K text sample), `cache/yfinance/`, `reference/tiingo/`, `runs/` (`validation/`, `phase9/`, `final/` = the pre-registered batches; `lab/` = exploratory; dated folders = Phase 4–5 development runs; `_reproductions/`, `validation_ABORTED_…` kept, never used), `exports/`, `screenshots/` |
+| `.playwright-browsers/` (git-ignored) | project-only Chromium for `dashboard_screenshots.py` |
 
-**Modules** — inside `src/quant_research/`. `data/` (Phase 2), `portfolio/` + `execution/` (Phase 3), `backtesting/`, `strategies/` and `metrics/` (Phase 4) exist; the rest are
-*not created yet* and get created only when a phase needs them (no empty modules).
+**Modules** — inside `src/quant_research/`. Every module below exists except `research/` (never needed: the experiment
+runners are `backtesting/run.py` + the run scripts in `scripts/`).
 | Module | Phase | Its job | It must NOT |
 |---|---|---|---|
-| `data/` — **created** (`tiingo`, `storage`, `validation`, `crosscheck`, `loader`, `fx`, `sec`, `sec_submissions`) | 2 | Download, validate, cache and load prices, dividends, splits (all years, incl. 2021+, for quality checks only — D8). Conventions: DATA_SOURCES §7 | trade, compute signals, chart or summarise 2021+ prices, or silently fill/fix bad data |
+| `data/` — **created** (`tiingo`, `storage`, `validation`, `crosscheck`, `loader`, `fx`, `sec`, `sec_submissions`) | 2 | Download, validate, cache and load prices, dividends, splits, FX and SEC data (2021–2025 only for the one-time final test, FINAL_TEST_PREREG). Conventions: DATA_SOURCES §7 | trade, compute signals, chart or summarise 2021+ prices, or silently fill/fix bad data |
 | `portfolio/` — **created** (`money`, `ledger`) | 3 | The ledger: cash, shares, costs, dividends, valuation (the only place cash changes) | decide when to trade or read future prices |
-| `execution/` — **created** (`costs`, `orders`, `fills`) | 3–4 | Turn an order into a fill: next-open price, gaps, costs, rounding | decide *whether* to trade; use the signal day's close as the fill price |
+| `execution/` — **created** (`costs`, `orders`, `fills`, `intrabar`) | 3–4 | Turn an order into a fill: next-open price, gaps, costs, rounding | decide *whether* to trade; use the signal day's close as the fill price |
 | `backtesting/` — **created** (`engine`, `run`, `lookahead`, `synthetic`) | 4 | Run the day-by-day timeline: data → signal → order → fill → ledger. Strategy interface: `on_close(day, history, portfolio_view) -> list[OrderIntent]` (no price field) | contain strategy rules or fee numbers; run on dates ≥ 2021-01-01 while locked (D8) |
 | `strategies/` — **created** (`buy_and_hold` = S0, `profit_target` = S1, S2, S4, `mean_reversion` = S3, `information` = C1, C2, E1 (Phase 9, PREREGISTRATION_V2), `indicators`, `registry`, `labels` = plain-English display names) | 4–5 | Read past data, return order intents (reinvest only when cash ≥ `reinvest_min_cash_usd`) | touch cash or shares directly; see any data after day T |
 | `metrics/` — **created** (`performance`) | 4, 6 | Returns, CAGR, drawdown + dates, volatility, Sharpe, worst year, costs, dividends, time in cash, round trips (floats OK) | change results or re-run trades |
-| `research/` | 6 | Experiment runner: grids, periods, walk-forward, saving run records | run anything on dates ≥ 2021-01-01 unless `final_test_unlocked: true` (D8) |
+| `research/` — **not created** (not needed) | 6 | (planned experiment runner — done by `backtesting/run.py` + `scripts/run_*.py`) | — |
 | `screening/` — **created** (`fundamentals`, `trading`, `score`) | 7 | Company indicators (SEC XBRL, point-in-time: usable only on days AFTER the filing date; restatements from their own filing date) and trading indicators; later screens + suitability profiles | feed results back into backtests silently; use a fact on or before its filing date; fill a MISSING value |
 | `reporting/` — **created** (`run_report`) | 6+, 8 | Markdown research reports built from saved run records only | type or edit any number by hand |
-| `dashboard/` — **created** (`data`, `lab`, `export` + `app/`: `main`, `ui`, `views/overview`, `company`, `performance`, `trades`, `report`, `lab`) | 8 | Streamlit app (uv group `dashboard`): views saved results; may START runs only through run.py (lab runs labelled exploratory, saved under data/runs/lab/); holds no strategy or accounting logic. Exports to data/exports/ with licence headers; localhost only | hold strategy or accounting logic, estimate a missing number, show dates ≥ 2021-01-01, mix lab runs with pre-registered runs, be deployed |
+| `dashboard/` — **created** (`data`, `lab`, `export` + `app/`: `main`, `ui`, `views/overview`, `company`, `performance`, `trades`, `report`, `lab`) | 8 | Streamlit app (uv group `dashboard`): views saved results; may START runs only through run.py (lab runs labelled exploratory, saved under data/runs/lab/); holds no strategy or accounting logic. Exports to data/exports/ with licence headers; localhost only | hold strategy or accounting logic, estimate a missing number, show dates ≥ 2021-01-01 outside the "final" page (nothing ≥ 2026 anywhere), mix lab runs with pre-registered runs, be deployed |
 | `news/` — **created** (`context`, `events`) | 9 | Market context features (point-in-time, via strategies/indicators) and SEC 8-K events: rule-based categories from official item codes, US/Eastern timing, the availability rule (DATA_SOURCES §12) | use an event before its usable close, read prices or returns around events before the Phase 9 pre-registration, use AI labels as facts |
 
-Planned test folders (roadmap): `tests/unit/`, `tests/accounting/`, `tests/backtesting/`,
-`tests/integration/`, plus `tests/fixtures/` for small data files. `config/`, `reports/`, `scripts/` exist.
+Test folders: see the `tests/` row above and TESTING.md (unit tests sit next to their topic folder instead of one
+`tests/unit/` folder).
 
 ---
+
+**Performance** (measured 2026-10-28 on a MacBook Air M2; nothing optimised — nothing is > 10× slower than needed)
+| What | Time | Notes |
+|---|---|---|
+| Full test suite (`uv run pytest -q`) | 16–18 s | 454 tests incl. the 20 saved-run replays (~12 s of it); fresh clone without data/: 18 s, 22 skipped |
+| One backtest, end to end | 0.6 s (S4-S2 AAPL validation) · 0.9 s (C1 SPY final) | loading data + FX + engine + saving the run record |
+| Batch of runs (6 worker processes) | 3,976 runs 358 s · 3,200 runs 249 s · 5,096 runs 362 s | first start → last finish from the run records; ≈ 0.4–0.5 s per run per worker |
+| Dashboard page (headless render) | ≤ 1.1 s first load, ≈ 0.05 s cached | AppTest script time per page, not browser paint |
+| `scripts/reproduce_reports.py` (12 reports) | ≈ 55 s | each generator re-reads the saved records |
 
 ## 3. Naming
 
