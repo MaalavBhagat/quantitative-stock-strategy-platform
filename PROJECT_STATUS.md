@@ -1,8 +1,8 @@
 # PROJECT_STATUS.md
 Last updated: 2026-10-30
 
-CURRENT PHASE: Phase 11 — CV, GitHub and portfolio (In progress)
-CURRENT TASK: Phase 11 ready for verification (chat Claude) → project complete
+CURRENT PHASE: PROJECT COMPLETE — v1.0.0 (2026-10-30)
+CURRENT TASK: none — all 12 phases VERIFIED; repo public at https://github.com/MaalavBhagat/quantitative-stock-strategy-platform
 
 PHASE STATES (Not started / In progress / Blocked / Verified):
 - Phase 0  Feasibility & research design ........ VERIFIED (2026-10-18)
@@ -16,7 +16,7 @@ PHASE STATES (Not started / In progress / Blocked / Verified):
 - Phase 8  Interactive dashboard ................ VERIFIED (2026-10-27)
 - Phase 9  Market context & AI news ............. VERIFIED (2026-10-28)
 - Phase 10 Integration, security, reliability ... VERIFIED (2026-10-30)
-- Phase 11 CV & GitHub portfolio ................ In progress (ready for verification 2026-10-30)
+- Phase 11 CV & GitHub portfolio ................ VERIFIED (2026-10-30)
 
 COMPLETED:
 - Master roadmap written (Quantitative Stock Strategy Research Platform.txt)
@@ -690,7 +690,13 @@ IMPORTANT DECISIONS:
      (only Goggy sets it) · D9 type hints required on every function in src/; no type-checker yet.
 
 NEXT ACTION:
-- Chat Claude verifies Phase 11 → project complete.
+- Commit this status update (Code session: "commit PROJECT_STATUS.md with message 'Phase 11 verified by chat Claude — project complete' and push").
+- Optional: any new idea (research/IDEAS_FOR_LATER.md) needs a NEW pre-registration; 2017–2025 data is already used.
+
+PHASE 11 VERIFIED by chat Claude 2026-10-30: main at 9cc87af, tag v1.0.0; repo public after a 0-finding secrets scan;
+docs/images/ holds only synthetic-demo charts + demo-period dashboard screenshots; CV bullets checked against reports —
+12,272 runs (3,976 + 3,200 + 5,096), S1 final-test median −68.7 pp, 1,359 8-K events, 460 tests, 8 strategies all REJECTED.
+All 5 roadmap criteria met. ALL 12 PHASES VERIFIED.
 
 TESTS RUN (2026-10-30, prompt 28 — Phase 11):
 - uv run pytest -q → 460 passed in 20.20s · uv run ruff check . → All checks passed! ·
