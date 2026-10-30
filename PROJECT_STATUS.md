@@ -690,6 +690,11 @@ IMPORTANT DECISIONS:
 NEXT ACTION:
 - Chat Claude verifies Phase 11 → project complete. Goggy decides whether to make the GitHub repo public.
 
+TESTS RUN (2026-10-30, prompt 28 — Phase 11):
+- uv run pytest -q → 460 passed in 20.20s · uv run ruff check . → All checks passed! ·
+  uv run ruff format --check . → 197 files already formatted · smoke_dashboard → PASS · scan_secrets → 8 refs,
+  103 commits, 560 file versions, findings: 0 · fresh clone: sync + demo 13 s, 438 passed / 22 skipped.
+
 TESTS RUN (2026-10-28, prompt 27 — Phase 10):
 - uv run pytest -q → 454 passed in 17.15s · uv run ruff check . → All checks passed! ·
   uv run ruff format --check . → 191 files already formatted · smoke_dashboard → PASS · scan_secrets → findings: 0 ·
