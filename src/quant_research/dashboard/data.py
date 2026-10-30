@@ -44,7 +44,7 @@ PERIODS = {
     "development": "Development period 2010-01-04 → 2016-12-30",
     "screen": "Screening years 2010–2020 (development + validation; point-in-time)",
     "final": "FINAL TEST 2021-01-04 → 2025-12-31 (run once, rules fixed in advance)",
-    "demo": "DEMO — synthetic stock \"DEMO\" from scripts/demo.py",
+    "demo": 'DEMO — synthetic stock "DEMO" from scripts/demo.py',
 }
 LABELS = labels.IDS  # config strategy name → ID (display names: strategies/labels.py)
 # The development records the reports use (same as scripts/report_validation.py DEV_COMMITS).
