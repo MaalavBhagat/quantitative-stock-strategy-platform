@@ -1,8 +1,8 @@
 # PROJECT_STATUS.md
-Last updated: 2026-10-28
+Last updated: 2026-10-30
 
-CURRENT PHASE: Phase 10 — Integration, security, reliability (In progress)
-CURRENT TASK: Phase 10 ready for verification (chat Claude); then Phase 11
+CURRENT PHASE: Phase 11 — CV, GitHub and portfolio (In progress)
+CURRENT TASK: Phase 11 — README, demo, diagrams, CV + interview prep, GitHub (prompt: prompts/28_phase11_cv_github_portfolio.md)
 
 PHASE STATES (Not started / In progress / Blocked / Verified):
 - Phase 0  Feasibility & research design ........ VERIFIED (2026-10-18)
@@ -15,8 +15,8 @@ PHASE STATES (Not started / In progress / Blocked / Verified):
 - Phase 7  Company research & screening ......... VERIFIED (2026-10-26)
 - Phase 8  Interactive dashboard ................ VERIFIED (2026-10-27)
 - Phase 9  Market context & AI news ............. VERIFIED (2026-10-28)
-- Phase 10 Integration, security, reliability ... In progress (ready for verification 2026-10-28)
-- Phase 11 CV & GitHub portfolio ................ Not started
+- Phase 10 Integration, security, reliability ... VERIFIED (2026-10-30)
+- Phase 11 CV & GitHub portfolio ................ In progress
 
 COMPLETED:
 - Master roadmap written (Quantitative Stock Strategy Research Platform.txt)
@@ -579,21 +579,26 @@ FINDINGS (Step 2.3):
   date stamp, fresh clone) · integration tests pass ✓ · important failures handled clearly ✓ (34 cases, 7 fixes) ·
   secrets / licensed data protected ✓ (history scan 0, pip-audit clean, repo private) · known limitations documented ✓
   (DATA_SOURCES §8, TESTING.md "not tested", RESULTS_SUMMARY §5).
+- Phase 10 VERIFIED 2026-10-30. Verified by chat Claude: git history (all branches/tags) has 0 files under data/, 0 .env,
+  0 .xls; Tiingo key in 0 commits; only fake test emails (example.com/.invalid) besides the noreply address;
+  RESEARCH_METHODOLOGY.md, TESTING.md, integration tests present. Dashboard theme (f9ec41e) checked from screenshots:
+  banner, REJECTED boxes and dashed S0 line all clear.
 
 IN PROGRESS:
-- none (Phase 9 ready for verification)
+- Phase 11 (prompt 28): README, demo, diagrams, CV + interview prep, GitHub.
 
-BLOCKED / OPEN QUESTIONS:
-- (resolved 2026-10-26, see the Steps 7.1–7.2 check) T FY2016 NI, PG FY2014 / XOM FY2019 revenue CONFLICT, INTC liabilities.
-- Stake fractional-share precision UNVERIFIED (D3 assumes 6 dp — check in Phase 3)
-- RBA 2018–2020: done (trimmed from 2018-2022.xls). 2021+ rates NOT downloaded — needed only for the final test (D8).
-- (1) INTC 2014-06-13 bad Tiingo bar (flat O=H=L=C, prior close repeated) — DEVELOPMENT period only, so it does not
-  touch the validation judgement; left unchanged, documented (DATA_SOURCES §8).
-- (2) BEFORE any final-test unlock: check 2021+ corporate actions the ledger doesn't support (e.g. AT&T's 2022
-  WarnerMedia spin-off is public knowledge) — decide how to handle T in the final test before looking at any results.
-- XOM 2014-07-28 Tiingo/Yahoo close differ 1.085% — unexplained (third source?)
+BLOCKED / OPEN QUESTIONS (genuinely open — none blocks the project; all are documented limitations):
+- Stake fractional-share precision UNVERIFIED (D3 assumes 6 dp).
+- XOM 2014-07-28 Tiingo/Yahoo close differ 1.085% — unexplained (would need a third source).
 - XOM pre-ex-date closes (2010-02-05, 2010-05-10): Tiingo vs Yahoo differ by exactly the dividend — which is right?
 - Delisted stocks: can Tiingo price history be downloaded for tickers with endDate in the past? (survivorship; untested)
+
+RESOLVED (moved out of the open list 2026-10-30):
+- T FY2016 NI, PG FY2014 / XOM FY2019 revenue CONFLICT, INTC liabilities — resolved 2026-10-26 (Steps 7.1–7.2 check).
+- RBA rates: 2018–2020 trimmed (Phase 6); 2021–2025 downloaded for the final test (DATA_SOURCES §13).
+- INTC 2014-06-13 flat Tiingo bar — development period only; documented, left unchanged (DATA_SOURCES §8).
+- 2021+ unsupported corporate actions before the final test — decided 2026-10-28: T excluded (2022 spin-off); no other
+  unsupported action found for the 7 stocks (reports/data_validation/final_2021-2025.md).
 
 SETUP FACTS (stated by Goggy, 2026-10-17):
 - Computer: Mac. Coding tool: Claude Code in the Claude desktop app (2026-10-20).
