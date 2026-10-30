@@ -2,11 +2,12 @@
 
 ## How to run
 ```bash
-uv run pytest -q                          # all tests (≈ 18 s; 454 tests on 2026-10-28)
+uv run pytest -q                          # all tests (≈ 18 s; 460 tests on 2026-10-30)
 uv run --group dashboard pytest -q        # same, with the dashboard packages present (dashboard tests need them)
 uv run ruff check . && uv run ruff format --check .
 uv run --group dashboard python scripts/smoke_dashboard.py     # every dashboard page loads, banner shown, no bare IDs
 uv run --all-groups python scripts/reproduce_reports.py        # every generated report rebuilt and compared with git
+uv run python scripts/demo.py                                  # made-up-data demo through the real engine (no data needed)
 uv run python scripts/scan_secrets.py                          # whole git history: no secrets, no licensed data
 ```
 No test uses the internet: HTTP is mocked (`httpx.MockTransport`). Tests that need the git-ignored `data/` folder skip
@@ -21,11 +22,11 @@ themselves with the reason printed (`-rs` shows it); on a fresh clone 22 tests s
 | `tests/metrics/` | 13 | returns, CAGR, drawdown and its dates, Sharpe, round trips, stranded |
 | `tests/screening/` | 37 | SEC facts point-in-time (filed before day T), conflicts never filled, quality scores |
 | `tests/news/` | 28 | 8-K timezone (true UTC), categories, availability rule incl. holidays / early closes / DST, overrides, market context |
-| `tests/dashboard/` | 23 | dashboard data layer, D8 date guard (final page may show 2021–2025, never ≥ 2026), lab, report + exports |
+| `tests/dashboard/` | 27 | dashboard data layer, D8 date guard (final page may show 2021–2025, never ≥ 2026), lab, report + exports |
 | `tests/integration/` | 21 | ONE end-to-end run on made-up data (mocked download → validation → loader → engine → metrics → run record → report → dashboard), every value worked out by hand; 20 random saved runs replayed to identical results (skips without data/) |
 | `tests/test_error_handling.py` | 34 | Tiingo / SEC timeout, connection error, 429, 500, 401, invalid JSON; malformed payloads; missing secrets; bad CSVs; bad RBA file; 13 invalid configs; 2021+ without unlock; bad YAML |
 | `tests/test_tiingo.py`, `test_sec.py`, `test_fx.py`, `test_loader.py`, `test_storage.py`, `test_validation.py`, `test_crosscheck.py` | 101 | downloaders (key only in the header), saving with provenance, the 9 data checks, FX parsing + trimming, Yahoo cross-check maths |
-| `tests/test_scan_secrets.py`, `test_scripts_help.py`, `test_smoke.py` | 8 | the history scanner detects fake secrets; every script answers `--help` and does nothing else |
+| `tests/test_scan_secrets.py`, `test_scripts_help.py`, `test_smoke.py`, `test_demo.py` | 10 | the history scanner detects fake secrets; every script answers `--help` and does nothing else; the made-up-data demo runs and is repeatable |
 
 ## Mutation checks (a rule broken on purpose → tests must fail → code restored)
 | Rule broken on purpose | Result |

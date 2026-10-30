@@ -3,6 +3,8 @@ name = "quantitative-stock-strategy-platform"
 version = "0.1.0"
 description = "Research platform testing whether a 'sell after a small rise, rebuy after a dip' strategy beats buy-and-hold after real costs (simulated, historical)."
 readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
 requires-python = ">=3.13,<3.14"
 dependencies = [
     "altair>=6.3.0",  # charts (demo + dashboard + exports) — moved from the dashboard group, Phase 11

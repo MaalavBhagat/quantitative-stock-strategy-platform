@@ -34,19 +34,21 @@ anything system-wide.
 |---|---|
 | `CLAUDE.md`, `PROJECT_BRIEF.md`, `PROJECT_STATUS.md`, `PROJECT_GUIDE.md` | rules, summary, progress, this guide |
 | `RESEARCH_METHODOLOGY.md`, `TESTING.md` | how the research was done; how the code is tested (Phase 10) |
+| `LICENSE`, `docs/` | MIT licence (code + docs only — no data); `docs/CV_AND_INTERVIEW.md`, `docs/images/` (charts and dashboard screenshots from the made-up demo only) |
 | `Quantitative Stock Strategy Research Platform.txt` | master roadmap (source of truth for phases) |
 | `README.md`, `CHANGELOG.md`, `DATA_SOURCES.md` | setup + findings; changes per task; every data source, licence and known limitation |
 | `research/` | design docs (RESEARCH_QUESTIONS, EXPERIMENT_PLAN, INITIAL_UNIVERSE, …), the pre-registrations (`PREREGISTRATION.md` tags `prereg-v1`/`v1.1`, `PREREGISTRATION_V2.md` tag `prereg-v2`, `FINAL_TEST_PREREG.md` tag `prereg-final`), SCREENING_METHOD, FAILED_EXPERIMENTS, FINAL_TEST_OPTIONS, IDEAS_FOR_LATER, `calc_feasibility.py` |
 | `prompts/` | the task prompts Goggy gives to Claude Code |
 | `src/quant_research/` | the Python package — modules in the table below, plus `ratios.py` (split-ratio snapping) |
 | `tests/` | `accounting/`, `backtesting/`, `strategies/`, `metrics/`, `screening/`, `news/`, `dashboard/`, `integration/` (end-to-end + replay of saved runs), top-level data / error-handling / security / script tests, `fixtures/` (small made-up files). See TESTING.md |
-| `scripts/` | every runnable step (downloads, validations, run batches, report builders, dashboard smoke + screenshots, `reproduce_reports.py`, `scan_secrets.py`, `record_environment.py`); each answers `--help` |
+| `scripts/` | every runnable step (downloads, validations, run batches, report builders, dashboard smoke + screenshots, `demo.py` (made-up data, no key needed), `reproduce_reports.py`, `scan_secrets.py`, `record_environment.py`); each answers `--help` |
 | `reports/` | generated reports (`data_validation/`, `experiments/`, `screening/`, `phase9/`, `runs/`, `accounting/`), `RESULTS_SUMMARY.md`, `ENVIRONMENT.md` — counts, dates and summary numbers only, never price series |
 | `config/` | example run settings as YAML (`RunConfig`): money/rates quoted, `final_test_unlocked: false` |
 | `pyproject.toml`, `uv.lock`, `.python-version` | project settings, exact package versions, Python 3.13 |
 | `.gitignore`, `.env.example`, `.streamlit/config.toml` | what Git must never save; template for keys; dashboard = localhost only |
 | `data/` (git-ignored, licensed) | `raw/tiingo/`, `raw/rba/`, `raw/sec/` (companyfacts, 8-K lists, 8-K text sample), `cache/yfinance/`, `reference/tiingo/`, `runs/` (`validation/`, `phase9/`, `final/` = the pre-registered batches; `lab/` = exploratory; dated folders = Phase 4–5 development runs; `_reproductions/`, `validation_ABORTED_…` kept, never used), `exports/`, `screenshots/` |
-| `.playwright-browsers/` (git-ignored) | project-only Chromium for `dashboard_screenshots.py` |
+| `demo_output/` (git-ignored) | output of `scripts/demo.py` (made-up data): run records for the dashboard's "demo" period, charts, demo_report.md |
+| `.playwright-browsers/` (git-ignored, deleted after Phase 11) | project-only Chromium for `dashboard_screenshots.py` — re-install with `playwright install chromium` when needed |
 
 **Modules** — inside `src/quant_research/`. Every module below exists except `research/` (never needed: the experiment
 runners are `backtesting/run.py` + the run scripts in `scripts/`).
@@ -61,7 +63,7 @@ runners are `backtesting/run.py` + the run scripts in `scripts/`).
 | `research/` — **not created** (not needed) | 6 | (planned experiment runner — done by `backtesting/run.py` + `scripts/run_*.py`) | — |
 | `screening/` — **created** (`fundamentals`, `trading`, `score`) | 7 | Company indicators (SEC XBRL, point-in-time: usable only on days AFTER the filing date; restatements from their own filing date) and trading indicators; later screens + suitability profiles | feed results back into backtests silently; use a fact on or before its filing date; fill a MISSING value |
 | `reporting/` — **created** (`run_report`) | 6+, 8 | Markdown research reports built from saved run records only | type or edit any number by hand |
-| `dashboard/` — **created** (`data`, `lab`, `export` + `app/`: `main`, `ui`, `views/overview`, `company`, `performance`, `trades`, `report`, `lab`) | 8 | Streamlit app (uv group `dashboard`): views saved results; may START runs only through run.py (lab runs labelled exploratory, saved under data/runs/lab/); holds no strategy or accounting logic. Exports to data/exports/ with licence headers; localhost only | hold strategy or accounting logic, estimate a missing number, show dates ≥ 2021-01-01 outside the "final" page (nothing ≥ 2026 anywhere), mix lab runs with pre-registered runs, be deployed |
+| `dashboard/` — **created** (`data`, `lab`, `export`, `chart_style` = shared chart colours + `app/`: `main`, `ui`, `views/overview`, `company`, `performance`, `trades`, `report`, `lab`) | 8 | Streamlit app (uv group `dashboard`): views saved results; may START runs only through run.py (lab runs labelled exploratory, saved under data/runs/lab/); holds no strategy or accounting logic. Exports to data/exports/ with licence headers; localhost only. Periods: final / validation / development / demo (made-up data from scripts/demo.py) | hold strategy or accounting logic, estimate a missing number, show dates ≥ 2021-01-01 outside the "final" page (nothing ≥ 2026 anywhere), mix lab runs with pre-registered runs, be deployed |
 | `news/` — **created** (`context`, `events`) | 9 | Market context features (point-in-time, via strategies/indicators) and SEC 8-K events: rule-based categories from official item codes, US/Eastern timing, the availability rule (DATA_SOURCES §12) | use an event before its usable close, read prices or returns around events before the Phase 9 pre-registration, use AI labels as facts |
 
 Test folders: see the `tests/` row above and TESTING.md (unit tests sit next to their topic folder instead of one
@@ -72,7 +74,7 @@ Test folders: see the `tests/` row above and TESTING.md (unit tests sit next to 
 **Performance** (measured 2026-10-28 on a MacBook Air M2; nothing optimised — nothing is > 10× slower than needed)
 | What | Time | Notes |
 |---|---|---|
-| Full test suite (`uv run pytest -q`) | 16–18 s | 454 tests incl. the 20 saved-run replays (~12 s of it); fresh clone without data/: 18 s, 22 skipped |
+| Full test suite (`uv run pytest -q`) | 16–20 s | 460 tests incl. the 20 saved-run replays (~12 s of it); fresh clone without data/: 18 s, 22 skipped |
 | One backtest, end to end | 0.6 s (S4-S2 AAPL validation) · 0.9 s (C1 SPY final) | loading data + FX + engine + saving the run record |
 | Batch of runs (6 worker processes) | 3,976 runs 358 s · 3,200 runs 249 s · 5,096 runs 362 s | first start → last finish from the run records; ≈ 0.4–0.5 s per run per worker |
 | Dashboard page (headless render) | ≤ 1.1 s first load, ≈ 0.05 s cached | AppTest script time per page, not browser paint |
