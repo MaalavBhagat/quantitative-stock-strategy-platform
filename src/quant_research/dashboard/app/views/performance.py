@@ -15,7 +15,8 @@ period, run, s0 = ui.pick_run()
 st.title("Performance")
 ui.banner(period)
 ui.title(run)
-currency = st.radio("Currency", ["USD", "AUD"], horizontal=True)
+# demo runs use a fixed 0.70 FX rate, so the AUD view (real RBA rates) is not offered for them
+currency = st.radio("Currency", ["USD"] if period == "demo" else ["USD", "AUD"], horizontal=True)
 col = "total_usd" if currency == "USD" else "total_aud"
 fx = ui.fx() if currency == "AUD" else None
 
@@ -30,7 +31,7 @@ st.altair_chart(
     alt.Chart(both)
     .mark_line()
     .encode(
-        x=alt.X("day:T", title="Date"),
+        x=cs.date_x(),
         y=alt.Y(f"{col}:Q", title=currency),
         **cs.series_lines(list(both["series"].unique()), S0),
     ),
@@ -50,7 +51,7 @@ st.altair_chart(
     alt.Chart(drawdowns)
     .mark_line()
     .encode(
-        x=alt.X("day:T", title="Date"),
+        x=cs.date_x(),
         y=alt.Y("drawdown:Q", title="Drawdown", axis=alt.Axis(format="%")),
         **cs.series_lines(list(drawdowns["series"].unique()), S0),
     ),
@@ -65,7 +66,7 @@ st.altair_chart(
     alt.Chart(held)
     .mark_area()
     .encode(
-        x=alt.X("day:T", title="Date"),
+        x=cs.date_x(),
         y=alt.Y("usd:Q", title="USD"),
         color=cs.extra_colours(["Cash", "Invested"], "part"),
     ),
@@ -90,7 +91,7 @@ else:
         alt.Chart(cum)
         .mark_line(interpolate="step-after")
         .encode(
-            x=alt.X("day:T", title="Date"),
+            x=cs.date_x(),
             y=alt.Y("usd:Q", title="USD"),
             color=cs.extra_colours(["Fees (cumulative)", "Spread cost (cumulative)"], "cost"),
         ),

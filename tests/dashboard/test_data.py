@@ -195,6 +195,11 @@ def test_final_verdicts_are_found_by_strategy_id():
     assert dd.verdict_for("S0", "final") is None
 
 
+def test_demo_period_banner_never_says_historical():
+    text = dd.banner("demo")
+    assert "MADE-UP" in text and "HISTORICAL" not in text.replace("not historical", "")
+
+
 def test_display_formatting_cents_shares_and_dash(tmp_path):
     rows = [
         "2020-01-03,buy,1.2345678,100,100.05,0.005,3.00,0.00,3.00,0,,1.234567",

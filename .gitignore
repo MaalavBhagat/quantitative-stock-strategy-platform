@@ -16,3 +16,6 @@ __pycache__/
 
 # Playwright browser for dashboard screenshots (downloaded per project, never commit)
 /.playwright-browsers/
+
+# Output of scripts/demo.py (made-up data; sample images are committed under docs/images/)
+/demo_output/

@@ -674,11 +674,13 @@ name = "quantitative-stock-strategy-platform"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [
+    { name = "altair" },
     { name = "exchange-calendars" },
     { name = "httpx" },
     { name = "pandas" },
     { name = "python-dotenv" },
     { name = "pyyaml" },
+    { name = "vl-convert-python" },
     { name = "xlrd" },
 ]
 
@@ -687,9 +689,7 @@ crosscheck = [
     { name = "yfinance" },
 ]
 dashboard = [
-    { name = "altair" },
     { name = "streamlit" },
-    { name = "vl-convert-python" },
 ]
 dev = [
     { name = "pytest" },
@@ -701,21 +701,19 @@ screenshots = [
 
 [package.metadata]
 requires-dist = [
+    { name = "altair", specifier = ">=6.3.0" },
     { name = "exchange-calendars", specifier = ">=4.13.2" },
     { name = "httpx", specifier = ">=0.28.1" },
     { name = "pandas", specifier = ">=3.0.6" },
     { name = "python-dotenv", specifier = ">=1.2.4" },
     { name = "pyyaml", specifier = ">=6.0.3" },
+    { name = "vl-convert-python", specifier = ">=1.9.0.post1" },
     { name = "xlrd", specifier = ">=2.0.2" },
 ]
 
 [package.metadata.requires-dev]
 crosscheck = [{ name = "yfinance", specifier = ">=1.7.0" }]
-dashboard = [
-    { name = "altair", specifier = ">=6.3.0" },
-    { name = "streamlit", specifier = ">=1.66.1" },
-    { name = "vl-convert-python", specifier = ">=1.9.0.post1" },
-]
+dashboard = [{ name = "streamlit", specifier = ">=1.66.1" }]
 dev = [
     { name = "pytest", specifier = ">=9.1.1" },
     { name = "ruff", specifier = ">=0.17.1" },

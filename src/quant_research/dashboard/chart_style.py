@@ -10,6 +10,9 @@ import altair as alt
 STRATEGY = "#590907"
 BUY_AND_HOLD = "#A5A79B"
 EXTRA = ("#6F7264", "#B8956A")
+LEGEND = alt.Legend(
+    labelLimit=0, orient="bottom", direction="vertical"
+)  # full labels, never truncated
 
 
 def series_lines(series: list[str], benchmark: str | None = None, title: str = "Series") -> dict:
@@ -22,7 +25,9 @@ def series_lines(series: list[str], benchmark: str | None = None, title: str = "
     widths = [2] * len(others) + ([3.5] if benchmark in series else [])
     field = "series:N"
     return {
-        "color": alt.Color(field, title=title, scale=alt.Scale(domain=domain, range=colours)),
+        "color": alt.Color(
+            field, title=title, scale=alt.Scale(domain=domain, range=colours), legend=LEGEND
+        ),
         # same field + same title → Vega-Lite merges the three into ONE legend that also shows the dash
         "strokeDash": alt.StrokeDash(
             field, title=title, scale=alt.Scale(domain=domain, range=dashes)
@@ -36,5 +41,13 @@ def series_lines(series: list[str], benchmark: str | None = None, title: str = "
 def extra_colours(names: list[str], field: str, title: str = "") -> alt.Color:
     """Colour encoding for non-strategy series (e.g. Cash / Invested, Fees / Spread): darker sage, then tan."""
     return alt.Color(
-        f"{field}:N", title=title, scale=alt.Scale(domain=names, range=list(EXTRA[: len(names)]))
+        f"{field}:N",
+        title=title,
+        scale=alt.Scale(domain=names, range=list(EXTRA[: len(names)])),
+        legend=LEGEND,
     )
+
+
+def date_x(field: str = "day") -> alt.X:
+    """Date axis that always shows the year ("Jan 2022"), not just month names."""
+    return alt.X(f"{field}:T", title="Date", axis=alt.Axis(format="%b %Y", labelOverlap=True))

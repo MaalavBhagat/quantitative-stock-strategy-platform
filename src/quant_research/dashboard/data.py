@@ -34,12 +34,17 @@ LOCK_DATE = date(2021, 1, 1)  # D8
 # The one-time final test (research/FINAL_TEST_PREREG.md) may show 2021-01-04 … 2025-12-31 — on its own page only.
 FINAL_LIMIT = date(2026, 1, 1)
 BANNER = "SIMULATED, HISTORICAL — not financial advice"
+DEMO_BANNER = "SIMULATED on MADE-UP prices — not historical, not a real stock, not financial advice"
+DEMO_RUNS_DIR = (
+    PROJECT_ROOT / "demo_output" / "runs" / "demo"
+)  # written by scripts/demo.py (git-ignored)
 NOT_AVAILABLE = "not available"
 PERIODS = {
     "validation": "Validation period 2017-01-03 → 2020-12-31",
     "development": "Development period 2010-01-04 → 2016-12-30",
     "screen": "Screening years 2010–2020 (development + validation; point-in-time)",
     "final": "FINAL TEST 2021-01-04 → 2025-12-31 (run once, rules fixed in advance)",
+    "demo": "DEMO — synthetic stock \"DEMO\" from scripts/demo.py",
 }
 LABELS = labels.IDS  # config strategy name → ID (display names: strategies/labels.py)
 # The development records the reports use (same as scripts/report_validation.py DEV_COMMITS).
@@ -59,7 +64,7 @@ def check_dates(days: Iterable[date], what: str, limit: date = LOCK_DATE) -> Non
 
 
 def banner(period: str) -> str:
-    return f"{BANNER} · {PERIODS[period]}"
+    return f"{DEMO_BANNER if period == 'demo' else BANNER} · {PERIODS[period]}"
 
 
 def show(value: Any, fmt: str = "{}") -> str:
@@ -187,6 +192,8 @@ def run_index(period: str, runs_dir: Path = RUNS_DIR) -> dict[tuple[str, str, st
         paths += sorted((runs_dir / "phase9" / "development" / "main").glob("*/run.json"))
     elif period == "final":
         paths = sorted((runs_dir / "final" / "main").glob("*/run.json"))
+    elif period == "demo":  # made-up data from scripts/demo.py — safe to show and publish
+        paths = sorted(DEMO_RUNS_DIR.glob("*/run.json"))
     else:
         raise ValueError(f"unknown period {period!r}")
     for p in paths:

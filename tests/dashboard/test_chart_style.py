@@ -26,3 +26,9 @@ def test_strategy_alone_and_extra_series():
         "#6F7264",
         "#B8956A",
     ]
+
+
+def test_dates_show_years_and_legend_labels_are_never_cut():
+    assert cs.date_x().to_dict()["axis"]["format"] == "%b %Y"
+    enc = cs.series_lines(["A very long strategy name (S4-S2) X 2% / Y 4%"])
+    assert enc["color"].to_dict()["legend"]["labelLimit"] == 0

@@ -80,7 +80,10 @@ def _kept(widget, label: str, options: list, name: str, **kwargs):
 def pick_run() -> tuple[str, dd.RunRecord, dd.RunRecord | None]:
     """Sidebar: period → stock → strategy → setting. Returns (period, run, S0 of the same stock and period)."""
     st.sidebar.header("Saved run")
-    period = _kept(st.sidebar.radio, "Period", ["final", "validation", "development"], "period")
+    periods = ["final", "validation", "development"]
+    if dd.run_index("demo"):  # only after `uv run python scripts/demo.py` (made-up data)
+        periods.append("demo")
+    period = _kept(st.sidebar.radio, "Period", periods, "period")
     idx = index(period)
     tickers = sorted({t for _, t, _ in idx})
     ticker = _kept(st.sidebar.selectbox, "Stock", tickers, "ticker")
@@ -92,6 +95,10 @@ def pick_run() -> tuple[str, dd.RunRecord, dd.RunRecord | None]:
     chosen = run(idx[(label, ticker, setting)], period)
     s0_key = ("S0", ticker, "—")
     s0 = run(idx[s0_key], period) if s0_key in idx else None
+    if period == "demo":
+        st.sidebar.caption(
+            "Demo = MADE-UP prices from scripts/demo.py (stock 'DEMO'), safe to share; says nothing about real stocks."
+        )
     if period == "final":
         st.sidebar.caption(
             "Final test = the ONE-TIME run on 2021–2025 (7 stocks, T excluded), rules fixed in advance (prereg-final)."

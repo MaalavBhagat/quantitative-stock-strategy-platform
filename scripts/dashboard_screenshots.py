@@ -5,6 +5,8 @@ Needs the dashboard running on localhost:8501 (README "How to open the dashboard
 Pages showing a run use S4-S2 · AAPL · X 2% / Y 4% (validation) — the run checked against the validation report.
 It also presses "Generate report + export files" (→ data/exports/) and starts ONE exploratory lab run
 (→ data/runs/lab/, labelled EXPLORATORY — NOT PRE-REGISTERED).
+With --demo it ONLY saves docs/images/dashboard_demo_{overview,performance,trades}.png: the dashboard on the MADE-UP
+demo data (run `uv run python scripts/demo.py` first) — safe to commit and publish, unlike the real-data screenshots.
 With --dropdown it ONLY saves data/screenshots/0_overview_dropdown.png (the Overview strategy menu opened, showing
 the plain-English names) — no export, no lab run.
 """
@@ -54,6 +56,33 @@ def dropdown_only(page: Page) -> None:
     print(f"saved {path.relative_to(PROJECT_ROOT)} — menu options: {options}")
 
 
+DEMO_OUT = PROJECT_ROOT / "docs" / "images"
+
+
+def demo_only(page: Page) -> None:
+    """Dashboard on the made-up demo runs only (period 'demo'): Overview, Performance, Trade explorer."""
+    page.get_by_text("demo", exact=True).click(force=True)
+    settle(page)
+    choose(page, "Strategy", "Trend filter + pullback (S4-S2)")
+    DEMO_OUT.mkdir(parents=True, exist_ok=True)
+    for name, title in (
+        ("overview", "Overview"),
+        ("performance", "Performance"),
+        ("trades", "Trade explorer"),
+    ):
+        page.get_by_role("link", name=title, exact=True).click(force=True)
+        settle(page)
+        if "MADE-UP" not in page.inner_text("body"):
+            raise SystemExit(
+                f"{title}: the demo banner is missing — refusing to save a possibly real-data screenshot"
+            )
+        path = DEMO_OUT / f"dashboard_demo_{name}.png"
+        page.screenshot(path=str(path))
+        print(
+            f"saved {path.relative_to(PROJECT_ROOT)} — page heading: {page.locator('h1').first.inner_text()}"
+        )
+
+
 def main() -> int:
     if not os.environ.get("PLAYWRIGHT_BROWSERS_PATH"):
         os.environ["PLAYWRIGHT_BROWSERS_PATH"] = str(PROJECT_ROOT / ".playwright-browsers")
@@ -63,6 +92,11 @@ def main() -> int:
         page = browser.new_page(viewport={"width": 1440, "height": 2200})
         page.goto(URL)
         settle(page)
+        if "--demo" in sys.argv:
+            page.set_viewport_size({"width": 1440, "height": 1500})
+            demo_only(page)
+            browser.close()
+            return 0
         if "--dropdown" in sys.argv:
             dropdown_only(page)
             browser.close()

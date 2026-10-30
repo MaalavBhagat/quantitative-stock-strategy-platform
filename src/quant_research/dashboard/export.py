@@ -58,7 +58,7 @@ def equity_chart(run: dd.RunRecord, s0: dd.RunRecord | None):
         alt.Chart(data, title=f"{run.title} — total value (USD). {dd.BANNER}")
         .mark_line()
         .encode(
-            x=alt.X("day:T", title="Date"),
+            x=cs.date_x(),
             y=alt.Y("total_usd:Q", title="USD"),
             **cs.series_lines(list(data["series"].unique()), labels.display("S0")),
         )
