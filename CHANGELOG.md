@@ -257,3 +257,4 @@
   and 5 tough questions.
 - PROJECT_GUIDE, TESTING, RESEARCH_METHODOLOGY updated (460 tests). Project-only browser deleted (572 MB freed).
 - Package version 0.1.0 → 1.0.0.
+- 2026-10-30: repository made public (Goggy) after a final secrets scan with 0 findings.

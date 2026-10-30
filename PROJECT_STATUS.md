@@ -595,6 +595,8 @@ FINDINGS (Step 2.3):
   instructions work ✓ (fresh clone) · reproducible demonstration exists ✓ (scripts/demo.py, fixed seed, test) ·
   CV summary reflects actual accomplishments ✓ (every number from a report) · no unsupported claims about
   profitability/reliability ✓ (headline is "rejected", SIMULATED, HISTORICAL labels).
+- DECISION 2026-10-30 (Goggy): GitHub repo made PUBLIC (https://github.com/MaalavBhagat/quantitative-stock-strategy-platform)
+  after a final whole-history scan (8 refs, 5 tags, 104 commits, 561 file versions: 0 findings). Only main on GitHub.
 
 IN PROGRESS:
 - none (Phase 11 ready for verification)
@@ -688,7 +690,7 @@ IMPORTANT DECISIONS:
      (only Goggy sets it) · D9 type hints required on every function in src/; no type-checker yet.
 
 NEXT ACTION:
-- Chat Claude verifies Phase 11 → project complete. Goggy decides whether to make the GitHub repo public.
+- Chat Claude verifies Phase 11 → project complete.
 
 TESTS RUN (2026-10-30, prompt 28 — Phase 11):
 - uv run pytest -q → 460 passed in 20.20s · uv run ruff check . → All checks passed! ·
