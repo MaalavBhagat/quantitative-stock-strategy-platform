@@ -229,3 +229,15 @@
   `reports/ENVIRONMENT.md`; fresh-clone check.
 - `--help` on every script (`scripts/_help.py`) + test; performance table in PROJECT_GUIDE.
 - New `RESEARCH_METHODOLOGY.md`, `TESTING.md`; README and PROJECT_GUIDE folder map audited and fixed.
+
+## 2026-10-30 — Dashboard colour theme (display only; no logic or numbers changed)
+- `.streamlit/config.toml` `[theme]` + `[theme.sidebar]`: page #F7EFE4, cards / table headers #E8D2B5, sidebar
+  #A5A79B, primary (buttons, links, selected items) #590907, text #2B1D1A. Alerts keep their own palettes (error /
+  REJECTED dark red on pink 6.27:1, warning dark amber on pale yellow 7.55:1) so they still read as warnings.
+- `dashboard/chart_style.py` (shared): strategy line burgundy; buy-and-hold sage, thicker and dashed (shown in the
+  legend, readable in greyscale); extra series darker sage #6F7264 and tan #B8956A. Used by Performance and the export PNG.
+- `ui.banner` (every page): SIMULATED banner as a cream-beige card with a burgundy edge; headings burgundy; captions and
+  metric labels a solid #42342F (Streamlit's faded captions failed WCAG AA at 3.04–4.14:1).
+- WCAG AA contrast (body text 4.5:1): text on page 14.24, on cards 11.07, on the sage sidebar 6.65; burgundy on page
+  12.56 / cards 9.76 / sidebar 5.86; white on burgundy buttons 14.32; captions 10.44 / 8.12 / 4.88. Buy-and-hold sage on
+  the page is 2.14:1 as a line, so the dash pattern carries the difference. Smoke check reads the new banner.
