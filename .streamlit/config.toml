@@ -9,3 +9,31 @@ serverAddress = "localhost"
 
 [client]
 toolbarMode = "minimal"  # hides the "Deploy" button — this app must never be deployed
+
+# Colour theme (Goggy, 2026-10-30) — display only. Contrast checked against WCAG AA (4.5:1 for body text):
+# text #2B1D1A on page 14.24 · on cream-beige cards 11.07 · on the sage sidebar 6.65; burgundy on page 12.56,
+# on cards 9.76, on sidebar 5.86; white on burgundy buttons 14.32. Captions get a solid #42342F (CSS in
+# dashboard/app/ui.py) because Streamlit's faded caption text failed (3.04–4.14). Alerts keep their own palettes.
+[theme]
+base = "light"
+primaryColor = "#590907"            # Deep Burgundy: buttons, links, selected items
+backgroundColor = "#F7EFE4"         # light tint of cream
+secondaryBackgroundColor = "#E8D2B5"  # Warm Cream Beige: inputs, cards
+textColor = "#2B1D1A"               # warm near-black
+linkColor = "#590907"
+dataframeHeaderBackgroundColor = "#E8D2B5"
+dataframeHeaderTextColor = "#2B1D1A"
+chartCategoricalColors = ["#590907", "#A5A79B", "#6F7264", "#B8956A"]
+# alerts stay clearly alerts (own background + icon, not plain burgundy): error/REJECTED 6.27:1, warning 7.55:1
+redColor = "#C62828"
+redBackgroundColor = "#FADAD5"
+redTextColor = "#9B1B12"
+yellowColor = "#C99A00"
+yellowBackgroundColor = "#F8E7B0"
+yellowTextColor = "#5C4300"
+
+[theme.sidebar]
+backgroundColor = "#A5A79B"         # Muted Sage Grey
+secondaryBackgroundColor = "#E8D2B5"  # dropdowns in the sidebar stay cream-beige
+textColor = "#2B1D1A"
+primaryColor = "#590907"

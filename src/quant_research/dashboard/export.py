@@ -51,6 +51,8 @@ def equity_chart(run: dd.RunRecord, s0: dd.RunRecord | None):
     parts = [dd.equity_table(run).assign(series=f"{labels.display(run.label)} {run.setting}")]
     if s0 is not None and run.label != "S0":
         parts.append(dd.equity_table(s0).assign(series=labels.display("S0")))
+    from quant_research.dashboard import chart_style as cs
+
     data = pd.concat(parts)[["day", "total_usd", "series"]]
     return (
         alt.Chart(data, title=f"{run.title} — total value (USD). {dd.BANNER}")
@@ -58,7 +60,7 @@ def equity_chart(run: dd.RunRecord, s0: dd.RunRecord | None):
         .encode(
             x=alt.X("day:T", title="Date"),
             y=alt.Y("total_usd:Q", title="USD"),
-            color=alt.Color("series:N", title="Series"),
+            **cs.series_lines(list(data["series"].unique()), labels.display("S0")),
         )
         .properties(width=900, height=400)
     )

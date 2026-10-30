@@ -5,6 +5,7 @@ Prints, per page: errors / exceptions found (must be 0), the banner text shown, 
 its plain-English name (must be none — strategies/labels.py).
 """
 
+import re
 import sys
 from pathlib import Path
 
@@ -50,7 +51,11 @@ def main() -> int:
         errors = [e.value for e in at.exception] + [
             e.value for e in at.error if not any(n in e.value for n in NOTICES)
         ]
-        banners = [w.value for w in at.warning if "SIMULATED, HISTORICAL" in w.value]
+        banners = [  # the banner is a styled card (st.markdown) since the 2026-10-30 theme
+            re.sub(r"<[^>]+>|⚠️ ", "", m.value).strip()
+            for m in at.markdown
+            if "sim-banner" in m.value and "SIMULATED, HISTORICAL" in m.value
+        ]
         bare = sorted({i for t in shown_text(at) for i in labels.bare_ids(t)})
         print(
             f"{name}: exceptions/errors {len(errors)} · banner: {banners[0] if banners else 'MISSING'}"

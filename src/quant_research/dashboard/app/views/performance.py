@@ -4,6 +4,7 @@ import altair as alt
 import pandas as pd
 import streamlit as st
 
+from quant_research.dashboard import chart_style as cs
 from quant_research.dashboard import data as dd
 from quant_research.dashboard.app import ui
 from quant_research.strategies import labels
@@ -31,7 +32,7 @@ st.altair_chart(
     .encode(
         x=alt.X("day:T", title="Date"),
         y=alt.Y(f"{col}:Q", title=currency),
-        color=alt.Color("series:N", title="Series"),
+        **cs.series_lines(list(both["series"].unique()), S0),
     ),
     width="stretch",
 )
@@ -44,13 +45,14 @@ st.markdown(f"### Drawdown of {strategy_name} (value ÷ highest value so far −
 dds = [eq.assign(series=strategy_name)[["day", "drawdown", "series"]]]
 if s0 is not None and run.label != "S0":
     dds.append(dd.equity_table(s0).assign(series=S0)[["day", "drawdown", "series"]])
+drawdowns = pd.concat(dds)
 st.altair_chart(
-    alt.Chart(pd.concat(dds))
+    alt.Chart(drawdowns)
     .mark_line()
     .encode(
         x=alt.X("day:T", title="Date"),
         y=alt.Y("drawdown:Q", title="Drawdown", axis=alt.Axis(format="%")),
-        color=alt.Color("series:N", title="Series"),
+        **cs.series_lines(list(drawdowns["series"].unique()), S0),
     ),
     width="stretch",
 )
@@ -65,7 +67,7 @@ st.altair_chart(
     .encode(
         x=alt.X("day:T", title="Date"),
         y=alt.Y("usd:Q", title="USD"),
-        color=alt.Color("part:N", title=""),
+        color=cs.extra_colours(["Cash", "Invested"], "part"),
     ),
     width="stretch",
 )
@@ -90,7 +92,7 @@ else:
         .encode(
             x=alt.X("day:T", title="Date"),
             y=alt.Y("usd:Q", title="USD"),
-            color=alt.Color("cost:N", title=""),
+            color=cs.extra_colours(["Fees (cumulative)", "Spread cost (cumulative)"], "cost"),
         ),
         width="stretch",
     )

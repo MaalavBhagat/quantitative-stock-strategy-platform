@@ -38,8 +38,27 @@ def title(r: dd.RunRecord) -> None:
     st.caption(explanation(r.label))
 
 
+# Theme details that config.toml cannot set (Goggy's theme 2026-10-30; colours in .streamlit/config.toml). Display only.
+# Captions / metric labels: Streamlit fades them to ~60% of the text colour, which failed WCAG AA (3.04–4.14:1), so
+# they get a solid #42342F (10.44 on the page, 8.12 on cream-beige, 4.88 on the sage sidebar).
+STYLE = """<style>
+h1, h2, h3, h4, [data-testid="stHeading"] h1, [data-testid="stHeading"] h2, [data-testid="stHeading"] h3,
+[data-testid="stMarkdownContainer"] h1, [data-testid="stMarkdownContainer"] h2, [data-testid="stMarkdownContainer"] h3 { color: #590907 !important; }
+[data-testid="stCaptionContainer"], [data-testid="stCaptionContainer"] *,
+[data-testid="stMetricLabel"], [data-testid="stMetricLabel"] * { color: #42342F !important; opacity: 1 !important; }
+.sim-banner { background: #E8D2B5; color: #2B1D1A; border-left: 6px solid #590907; border-radius: 0.5rem;
+              padding: 0.75rem 1rem; margin-bottom: 1rem; font-weight: 600; }
+</style>"""
+
+
 def banner(period: str) -> None:
-    st.warning(dd.banner(period), icon="⚠️")
+    """The SIMULATED, HISTORICAL banner (cream-beige card, burgundy edge) + the shared page styling."""
+    import html
+
+    st.markdown(STYLE, unsafe_allow_html=True)
+    st.markdown(
+        f'<div class="sim-banner">⚠️ {html.escape(dd.banner(period))}</div>', unsafe_allow_html=True
+    )
 
 
 def _kept(widget, label: str, options: list, name: str, **kwargs):
