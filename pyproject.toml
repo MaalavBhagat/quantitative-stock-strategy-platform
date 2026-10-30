@@ -1,6 +1,6 @@
 [project]
 name = "quantitative-stock-strategy-platform"
-version = "0.1.0"
+version = "1.0.0"
 description = "Research platform testing whether a 'sell after a small rise, rebuy after a dip' strategy beats buy-and-hold after real costs (simulated, historical)."
 readme = "README.md"
 license = "MIT"

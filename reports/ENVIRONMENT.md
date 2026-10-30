@@ -8,8 +8,8 @@
 | Python | 3.13.16 (CPython) |
 | uv | 0.13.2 (Homebrew 2026-10-19 aarch64-apple-darwin) |
 | Operating system | Darwin 25.6.0 (arm64) |
-| Project package | quantitative-stock-strategy-platform 0.1.0 |
-| Git commit when written | 4447f20 |
+| Project package | quantitative-stock-strategy-platform 1.0.0 |
+| Git commit when written | 7c2eccd |
 
 ## Key packages
 
@@ -32,4 +32,4 @@
 
 ## All installed packages (64)
 
-altair 6.3.0, anyio 4.15.1, attrs 26.1.0, beautifulsoup4 4.15.0, certifi 2026.10.19, cffi 2.1.1, charset-normalizer 3.5.2, click 8.5.0, curl-cffi 0.16.3, exchange-calendars 4.13.2, greenlet 3.5.6, h11 0.16.0, httpcore 1.0.9, httpx 0.28.1, idna 3.20, iniconfig 2.3.1, itsdangerous 2.2.0, jinja2 3.1.6, jsonschema 4.26.0, jsonschema-specifications 2025.9.1, korean-lunar-calendar 0.4.0, lxml 6.1.3, markupsafe 3.0.4, multitasking 0.0.13, narwhals 2.27.1, numpy 2.5.4, packaging 26.3, pandas 3.0.6, peewee 4.5.3, pillow 13.0.0, platformdirs 4.13.5, playwright 1.64.1, pluggy 1.7.0, protobuf 7.36.2, pyarrow 26.0.0, pycparser 3.11, pydeck 0.9.3, pyee 14.0.0, pygments 2.21.0, pyluach 2.3.0, pytest 9.1.1, python-dateutil 2.9.0.post0, python-dotenv 1.2.4, python-multipart 0.0.32, pytz 2026.5, pyyaml 6.0.3, quantitative-stock-strategy-platform 0.1.0, referencing 0.37.0, requests 2.34.2, rpds-py 2026.9.1, ruff 0.17.1, six 1.17.0, soupsieve 3.0.3, starlette 1.10.0, streamlit 1.66.1, toolz 1.2.0, typing-extensions 4.16.0, tzdata 2026.5, urllib3 2.8.0, uvicorn 0.54.0, vl-convert-python 1.9.0.post1, websockets 17.3, xlrd 2.0.2, yfinance 1.7.0
+altair 6.3.0, anyio 4.15.1, attrs 26.1.0, beautifulsoup4 4.15.0, certifi 2026.10.19, cffi 2.1.1, charset-normalizer 3.5.2, click 8.5.0, curl-cffi 0.16.3, exchange-calendars 4.13.2, greenlet 3.5.6, h11 0.16.0, httpcore 1.0.9, httpx 0.28.1, idna 3.20, iniconfig 2.3.1, itsdangerous 2.2.0, jinja2 3.1.6, jsonschema 4.26.0, jsonschema-specifications 2025.9.1, korean-lunar-calendar 0.4.0, lxml 6.1.3, markupsafe 3.0.4, multitasking 0.0.13, narwhals 2.27.1, numpy 2.5.4, packaging 26.3, pandas 3.0.6, peewee 4.5.3, pillow 13.0.0, platformdirs 4.13.5, playwright 1.64.1, pluggy 1.7.0, protobuf 7.36.2, pyarrow 26.0.0, pycparser 3.11, pydeck 0.9.3, pyee 14.0.0, pygments 2.21.0, pyluach 2.3.0, pytest 9.1.1, python-dateutil 2.9.0.post0, python-dotenv 1.2.4, python-multipart 0.0.32, pytz 2026.5, pyyaml 6.0.3, quantitative-stock-strategy-platform 1.0.0, referencing 0.37.0, requests 2.34.2, rpds-py 2026.9.1, ruff 0.17.1, six 1.17.0, soupsieve 3.0.3, starlette 1.10.0, streamlit 1.66.1, toolz 1.2.0, typing-extensions 4.16.0, tzdata 2026.5, urllib3 2.8.0, uvicorn 0.54.0, vl-convert-python 1.9.0.post1, websockets 17.3, xlrd 2.0.2, yfinance 1.7.0

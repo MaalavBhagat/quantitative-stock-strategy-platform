@@ -2,7 +2,7 @@
 Last updated: 2026-10-30
 
 CURRENT PHASE: Phase 11 — CV, GitHub and portfolio (In progress)
-CURRENT TASK: Phase 11 — README, demo, diagrams, CV + interview prep, GitHub (prompt: prompts/28_phase11_cv_github_portfolio.md)
+CURRENT TASK: Phase 11 ready for verification (chat Claude) → project complete
 
 PHASE STATES (Not started / In progress / Blocked / Verified):
 - Phase 0  Feasibility & research design ........ VERIFIED (2026-10-18)
@@ -16,7 +16,7 @@ PHASE STATES (Not started / In progress / Blocked / Verified):
 - Phase 8  Interactive dashboard ................ VERIFIED (2026-10-27)
 - Phase 9  Market context & AI news ............. VERIFIED (2026-10-28)
 - Phase 10 Integration, security, reliability ... VERIFIED (2026-10-30)
-- Phase 11 CV & GitHub portfolio ................ In progress
+- Phase 11 CV & GitHub portfolio ................ In progress (ready for verification 2026-10-30)
 
 COMPLETED:
 - Master roadmap written (Quantitative Stock Strategy Research Platform.txt)
@@ -583,9 +583,21 @@ FINDINGS (Step 2.3):
   0 .xls; Tiingo key in 0 commits; only fake test emails (example.com/.invalid) besides the noreply address;
   RESEARCH_METHODOLOGY.md, TESTING.md, integration tests present. Dashboard theme (f9ec41e) checked from screenshots:
   banner, REJECTED boxes and dashed S0 line all clear.
+- Phase 11 (Steps 11.1–11.5) — DONE 2026-10-30 (prompt 28): README rewritten (summary, headline table validation +
+  final, Mermaid diagrams, trust section, demo, licence); MIT LICENSE (Goggy); scripts/demo.py on made-up data through
+  the real engine (S0 US$24,423.22 · S4-S2 2/4 US$17,856.86 · C1 US$12,634.32, SIMULATED); dashboard "demo" period +
+  3 publishable screenshots + 3 demo charts in docs/images/ (real-data screenshots kept out: licence); chart polish
+  (years on axes, full legends); docs/CV_AND_INTERVIEW.md (CV bullets x2, AI-use line + decision log, 9 answers ≤ 99
+  words, 5 tough questions); GitHub description + 8 topics set (repo still PRIVATE); fresh clone: sync + demo 13 s,
+  438 passed / 22 skipped; .playwright-browsers deleted (572 MB; screenshots group kept — dashboard_screenshots.py
+  needs it). Version 1.0.0.
+  PHASE 11 CHECK (report only): repository understandable ✓ (README for a 2-minute reader + linked docs) · setup
+  instructions work ✓ (fresh clone) · reproducible demonstration exists ✓ (scripts/demo.py, fixed seed, test) ·
+  CV summary reflects actual accomplishments ✓ (every number from a report) · no unsupported claims about
+  profitability/reliability ✓ (headline is "rejected", SIMULATED, HISTORICAL labels).
 
 IN PROGRESS:
-- Phase 11 (prompt 28): README, demo, diagrams, CV + interview prep, GitHub.
+- none (Phase 11 ready for verification)
 
 BLOCKED / OPEN QUESTIONS (genuinely open — none blocks the project; all are documented limitations):
 - Stake fractional-share precision UNVERIFIED (D3 assumes 6 dp).
@@ -676,8 +688,7 @@ IMPORTANT DECISIONS:
      (only Goggy sets it) · D9 type hints required on every function in src/; no type-checker yet.
 
 NEXT ACTION:
-- Chat Claude verifies Phase 10; then Phase 11 (prompt 28): README polish, demo, diagrams, CV bullets, interview prep,
-  decide public vs private.
+- Chat Claude verifies Phase 11 → project complete. Goggy decides whether to make the GitHub repo public.
 
 TESTS RUN (2026-10-28, prompt 27 — Phase 10):
 - uv run pytest -q → 454 passed in 17.15s · uv run ruff check . → All checks passed! ·

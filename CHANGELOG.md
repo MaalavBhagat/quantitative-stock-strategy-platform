@@ -241,3 +241,19 @@
 - WCAG AA contrast (body text 4.5:1): text on page 14.24, on cards 11.07, on the sage sidebar 6.65; burgundy on page
   12.56 / cards 9.76 / sidebar 5.86; white on burgundy buttons 14.32; captions 10.44 / 8.12 / 4.88. Buy-and-hold sage on
   the page is 2.14:1 as a line, so the dash pattern carries the difference. Smoke check reads the new banner.
+
+## 1.0.0 — 2026-10-30 — Phase 11: portfolio release (tag v1.0.0)
+- README rewritten for a 2-minute reader: question, method, answer (every strategy REJECTED in validation and the
+  one-time final test), headline table, Mermaid architecture + pre-registration diagrams, why it can be trusted,
+  2-minute demo, licence. Labelled SIMULATED, HISTORICAL throughout; no profitability claim.
+- `LICENSE` (MIT, code + docs only; data is not included and keeps its own terms).
+- `scripts/demo.py`: made-up prices (fixed seed, dividends, a 2:1 split) through the real engine — S0, S4-S2, C1;
+  results table, report and charts in `demo_output/` (git-ignored); sample charts in `docs/images/`; test + fresh-clone
+  check (sync + demo 13 s).
+- Dashboard: "demo" period (made-up data banner, USD only); publishable screenshots from it (`dashboard_screenshots.py
+  --demo`); charts show years on date axes and full legend labels. altair + vl-convert-python moved to the default install.
+- `docs/CV_AND_INTERVIEW.md`: description, CV bullets (finance and data/tech versions, real numbers), technologies,
+  GitHub description + topics (set with gh), how AI was used and the decision log, 2-minute demo, 9 interview answers
+  and 5 tough questions.
+- PROJECT_GUIDE, TESTING, RESEARCH_METHODOLOGY updated (460 tests). Project-only browser deleted (572 MB freed).
+- Package version 0.1.0 → 1.0.0.
